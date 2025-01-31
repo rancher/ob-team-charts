@@ -135,7 +135,7 @@ clients:
 
   copyCertsImage:
     repository: rancher/mirrored-library-busybox
-    tag: 1.31.1
+    tag: 1.37.0
 
   # The default intention of rancher-pushprox clients is to scrape hostNetwork metrics across all nodes.
   # This can be used to scrape internal Kubernetes components or DaemonSets of hostNetwork Pods in
