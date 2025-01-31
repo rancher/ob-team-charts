@@ -16,4 +16,4 @@ spec:
       app.kubernetes.io/name: rke2-ingress-nginx
   policyTypes:
     - Ingress
-{{- end }}
+  {{- end }}
