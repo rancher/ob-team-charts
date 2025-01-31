@@ -33,7 +33,7 @@
 -    registry: quay.io
 -    repository: brancz/kube-rbac-proxy
 +    repository: rancher/mirrored-kube-rbac-proxy
-     tag: v0.14.0
+     tag: v0.18.2
      sha: ""
      pullPolicy: IfNotPresent
 @@ -204,7 +207,6 @@
