@@ -126,3 +126,40 @@ func fetchUpdate(requestUrl string) error {
 
 	return nil
 }
+
+func callChartBuildScriptCommand(commandAndArgs []string) error {
+	err := Chart{}.PullBuildScripts()
+	if err != nil {
+		return err
+	}
+
+	err = sh.RunV(chartsBuildScriptsBinPath, commandAndArgs...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func callChartBuildScriptWithFlags(commandName string, flags string) error {
+	inputFlags := strings.Split(flags, " ")
+	command := append([]string{commandName}, inputFlags...)
+	return callChartBuildScriptCommand(command)
+}
+
+// Individual Mage tasks for each charts-build-scripts sub-command target
+
+func (Chart) Prepare(flags string) error { return callChartBuildScriptWithFlags("prepare", flags) }
+func (Chart) Patch(flags string) error   { return callChartBuildScriptWithFlags("patch", flags) }
+func (Chart) Clean() error {
+	log.Info("Will clean the charts-build-script cache...")
+	return callChartBuildScriptCommand([]string{"clean"})
+}
+func (Chart) CleanCache() error         { return callChartBuildScriptCommand([]string{"clean-cache"}) }
+func (Chart) Charts(flags string) error { return callChartBuildScriptWithFlags("charts", flags) }
+func (Chart) List() error               { return callChartBuildScriptCommand([]string{"list"}) }
+func (Chart) Index() error              { return callChartBuildScriptCommand([]string{"index"}) }
+func (Chart) Unzip() error              { return callChartBuildScriptCommand([]string{"unzip"}) }
+func (Chart) Zip() error                { return callChartBuildScriptCommand([]string{"zip"}) }
+func (Chart) Standardize() error        { return callChartBuildScriptCommand([]string{"standardize"}) }
+func (Chart) Template() error           { return callChartBuildScriptCommand([]string{"template"}) }
