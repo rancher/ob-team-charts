@@ -1,4 +1,4 @@
-TARGETS := $(shell ls scripts|grep -ve "^util-\|^pull-scripts")
+TARGETS := $(shell ls scripts|grep -ve "^util-")
 
 # Default behavior for targets
 $(TARGETS):
@@ -6,31 +6,33 @@ $(TARGETS):
 
 .DEFAULT_GOAL := default
 
-# Charts Build Scripts
-pull-scripts:
-	./scripts/pull-scripts
-
 rebase:
 	./scripts/charts-build-scripts/rebase
 
-dev-prepare: pull-scripts
-	@./bin/charts-build-scripts prepare --soft-errors --debug
+dev-prepare:
+	@./make pull-scripts
+	@./bin/charts-build-scripts prepare --soft-errors
 
-dev-prepare-cached: pull-scripts
-	@./bin/charts-build-scripts prepare --soft-errors --debug --useCache
+dev-prepare-cached:
+	@./make pull-scripts
+	@./bin/charts-build-scripts prepare --soft-errors --useCache
 
-prepare-cached: pull-scripts
+prepare-cached:
+	@./make pull-scripts
 	@./bin/charts-build-scripts prepare --useCache
 
-patch-cached: pull-scripts
+patch-cached:
+	@./make pull-scripts
 	@./bin/charts-build-scripts patch --useCache
 
-charts-cached: pull-scripts
+charts-cached:
+	@./make pull-scripts
 	@./bin/charts-build-scripts charts --useCache
 
 CHARTS_BUILD_SCRIPTS_TARGETS := prepare patch clean clean-cache charts list index unzip zip standardize template
 
-$(CHARTS_BUILD_SCRIPTS_TARGETS): pull-scripts
+$(CHARTS_BUILD_SCRIPTS_TARGETS):
+	@./make pull-scripts
 	@./bin/charts-build-scripts $@
 
 .PHONY: $(TARGETS) $(CHARTS_BUILD_SCRIPTS_TARGETS) list
