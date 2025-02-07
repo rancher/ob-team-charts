@@ -3,6 +3,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/magefile/mage/sh"
 	"os"
 
@@ -38,4 +39,18 @@ func init() {
 
 func Rebase() error {
 	return sh.RunV("./scripts/charts-build-scripts/rebase")
+}
+
+func Script(target string) error {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("Error getting CWD: %s", err)
+	}
+	filePath := fmt.Sprintf("%s/scripts/%s", cwd, target)
+	_, err = os.Stat(filePath)
+	if err != nil {
+		return fmt.Errorf("Error checking if file exists: %s", err)
+	}
+
+	return sh.RunV(filePath)
 }

@@ -11,5 +11,5 @@ if [ -d ./.charts-build-scripts/.cache ]; then
   rm -rf ./.charts-build-scripts/.cache
 fi
 
-./scripts/pull-scripts
+./make pull-scripts
 ./bin/charts-build-scripts validate --local
