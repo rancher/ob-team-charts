@@ -69,6 +69,9 @@ func (Chart) PullBuildScripts() error {
 }
 
 func checkNeedsFetch() (bool, error) {
+	// TODO: add a cache mechanism so that when this runs 80% of the time it checks the cache and returns false
+	// and the 20% the time that hit, we do a HEAD and compare version (and etag? I trust nichoals but lets be paranoid)
+	// then we refresh the cache TTL file if no change, or update bin then update TTL file.
 	stat, err := os.Stat(chartsBuildScriptsBinPath)
 	if err != nil {
 		return true, err

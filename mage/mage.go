@@ -3,8 +3,8 @@
 package main
 
 import (
+	"fmt"
 	"os"
-
 	//mage:import
 	"github.com/rancher/ob-team-charts/mage/charts"
 
@@ -38,3 +38,12 @@ func init() {
 	// Only log the warning severity or above.
 	log.SetLevel(log.InfoLevel)
 }
+
+// Help prints the available Mage commands in a standard CLI help format.
+func Help() error {
+	fmt.Println("Usage: ./make [target]")
+	// TODO: add more of a traditional CLI help here? (i.e. a description of each target)
+	return nil
+}
+
+var Default = Help

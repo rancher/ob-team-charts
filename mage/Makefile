@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := default
 
 default:
-	mage -compile ../make
+	mage -compile ../ob-charts-make
 
 clean:
-	rm ../make
+	rm ../ob-charts-make
