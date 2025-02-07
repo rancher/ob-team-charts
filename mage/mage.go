@@ -3,12 +3,13 @@
 package main
 
 import (
-	"fmt"
-	"github.com/magefile/mage/sh"
 	"os"
 
 	//mage:import
 	"github.com/rancher/ob-team-charts/mage/charts"
+
+	//mage:import
+	"github.com/rancher/ob-team-charts/mage/scripts"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -26,6 +27,7 @@ var Aliases = map[string]interface{}{
 	"zip":          charts.Chart.Zip,
 	"standardize":  charts.Chart.Standardize,
 	"template":     charts.Chart.Template,
+	"call":         scripts.Scripts.Execute,
 }
 
 func init() {
@@ -35,22 +37,4 @@ func init() {
 
 	// Only log the warning severity or above.
 	log.SetLevel(log.InfoLevel)
-}
-
-func Rebase() error {
-	return sh.RunV("./scripts/charts-build-scripts/rebase")
-}
-
-func Script(target string) error {
-	cwd, err := os.Getwd()
-	if err != nil {
-		return fmt.Errorf("Error getting CWD: %s", err)
-	}
-	filePath := fmt.Sprintf("%s/scripts/%s", cwd, target)
-	_, err = os.Stat(filePath)
-	if err != nil {
-		return fmt.Errorf("Error checking if file exists: %s", err)
-	}
-
-	return sh.RunV(filePath)
 }
