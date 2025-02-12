@@ -1,0 +1,53 @@
+#!/bin/bash
+set -e # Exit immediately if a command exits with a non-zero status.
+
+cd $(dirname $0) # Move to the directory of the script
+
+OB_TEAM_SCRIPTS_REPO=https://github.com/mallardduck/ob-charts-tool.git
+OB_TEAM_SCRIPT_VERSION="${OB_TEAM_SCRIPT_VERSION:-v0.0.6}"
+
+
+# Check if the charts-build-scripts binary exists in the ../bin directory
+if ls ../bin/ob-charts-tool 1>/dev/null 2>/dev/null; then
+    # Use awk to split the version output correctly and extract the version number
+    CURRENT_SCRIPT_VERSION="$(../bin/ob-charts-tool --version | awk '{print $3}')"
+    echo "Current version: ${CURRENT_SCRIPT_VERSION}, Expected version: ${OB_TEAM_SCRIPT_VERSION}"
+    # Exit if the current version matches the expected version
+    if [[ "${CURRENT_SCRIPT_VERSION}" == "${OB_TEAM_SCRIPT_VERSION}" ]]; then
+        exit 0
+    fi
+fi
+
+echo "Downloading ob-charts-tool version ${OB_TEAM_SCRIPTS_REPO}@${OB_TEAM_SCRIPT_VERSION}"
+
+# Remove existing ../bin directory and change to the parent dir.
+rm -f ../bin/ob-charts-tool
+cd ..
+
+mkdir -p bin # Re-create bin dir
+
+# Extract the OS and architecture from the go version command output
+OS=$(go version | cut -d' ' -f4 | cut -d'/' -f1)
+ARCH=$(go version | cut -d' ' -f4 | cut -d'/' -f2)
+
+# Determine the binary name based on the OS and architecture
+if [[ "$OS" == "windows" ]]; then
+    BINARY_NAME="ob-charts-tool_${OS}_${ARCH}.exe"
+else
+    BINARY_NAME="ob-charts-tool_${OS}_${ARCH}"
+fi
+
+# Download the binary from the charts-build-scripts repository
+curl -s -L "${OB_TEAM_SCRIPTS_REPO%.git}/releases/download/${OB_TEAM_SCRIPT_VERSION}/${BINARY_NAME}" --output bin/ob-charts-tool
+
+# If fetching binary did not work, fail
+if ! [[ -f bin/ob-charts-tool ]] || [[ $(cat bin/ob-charts-tool) == "Not Found" ]]; then
+    echo "Failed to find ob-charts-tool binary"
+    rm bin/ob-charts-tool;
+    exit 1
+fi
+
+echo "${BINARY_NAME} => ./bin/ob-charts-tool"
+
+chmod +x ./bin/ob-charts-tool
+./bin/ob-charts-tool --version
