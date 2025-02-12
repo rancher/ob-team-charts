@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+cd $(dirname $0) # Move to the directory of the script
+
+bash ./pull-scripts
+
+if [[ -f ../bin/ob-charts-tool ]]; then
+  exec ../bin/ob-charts-tool getRebaseInfo "$@"
+else
+  echo "Your ob-charts-tool bin is missing..."
+fi
