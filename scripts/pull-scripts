@@ -18,7 +18,7 @@ fi
 echo "Downloading charts-build-scripts version ${CHARTS_BUILD_SCRIPTS_REPO}@${CHARTS_BUILD_SCRIPT_VERSION}"
 
 # Remove existing ../bin directory and change to the parent dir.
-rm -rf ../bin
+rm -f ../bin/charts-build-scripts
 cd ..
 
 mkdir -p bin # Re-create bin dir

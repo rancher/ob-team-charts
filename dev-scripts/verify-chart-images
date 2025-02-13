@@ -1,72 +1,18 @@
 #!/usr/bin/env bash
 
-# Function to check if an image:tag exists
-check_docker_image() {
-  local repo=$1
-  local tag=${2:-latest}
+cd $(dirname $0) # Move to the directory of the script
 
-  # Authenticate once and store the token
-  tokenUri="https://auth.docker.io/token"
-  service="service=registry.docker.io"
-  scope="scope=repository:$repo:pull"  # Use a common public repo for auth
-  local DOCKER_HUB_TOKEN=$(curl --silent --get --data-urlencode "$service" --data-urlencode "$scope" "$tokenUri" | jq --raw-output '.token')
+bash ./pull-scripts
 
-
-  local manifestUri="https://registry-1.docker.io/v2/$repo/manifests/$tag"
-  local authz="Authorization: Bearer $DOCKER_HUB_TOKEN"
-
-  if curl --silent --head --fail -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "$authz" "$manifestUri" >/dev/null; then
-    echo "✔ $repo:$tag exists"
+if [[ -f ../bin/ob-charts-tool ]]; then
+  # Check if there's input from STDIN
+  if [ -t 0 ]; then
+      # No STDIN, pass all arguments to the command
+      exec ../bin/ob-charts-tool verifyChartImages "$@"
   else
-    echo "✘ $repo:$tag NOT found"
+      # Pass STDIN to the command
+      exec ../bin/ob-charts-tool verifyChartImages "$@" <&0
   fi
-}
-
-process_stdin() {
-  IMAGE_LIST=$(echo "$input"|grep "image:\|docker.io"|grep "image:\|docker.io"|grep -vi registry|grep -v "image:$"|grep -v "{{"| awk '{$1=$1};1'|cut -d= -f2 | cut -d' ' -f2 | sort -u | sed -E 's|"||g;s|^docker.io/||' | awk -F: '{print $1, $2 ? $2 : "latest"}')
-
-  echo -e "We will check: \n$IMAGE_LIST\n---"
-
-  # Run your existing command, process the list, and check each image
-  echo "$IMAGE_LIST" | while read -r repo tag; do
-    check_docker_image "$repo" "$tag"
-  done
-  wait
-}
-
-process_chart_version() {
-  echo "This will run the 'helm' command for you, otherwise you can pipe input from helm."
-  echo "If you include a debug.yaml -values file from rancher- in the CWD it will use that too."
-
-  local CHART_VERSION=$1
-  local BASE_DIR=$(dirname "$(dirname "$(realpath "$0")")")
-  local CHART_BASE="$BASE_DIR/charts/rancher-monitoring/$CHART_VERSION"
-
-  echo "Looking for chart at \`$CHART_BASE\`";
-  if [ -d "$CHART_BASE" ];then
-    echo "The chart was found - will execute helm next to find debug images";
-
-    if [ -f "$BASE_DIR/debug.yaml" ]; then
-      input=$(helm template --debug rancher-monitoring "$CHART_BASE" -f "$BASE_DIR/debug.yaml" -n cattle-monitoring-system)
-    else
-      input=$(helm template --debug rancher-monitoring "$CHART_BASE" -n cattle-monitoring-system)
-    fi
-    process_stdin
-
-    echo "Warning: without a values file -populated from rancher- this may be missing some images."
-  else
-    echo "ERROR: Did not find the chart with the provided version"
-    exit 1
-  fi
-}
-
-# Check if input is coming from a pipe
-if [ -p /dev/stdin ]; then
-  input=$(cat /dev/stdin)
-  process_stdin
-elif [ -n "$1" ]; then  # Check if a command-line argument is provided
-  process_chart_version "$1"
 else
-  echo "Usage: verify-chart-images <chart_version: a rancher-monitoring version> or pipe input from helm debug to the script"
-  exit 1
+  echo "Your ob-charts-tool bin is missing..."
 fi
