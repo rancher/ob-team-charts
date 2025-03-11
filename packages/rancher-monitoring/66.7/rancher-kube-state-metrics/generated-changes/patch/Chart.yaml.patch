@@ -1,6 +1,6 @@
 --- charts-original/Chart.yaml
 +++ charts/Chart.yaml
-@@ -19,7 +25,7 @@
+@@ -19,7 +19,7 @@
    name: mrueg
  - email: david@0xdc.me
    name: dotdc
