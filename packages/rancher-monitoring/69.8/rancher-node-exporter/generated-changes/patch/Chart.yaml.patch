@@ -1,0 +1,11 @@
+--- charts-original/Chart.yaml
++++ charts/Chart.yaml
+@@ -21,7 +21,7 @@
+ - email: rootsandtrees@posteo.de
+   name: zeritti
+   url: https://github.com/zeritti
+-name: prometheus-node-exporter
++name: rancher-node-exporter
+ sources:
+ - https://github.com/prometheus/node_exporter/
+ type: application
