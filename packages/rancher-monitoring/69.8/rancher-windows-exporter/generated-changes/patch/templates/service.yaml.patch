@@ -1,0 +1,17 @@
+--- charts-original/templates/service.yaml
++++ charts/templates/service.yaml
+@@ -4,7 +4,7 @@
+   name: {{ include "prometheus-windows-exporter.fullname" . }}
+   namespace: {{ include "prometheus-windows-exporter.namespace" . }}
+   labels:
+-    {{- include "prometheus-windows-exporter.labels" $ | nindent 4 }}
++    {{- include "windowsExporter.labels" $ | nindent 4 }}
+   {{- with .Values.service.annotations }}
+   annotations:
+     {{- toYaml . | nindent 4 }}
+@@ -21,4 +21,4 @@
+       appProtocol: http
+       name: {{ .Values.service.portName }}
+   selector:
+-    {{- include "prometheus-windows-exporter.selectorLabels" . | nindent 4 }}
++    {{- include "windowsExporter.labels" . | nindent 4 }}
