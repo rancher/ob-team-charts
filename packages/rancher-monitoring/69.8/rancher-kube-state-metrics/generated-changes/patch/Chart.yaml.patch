@@ -1,0 +1,11 @@
+--- charts-original/Chart.yaml
++++ charts/Chart.yaml
+@@ -22,7 +22,7 @@
+ - email: david@0xdc.me
+   name: dotdc
+   url: https://github.com/dotdc
+-name: kube-state-metrics
++name: rancher-kube-state-metrics
+ sources:
+ - https://github.com/kubernetes/kube-state-metrics/
+ type: application
