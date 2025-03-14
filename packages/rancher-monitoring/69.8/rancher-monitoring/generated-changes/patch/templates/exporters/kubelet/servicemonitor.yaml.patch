@@ -1,0 +1,34 @@
+--- charts-original/templates/exporters/kubelet/servicemonitor.yaml
++++ charts/templates/exporters/kubelet/servicemonitor.yaml
+@@ -1,4 +1,7 @@
+-{{- if and .Values.kubelet.enabled .Values.kubernetesServiceMonitors.enabled }}
++{{- if (and (not .Values.kubelet.enabled) .Values.hardenedKubelet.enabled) }}
++{{ required "Cannot set .Values.hardenedKubelet.enabled=true when .Values.kubelet.enabled=false" "" }}
++{{- end }}
++{{- if (and .Values.kubelet.enabled .Values.kubernetesServiceMonitors.enabled (not .Values.hardenedKubelet.enabled) (not .Values.k3sServer.enabled)) }}
+ apiVersion: monitoring.coreos.com/v1
+ kind: ServiceMonitor
+ metadata:
+@@ -47,10 +50,20 @@
+     {{- include "kube-prometheus-stack.kubelet.authConfig" . | indent 4 }}
+     honorLabels: {{ .Values.kubelet.serviceMonitor.honorLabels }}
+     honorTimestamps: {{ .Values.kubelet.serviceMonitor.honorTimestamps }}
+-{{- if .Values.kubelet.serviceMonitor.metricRelabelings }}
+     metricRelabelings:
+-{{ tpl (toYaml .Values.kubelet.serviceMonitor.metricRelabelings | indent 4) . }}
++{{- if .Values.kubelet.serviceMonitor.metricRelabelings }}
++{{ tpl (toYaml .Values.kubelet.serviceMonitor.metricRelabelings | indent 6) . }}
+ {{- end }}
++    {{ if .Values.global.cattle.clusterId }}
++      - sourceLabels: [__address__]
++        targetLabel: cluster_id
++        replacement: {{ .Values.global.cattle.clusterId }}
++    {{- end }}
++    {{ if .Values.global.cattle.clusterName}}
++      - sourceLabels: [__address__]
++        targetLabel: cluster_name
++        replacement: {{ .Values.global.cattle.clusterName }}
++    {{- end }}
+ {{- if .Values.kubelet.serviceMonitor.relabelings }}
+     relabelings:
+ {{ tpl (toYaml .Values.kubelet.serviceMonitor.relabelings | indent 4) . }}
