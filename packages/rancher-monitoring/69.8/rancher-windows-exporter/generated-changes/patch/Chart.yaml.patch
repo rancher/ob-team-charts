@@ -9,5 +9,5 @@
 +  catalog.rancher.io/namespace: cattle-monitoring-system
 +  catalog.rancher.io/release-name: rancher-windows-exporter
  apiVersion: v2
- appVersion: 0.29.2
+ appVersion: 0.30.5
  description: A Helm chart for prometheus windows-exporter
