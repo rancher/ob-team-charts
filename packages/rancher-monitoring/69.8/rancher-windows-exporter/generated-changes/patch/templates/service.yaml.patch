@@ -6,10 +6,10 @@
    labels:
 -    {{- include "prometheus-windows-exporter.labels" $ | nindent 4 }}
 +    {{- include "windowsExporter.labels" $ | nindent 4 }}
-   {{- if or .Values.prometheus.monitor.enabled .Values.prometheus.podMonitor.enabled }}
    {{- with .Values.service.annotations }}
    annotations:
-@@ -24,9 +24,9 @@
+     {{- toYaml . | nindent 4 }}
+@@ -16,9 +16,9 @@
        {{- if ( and (eq .Values.service.type "NodePort" ) (not (empty .Values.service.nodePort)) ) }}
        nodePort: {{ .Values.service.nodePort }}
        {{- end }}
