@@ -12,7 +12,7 @@
 +  repository: rancher/mirrored-prometheus-node-exporter
    # Overrides the image tag whose default is {{ printf "v%s" .Chart.AppVersion }}
 -  tag: ""
-+  tag: v1.3.1
++  tag: v1.9.0
    pullPolicy: IfNotPresent
    digest: ""
  
@@ -28,19 +28,17 @@
    # To help compatibility with other charts which use global.imagePullSecrets.
    # Allow either an array of {name: pullSecret} maps (k8s-style), or an array of strings (more common helm-style).
    # global:
-@@ -43,9 +49,9 @@
+@@ -43,8 +49,8 @@
    env: {}
      # VARIABLE: value
    image:
 -    registry: quay.io
 -    repository: brancz/kube-rbac-proxy
--    tag: v0.18.1
 +    registry: ''
 +    repository: rancher/mirrored-brancz-kube-rbac-proxy
-+    tag: v0.18.2
+     tag: v0.18.2
      sha: ""
      pullPolicy: IfNotPresent
- 
 @@ -126,13 +132,13 @@
    clusterIP: ""
    ## Default service port. Sets the port of the exposed container as well (NE or kubeRBACProxy).
@@ -57,7 +55,7 @@
    ## Name of the service port. Sets the port name of the main container (NE) as well.
    portName: metrics
    ## Port number for service type NodePort
-@@ -365,9 +371,6 @@
+@@ -369,9 +375,6 @@
    ## If true, create & use RBAC resources
    ##
    create: true
@@ -67,7 +65,7 @@
    pspAnnotations: {}
  
  # for deployments that have node_exporter deployed outside of the cluster, list
-@@ -456,6 +459,8 @@
+@@ -461,6 +464,8 @@
  tolerations:
    - effect: NoSchedule
      operator: Exists
