@@ -11,7 +11,7 @@
 +  os: "windows"
    # Overrides the image tag whose default is {{ printf "v%s" .Chart.AppVersion }}
 -  tag: ""
-+  tag: "0.25.1"
++  tag: "0.30.5"
    pullPolicy: IfNotPresent
    digest: ""
  
@@ -22,7 +22,7 @@
  
  imagePullSecrets: []
  # - name: "image-pull-secret"
-@@ -32,15 +33,14 @@
+@@ -32,20 +33,19 @@
    #   - pullSecret1
    #   - pullSecret2
    imagePullSecrets: []
@@ -32,17 +32,22 @@
 +  cattle:
 +    systemDefaultRegistry: ""
  
+ ## Service configuration
  service:
+   ## Service type
    type: ClusterIP
+   ## Default service port. Sets the port of the exposed container as well (windows-exporter).
 -  port: 9182
 +  port: 9796
+   ## Port number for service type NodePort
    nodePort:
+   ## Name of the service port. Sets the port name of the main container (windows-exporter) as well.
 -  portName: metrics
 +  portName: windows-metrics
+   ## Additional annotations and labels for the service.
    annotations: {}
  
- # Additional environment variables that will be passed to the daemonset
-@@ -50,15 +50,15 @@
+@@ -56,15 +56,15 @@
  
  prometheus:
    monitor:
@@ -55,13 +60,13 @@
 +    jobLabel: "component"
  
      # List of pod labels to add to windows exporter metrics
-     # https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#servicemonitor
+     # https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api-reference/api.md#servicemonitor
 -    podTargetLabels: []
 +    podTargetLabels: ["component"]
  
      scheme: http
      basicAuth: {}
-@@ -228,8 +228,6 @@
+@@ -234,8 +234,6 @@
      hostProcess: true
      runAsUserName: "NT AUTHORITY\\system"
  
