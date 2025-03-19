@@ -1,8 +1,8 @@
 --- charts-original/Chart.yaml
 +++ charts/Chart.yaml
-@@ -6,13 +6,24 @@
-     - name: Upstream Project
-       url: https://github.com/prometheus-operator/kube-prometheus
+@@ -8,13 +8,24 @@
+     - name: Upgrade Process
+       url: https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/README.md#upgrading-chart
    artifacthub.io/operator: "true"
 +  catalog.cattle.io/auto-install: rancher-monitoring-crd=match
 +  catalog.cattle.io/certified: rancher
@@ -18,9 +18,9 @@
 +  catalog.cattle.io/requests-memory: 4000Mi
 +  catalog.cattle.io/type: cluster-tool
 +  catalog.cattle.io/ui-component: monitoring
-+  catalog.cattle.io/upstream-version: 66.7.1
++  catalog.cattle.io/upstream-version: 69.8.2
  apiVersion: v2
- appVersion: v0.79.0
+ appVersion: v0.80.1
  dependencies:
 -- condition: crds.enabled
 -  name: crds
@@ -29,18 +29,18 @@
  - condition: grafana.enabled
    name: grafana
    repository: file://./charts/grafana
-@@ -57,10 +68,6 @@
+@@ -59,10 +70,6 @@
    name: prometheus-node-exporter
    repository: file://./charts/prometheus-node-exporter
-   version: 4.41.0
+   version: 4.44.1
 -- condition: windowsMonitoring.enabled
 -  name: prometheus-windows-exporter
 -  repository: https://prometheus-community.github.io/helm-charts
--  version: 0.7.*
+-  version: 0.9.*
  - condition: rke2ControllerManager.enabled
    name: rke2ControllerManager
    repository: file://./charts/rke2ControllerManager
-@@ -110,7 +117,7 @@
+@@ -112,7 +119,7 @@
    operate end-to-end Kubernetes cluster monitoring with Prometheus using the Prometheus
    Operator.
  home: https://github.com/prometheus-operator/kube-prometheus
@@ -49,10 +49,10 @@
  keywords:
  - operator
  - prometheus
-@@ -133,7 +140,7 @@
-   name: Xtigyro
+@@ -143,7 +150,7 @@
  - email: quentin.bisson@gmail.com
    name: QuentinBisson
+   url: https://github.com/QuentinBisson
 -name: kube-prometheus-stack
 +name: rancher-monitoring
  sources:
