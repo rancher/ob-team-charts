@@ -10,7 +10,7 @@
 -  tag: ""
 +  registry: docker.io
 +  repository: rancher/mirrored-kube-state-metrics-kube-state-metrics
-+  tag: v2.14.0
++  tag: v2.15.0
    sha: ""
    pullPolicy: IfNotPresent
  
@@ -37,7 +37,7 @@
      tag: v0.18.2
      sha: ""
      pullPolicy: IfNotPresent
-@@ -237,7 +241,6 @@
+@@ -244,7 +248,6 @@
  ## Ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/
  ##
  podSecurityPolicy:
