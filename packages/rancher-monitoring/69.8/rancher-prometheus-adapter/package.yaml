@@ -1,4 +1,4 @@
 url: https://github.com/prometheus-community/helm-charts.git
 subdirectory: charts/prometheus-adapter
-commit: cfa7307424fd2e3572e0580287676c386fc91604
+commit: ea6a581d7f0947333b6b13d8636c18980a6a2088
 doNotRelease: true
