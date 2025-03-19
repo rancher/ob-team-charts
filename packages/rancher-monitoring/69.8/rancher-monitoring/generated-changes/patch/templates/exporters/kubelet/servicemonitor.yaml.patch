@@ -1,15 +1,15 @@
 --- charts-original/templates/exporters/kubelet/servicemonitor.yaml
 +++ charts/templates/exporters/kubelet/servicemonitor.yaml
 @@ -1,4 +1,7 @@
--{{- if and .Values.kubelet.enabled .Values.kubernetesServiceMonitors.enabled }}
+-{{- if and .Values.kubelet.enabled .Values.kubelet.serviceMonitor.enabled .Values.kubernetesServiceMonitors.enabled }}
 +{{- if (and (not .Values.kubelet.enabled) .Values.hardenedKubelet.enabled) }}
 +{{ required "Cannot set .Values.hardenedKubelet.enabled=true when .Values.kubelet.enabled=false" "" }}
 +{{- end }}
-+{{- if (and .Values.kubelet.enabled .Values.kubernetesServiceMonitors.enabled (not .Values.hardenedKubelet.enabled) (not .Values.k3sServer.enabled)) }}
++{{- if (and .Values.kubelet.enabled .Values.kubelet.serviceMonitor.enabled .Values.kubernetesServiceMonitors.enabled (not .Values.hardenedKubelet.enabled) (not .Values.k3sServer.enabled)) }}
  apiVersion: monitoring.coreos.com/v1
  kind: ServiceMonitor
  metadata:
-@@ -47,10 +50,20 @@
+@@ -48,10 +51,20 @@
      {{- include "kube-prometheus-stack.kubelet.authConfig" . | indent 4 }}
      honorLabels: {{ .Values.kubelet.serviceMonitor.honorLabels }}
      honorTimestamps: {{ .Values.kubelet.serviceMonitor.honorTimestamps }}
