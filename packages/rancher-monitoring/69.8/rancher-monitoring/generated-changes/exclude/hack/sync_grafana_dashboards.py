@@ -29,11 +29,11 @@ def change_style(style, representer):
 
 refs = {
     # https://github.com/prometheus-operator/kube-prometheus
-    'ref.kube-prometheus': '17aa6690a5739183c68efa048439739dce773827',
+    'ref.kube-prometheus': 'baf3c7a71ec9f889644231f677f8708791d38293',
     # https://github.com/kubernetes-monitoring/kubernetes-mixin
-    'ref.kubernetes-mixin': 'bad0615569e5ed5cdbab2ea4039c6c871c2c8589',
+    'ref.kubernetes-mixin': '1fa3b6731c93eac6d5b8c3c3b087afab2baabb42',
     # https://github.com/etcd-io/etcd
-    'ref.etcd': '25dfc8231e1c1492bff25b152a919db8799ab38c',
+    'ref.etcd': '9f1709e015640838269bfbecae9ee2be41b47939',
 }
 
 # Source files list
@@ -78,6 +78,7 @@ charts = [
 
 # Additional conditions map
 condition_map = {
+    'alertmanager-overview': ' (or .Values.alertmanager.enabled .Values.alertmanager.forceDeployDashboards)',
     'grafana-coredns-k8s': ' .Values.coreDns.enabled',
     'etcd': ' .Values.kubeEtcd.enabled',
     'apiserver': ' .Values.kubeApiServer.enabled',
@@ -205,11 +206,22 @@ def patch_json_set_editable_as_variable(content):
     return re.sub(r'"editable"\s*:\s*(?:true|false)', '"editable":`}}{{ .Values.grafana.defaultDashboardsEditable }}{{`', content, flags=re.IGNORECASE)
 
 
+def patch_json_set_interval_as_variable(content):
+    # content is no more in json format, so we have to replace using regex
+    return re.sub(r'"interval"\s*:\s*"(?:\\.|[^\"])*"', '"interval":"`}}{{ .Values.grafana.defaultDashboardsInterval }}{{`"', content, flags=re.IGNORECASE)
+
 def jsonnet_import_callback(base, rel):
+    # rel_base is the path relative to the current cwd.
+    # see https://github.com/prometheus-community/helm-charts/issues/5283
+    # for more details.
+    rel_base = base
+    if rel_base.startswith(os.getcwd()):
+        rel_base = base[len(os.getcwd()):]
+
     if "github.com" in rel:
         base = os.getcwd() + '/vendor/'
-    elif "github.com" in base:
-        base = os.getcwd() + '/vendor/' + base[base.find('github.com'):]
+    elif "github.com" in rel_base:
+        base = os.getcwd() + '/vendor/' + rel_base[rel_base.find('github.com'):]
 
     if os.path.isfile(base + rel):
         return base + rel, open(base + rel).read().encode('utf-8')
@@ -230,6 +242,7 @@ def write_group_to_file(resource_name, content, url, destination, min_kubernetes
     content = patch_dashboards_json(content, multicluster_key)
     content = patch_json_set_timezone_as_variable(content)
     content = patch_json_set_editable_as_variable(content)
+    content = patch_json_set_interval_as_variable(content)
 
     filename_struct = {resource_name + '.json': (LiteralStr(content))}
     # rules themselves
