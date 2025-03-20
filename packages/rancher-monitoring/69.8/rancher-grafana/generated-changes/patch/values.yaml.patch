@@ -31,7 +31,7 @@
 +  repository: rancher/mirrored-grafana-grafana
    # Overrides the Grafana image tag whose default is the chart appVersion
 -  tag: ""
-+  tag: 10.4.9
++  tag: 11.5.2
    sha: ""
    pullPolicy: IfNotPresent
  
