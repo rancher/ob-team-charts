@@ -82,7 +82,7 @@
 +
 +                        },
 +                        "id": 3,
-+                        "interval": "1m", ## UNDERSTAND HOW "interval": "`}}{{ .Values.grafana.defaultDashboardsInterval }}{{`" WOULD MANIFEST HERE
++                        "interval": "1m",
 +                        "legend": {
 +                            "alignAsTable": true,
 +                            "rightSide": true
