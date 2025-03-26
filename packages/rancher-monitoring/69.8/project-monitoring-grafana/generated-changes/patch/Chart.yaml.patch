@@ -9,10 +9,10 @@
    catalog.cattle.io/os: linux
    catalog.rancher.io/certified: rancher
    catalog.rancher.io/namespace: cattle-monitoring-system
-@@ -31,7 +31,7 @@
-   name: Xtigyro
- - email: mail@torstenwalter.de
+@@ -33,7 +33,7 @@
    name: torstenwalter
+ - email: github@jkroepke.de
+   name: jkroepke
 -name: grafana
 +name: rancher-grafana
  sources:
