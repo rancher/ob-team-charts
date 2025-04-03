@@ -1,18 +1,9 @@
 --- charts-original/Chart.yaml
 +++ charts/Chart.yaml
-@@ -6,7 +6,7 @@
-     - name: Upstream Project
-       url: https://github.com/grafana/grafana
-   catalog.cattle.io/hidden: "true"
--  catalog.cattle.io/kube-version: '>= 1.26.0-0 < 1.31.0-0'
-+  catalog.cattle.io/kube-version: '>= 1.26.0-0'
-   catalog.cattle.io/os: linux
-   catalog.rancher.io/certified: rancher
-   catalog.rancher.io/namespace: cattle-monitoring-system
-@@ -31,7 +31,7 @@
-   name: Xtigyro
- - email: mail@torstenwalter.de
+@@ -27,7 +27,7 @@
    name: torstenwalter
+ - email: github@jkroepke.de
+   name: jkroepke
 -name: grafana
 +name: rancher-grafana
  sources:
