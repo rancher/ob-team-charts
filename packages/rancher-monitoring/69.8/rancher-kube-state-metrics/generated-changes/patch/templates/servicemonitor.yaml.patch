@@ -1,0 +1,23 @@
+--- charts-original/templates/servicemonitor.yaml
++++ charts/templates/servicemonitor.yaml
+@@ -57,8 +57,20 @@
+     {{- end }}
+     {{- if or .Values.prometheus.monitor.http.metricRelabelings .Values.prometheus.monitor.metricRelabelings }}
+       metricRelabelings:
++    {{- if or .Values.prometheus.monitor.http.metricRelabelings .Values.prometheus.monitor.metricRelabelings }}
+         {{- toYaml (.Values.prometheus.monitor.http.metricRelabelings | default .Values.prometheus.monitor.metricRelabelings) | nindent 8 }}
+     {{- end }}
++    {{ if .Values.global.cattle.clusterId }}
++        - sourceLabels: [__address__]
++          targetLabel: cluster_id
++          replacement: {{ .Values.global.cattle.clusterId }}
++    {{- end }}
++    {{ if .Values.global.cattle.clusterName }}
++        - sourceLabels: [__address__]
++          targetLabel: cluster_name
++          replacement: {{ .Values.global.cattle.clusterName }}
++    {{- end }}
++    {{- end }}
+     {{- if or .Values.prometheus.monitor.http.relabelings .Values.prometheus.monitor.relabelings }}
+       relabelings:
+         {{- toYaml (.Values.prometheus.monitor.http.relabelings | default .Values.prometheus.monitor.relabelings) | nindent 8 }}
