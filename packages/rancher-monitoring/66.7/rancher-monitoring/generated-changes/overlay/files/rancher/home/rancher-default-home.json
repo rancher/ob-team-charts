@@ -283,7 +283,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "(1 - (((sum(max by (device) (node_filesystem_size_bytes{fstype != \"tmpfs\"})) OR on() vector(0)) + (sum(windows_logical_disk_free_bytes{volume!~\"(HarddiskVolume.+|[A-Z]:.+)\"}) OR on() vector(0))) / ((sum(node_filesystem_size_bytes{device!~\"rootfs|HarddiskVolume.+\"}) OR on() vector(0)) + (sum(windows_logical_disk_size_bytes{volume!~\"(HarddiskVolume.+|[A-Z]:.+)\"}) OR on() vector(0))))) * 100",
+          "expr": "(1 - (((sum(max by (device) (node_filesystem_free_bytes{fstype != \"tmpfs\"})) OR on() vector(0)) + (sum(windows_logical_disk_free_bytes{volume!~\"(HarddiskVolume.+|[A-Z]:.+)\"}) OR on() vector(0))) / ((sum(max by (device) (node_filesystem_size_bytes{fstype != \"tmpfs\"})) OR on() vector(0)) + (sum(windows_logical_disk_size_bytes{volume!~\"(HarddiskVolume.+|[A-Z]:.+)\"}) OR on() vector(0))))) * 100",
           "format": "time_series",
           "interval": "10s",
           "intervalFactor": 1,
@@ -746,7 +746,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "(sum(max by (device) (node_filesystem_size_bytes{fstype != \"tmpfs\"})) - sum(node_filesystem_free_bytes{device!~\"rootfs|HarddiskVolume.+\"}) OR on() vector(0)) + (sum(windows_logical_disk_size_bytes{volume!~\"(HarddiskVolume.+|[A-Z]:.+)\"}) - sum(windows_logical_disk_free_bytes{volume!~\"(HarddiskVolume.+|[A-Z]:.+)\"}) OR on() vector(0))",
+          "expr": "(sum(max by (device) (node_filesystem_size_bytes{fstype != \"tmpfs\"})) - sum(max by (device) (node_filesystem_free_bytes{fstype != \"tmpfs\"})) OR on() vector(0)) + (sum(windows_logical_disk_size_bytes{volume!~\"(HarddiskVolume.+|[A-Z]:.+)\"}) - sum(windows_logical_disk_free_bytes{volume!~\"(HarddiskVolume.+|[A-Z]:.+)\"}) OR on() vector(0))",
           "interval": "10s",
           "intervalFactor": 1,
           "refId": "A",
@@ -1117,12 +1117,12 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "(1 - ((sum(node_filesystem_free_bytes{device!~\"rootfs|HarddiskVolume.+\"}) OR on() vector(0)) + (sum(windows_logical_disk_free_bytes{volume!~\"(HarddiskVolume.+|[A-Z]:.+)\"} OR on() vector(0)))) / ((sum(node_filesystem_size_bytes{device!~\"rootfs|HarddiskVolume.+\"}) OR on() vector(0)) + (sum(windows_logical_disk_size_bytes{volume!~\"(HarddiskVolume.+|[A-Z]:.+)\"}) OR on() vector(0)))) * 100",
+          "expr": "(1 - ((sum(max by (device) (node_filesystem_free_bytes{fstype != \"tmpfs\"})) OR on() vector(0)) + (sum(windows_logical_disk_free_bytes{volume!~\"(HarddiskVolume.+|[A-Z]:.+)\"} OR on() vector(0)))) / ((sum(max by (device) (node_filesystem_size_bytes{fstype != \"tmpfs\"})) OR on() vector(0)) + (sum(windows_logical_disk_size_bytes{volume!~\"(HarddiskVolume.+|[A-Z]:.+)\"}) OR on() vector(0)))) * 100",
           "legendFormat": "Cluster",
           "refId": "A"
         },
         {
-          "expr": "(1 - (sum(node_filesystem_free_bytes{device!~\"rootfs|HarddiskVolume.+\"}) by (instance)) / sum(node_filesystem_size_bytes{device!~\"rootfs|HarddiskVolume.+\"}) by (instance)) * 100",
+          "expr": "(1 - (sum(max by (device) (node_filesystem_free_bytes{fstype != \"tmpfs\"})) by (instance)) / sum(max by (device) (node_filesystem_size_bytes{fstype != \"tmpfs\"})) by (instance)) * 100",
           "hide": false,
           "legendFormat": "{{ instance }}",
           "refId": "B"
