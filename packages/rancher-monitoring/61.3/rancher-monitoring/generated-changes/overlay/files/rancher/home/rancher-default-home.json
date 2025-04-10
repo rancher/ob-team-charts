@@ -283,7 +283,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "(1 - (((sum(max by (device) (node_filesystem_size_bytes{fstype != \"tmpfs\"})) OR on() vector(0)) + (sum(windows_logical_disk_free_bytes{volume!~\"(HarddiskVolume.+|[A-Z]:.+)\"}) OR on() vector(0))) / ((sum(node_filesystem_size_bytes{device!~\"rootfs|HarddiskVolume.+\"}) OR on() vector(0)) + (sum(windows_logical_disk_size_bytes{volume!~\"(HarddiskVolume.+|[A-Z]:.+)\"}) OR on() vector(0))))) * 100",
+          "expr": "(1 - (((sum(max by (device) (node_filesystem_free_bytes{fstype != \"tmpfs\"})) OR on() vector(0)) + (sum(windows_logical_disk_free_bytes{volume!~\"(HarddiskVolume.+|[A-Z]:.+)\"}) OR on() vector(0))) / ((sum(max by (device) (node_filesystem_size_bytes{fstype != \"tmpfs\"})) OR on() vector(0)) + (sum(windows_logical_disk_size_bytes{volume!~\"(HarddiskVolume.+|[A-Z]:.+)\"}) OR on() vector(0))))) * 100",
           "format": "time_series",
           "interval": "10s",
           "intervalFactor": 1,
@@ -746,7 +746,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "(sum(max by (device) (node_filesystem_size_bytes{fstype != \"tmpfs\"})) - sum(node_filesystem_free_bytes{device!~\"rootfs|HarddiskVolume.+\"}) OR on() vector(0)) + (sum(windows_logical_disk_size_bytes{volume!~\"(HarddiskVolume.+|[A-Z]:.+)\"}) - sum(windows_logical_disk_free_bytes{volume!~\"(HarddiskVolume.+|[A-Z]:.+)\"}) OR on() vector(0))",
+          "expr": "(sum(max by (device) (node_filesystem_size_bytes{fstype != \"tmpfs\"})) - sum(max by (device) (node_filesystem_free_bytes{fstype != \"tmpfs\"})) OR on() vector(0)) + (sum(windows_logical_disk_size_bytes{volume!~\"(HarddiskVolume.+|[A-Z]:.+)\"}) - sum(windows_logical_disk_free_bytes{volume!~\"(HarddiskVolume.+|[A-Z]:.+)\"}) OR on() vector(0))",
           "interval": "10s",
           "intervalFactor": 1,
           "refId": "A",
@@ -1117,12 +1117,12 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "(1 - ((sum(node_filesystem_free_bytes{device!~\"rootfs|HarddiskVolume.+\"}) OR on() vector(0)) + (sum(windows_logical_disk_free_bytes{volume!~\"(HarddiskVolume.+|[A-Z]:.+)\"} OR on() vector(0)))) / ((sum(node_filesystem_size_bytes{device!~\"rootfs|HarddiskVolume.+\"}) OR on() vector(0)) + (sum(windows_logical_disk_size_bytes{volume!~\"(HarddiskVolume.+|[A-Z]:.+)\"}) OR on() vector(0)))) * 100",
+          "expr": "(1 - ((sum(max by (device) (node_filesystem_free_bytes{fstype != \"tmpfs\"})) OR on() vector(0)) + (sum(windows_logical_disk_free_bytes{volume!~\"(HarddiskVolume.+|[A-Z]:.+)\"} OR on() vector(0)))) / ((sum(max by (device) (node_filesystem_size_bytes{fstype != \"tmpfs\"})) OR on() vector(0)) + (sum(windows_logical_disk_size_bytes{volume!~\"(HarddiskVolume.+|[A-Z]:.+)\"}) OR on() vector(0)))) * 100",
           "legendFormat": "Cluster",
           "refId": "A"
         },
         {
-          "expr": "(1 - (sum(node_filesystem_free_bytes{device!~\"rootfs|HarddiskVolume.+\"}) by (instance)) / sum(node_filesystem_size_bytes{device!~\"rootfs|HarddiskVolume.+\"}) by (instance)) * 100",
+          "expr": "(1 - (sum(max by (device) (node_filesystem_free_bytes{fstype != \"tmpfs\"})) by (instance)) / sum(max by (device) (node_filesystem_size_bytes{fstype != \"tmpfs\"})) by (instance)) * 100",
           "hide": false,
           "legendFormat": "{{ instance }}",
           "refId": "B"
@@ -1219,7 +1219,7 @@
       },
       "id": 2055,
       "options": {
-        "content": "## About Rancher Monitoring\n\nRancher Monitoring is a Helm chart developed by Rancher that is powered by [Prometheus Operator](https://github.com/prometheus-operator/prometheus-operator). It is based on the upstream [kube-prometheus-stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack) Helm chart maintained by the Prometheus community.\n\nBy default, the chart deploys Grafana alongside a set of Grafana dashboards curated by the [kube-prometheus](https://github.com/prometheus-operator/kube-prometheus) project.\n\nFor more information on how Rancher Monitoring differs from [kube-prometheus-stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack), please view the CHANGELOG.md of the rancher-monitoring chart located in the [rancher/charts](https://github.com/rancher/charts) repository.\n\nFor more information about how to configure Rancher Monitoring, please view the [Rancher docs](https://rancher.com/docs/rancher/v2.x/en/).\n\n",
+        "content": "## About Rancher Monitoring\n\nRancher Monitoring is a Helm chart developed by Rancher that is powered by [Prometheus Operator](https://github.com/prometheus-operator/prometheus-operator). It is based on the upstream [kube-prometheus-stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack) Helm chart maintained by the Prometheus community.\n\nBy default, the chart deploys Grafana alongside a set of Grafana dashboards curated by the [kube-prometheus](https://github.com/prometheus-operator/kube-prometheus) project.\n\nFor more information on how Rancher Monitoring differs from [kube-prometheus-stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack), please view the CHANGELOG.md of the rancher-monitoring chart located in the [rancher/charts](https://github.com/rancher/charts) repository.\n\nFor more information about how to configure Rancher Monitoring, please view the [Rancher docs](https://ranchermanager.docs.rancher.com/integrations-in-rancher/monitoring-and-alerting).\n\n",
         "mode": "markdown"
       },
       "pluginVersion": "7.1.0",
