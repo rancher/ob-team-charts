@@ -148,7 +148,18 @@
  {{/* vim: set filetype=mustache: */}}
  {{/* Expand the name of the chart. This is suffixed with -alertmanager, which means subtract 13 from longest 63 available */}}
  {{- define "kube-prometheus-stack.name" -}}
-@@ -331,3 +475,11 @@
+@@ -81,8 +225,9 @@
+ {{- define "kube-prometheus-stack.labels" }}
+ app.kubernetes.io/managed-by: {{ .Release.Service }}
+ app.kubernetes.io/instance: {{ .Release.Name }}
+-app.kubernetes.io/version: "{{ replace "+" "_" .Chart.Version }}"
++app.kubernetes.io/version: {{ .Chart.AppVersion }}
+ app.kubernetes.io/part-of: {{ template "kube-prometheus-stack.name" . }}
++helm.sh/chart: {{ template "kube-prometheus-stack.chartref" . }}
+ chart: {{ template "kube-prometheus-stack.chartref" . }}
+ release: {{ $.Release.Name | quote }}
+ heritage: {{ $.Release.Service | quote }}
+@@ -331,3 +476,11 @@
  bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
  {{- end }}
  {{- end }}
