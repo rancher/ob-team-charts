@@ -1,0 +1,17 @@
+--- charts-original/charts/grafana/templates/_helpers.tpl
++++ charts/charts/grafana/templates/_helpers.tpl
+@@ -94,8 +94,14 @@
+ Common labels
+ */}}
+ {{- define "grafana.labels" -}}
++app.kubernetes.io/component: {{ include "grafana.name" . }}
++app.kubernetes.io/managed-by: {{ .Release.Service }}
+ helm.sh/chart: {{ include "grafana.chart" . }}
++chart: {{ include "grafana.chart" . }}
++release: {{ $.Release.Name | quote }}
++heritage: {{ $.Release.Service | quote }}
+ {{ include "grafana.selectorLabels" . }}
++app.kubernetes.io/part-of: {{ template "kube-prometheus-stack.name" . }}
+ {{- if or .Chart.AppVersion .Values.image.tag }}
+ app.kubernetes.io/version: {{ mustRegexReplaceAllLiteral "@sha.*" .Values.image.tag "" | default .Chart.AppVersion | trunc 63 | trimSuffix "-" | quote }}
+ {{- end }}

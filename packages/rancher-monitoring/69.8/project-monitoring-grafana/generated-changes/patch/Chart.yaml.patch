@@ -1,0 +1,11 @@
+--- charts-original/Chart.yaml
++++ charts/Chart.yaml
+@@ -27,7 +27,7 @@
+   name: torstenwalter
+ - email: github@jkroepke.de
+   name: jkroepke
+-name: grafana
++name: rancher-grafana
+ sources:
+ - https://github.com/grafana/grafana
+ - https://github.com/grafana/helm-charts
