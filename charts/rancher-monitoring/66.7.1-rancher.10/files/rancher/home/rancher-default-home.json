@@ -1122,7 +1122,7 @@
           "refId": "A"
         },
         {
-          "expr": "(1 - (sum(max by (device) (node_filesystem_free_bytes{fstype != \"tmpfs\"})) by (instance)) / sum(max by (device) (node_filesystem_size_bytes{fstype != \"tmpfs\"})) by (instance)) * 100",
+          "expr": "(1 - (sum(max by (instance, device) (node_filesystem_free_bytes{fstype != \"tmpfs\"})) by (instance)) / sum(max by (instance, device) (node_filesystem_size_bytes{fstype != \"tmpfs\"})) by (instance)) * 100",
           "hide": false,
           "legendFormat": "{{ instance }}",
           "refId": "B"
