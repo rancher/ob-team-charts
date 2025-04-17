@@ -10,6 +10,9 @@ $(TARGETS):
 pull-scripts:
 	./scripts/pull-scripts
 
+remove:
+	./scripts/remove-asset
+
 rebase:
 	./scripts/charts-build-scripts/rebase
 
