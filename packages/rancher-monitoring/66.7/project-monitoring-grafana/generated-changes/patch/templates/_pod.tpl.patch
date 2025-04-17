@@ -12,7 +12,7 @@
        {{- with .Values.sidecar.alerts.skipTlsVerify }}
        - name: SKIP_TLS_VERIFY
          value: {{ quote . }}
-@@ -216,10 +214,8 @@
+@@ -221,10 +219,8 @@
        - name: UNIQUE_FILENAMES
          value: "{{ . }}"
        {{- end }}
@@ -24,7 +24,7 @@
        {{- with .Values.sidecar.skipTlsVerify }}
        - name: SKIP_TLS_VERIFY
          value: "{{ . }}"
-@@ -274,10 +270,8 @@
+@@ -279,10 +275,8 @@
        - name: UNIQUE_FILENAMES
          value: "{{ . }}"
        {{- end }}
@@ -36,7 +36,7 @@
        {{- with .Values.sidecar.skipTlsVerify }}
        - name: SKIP_TLS_VERIFY
          value: "{{ . }}"
-@@ -351,10 +345,8 @@
+@@ -356,10 +350,8 @@
        - name: UNIQUE_FILENAMES
          value: "{{ . }}"
        {{- end }}
@@ -48,7 +48,7 @@
        {{- with .Values.sidecar.alerts.skipTlsVerify }}
        - name: SKIP_TLS_VERIFY
          value: {{ quote . }}
-@@ -463,10 +455,8 @@
+@@ -480,10 +472,8 @@
        - name: UNIQUE_FILENAMES
          value: "{{ . }}"
        {{- end }}
@@ -60,7 +60,7 @@
        {{- with .Values.sidecar.skipTlsVerify }}
        - name: SKIP_TLS_VERIFY
          value: "{{ . }}"
-@@ -574,10 +564,8 @@
+@@ -608,10 +598,8 @@
        - name: UNIQUE_FILENAMES
          value: "{{ . }}"
        {{- end }}
@@ -72,7 +72,7 @@
        {{- if .Values.sidecar.skipTlsVerify }}
        - name: SKIP_TLS_VERIFY
          value: "{{ .Values.sidecar.skipTlsVerify }}"
-@@ -678,10 +666,8 @@
+@@ -727,10 +715,8 @@
        - name: UNIQUE_FILENAMES
          value: "{{ .Values.sidecar.enableUniqueFilenames }}"
        {{- end }}
@@ -84,7 +84,7 @@
        {{- with .Values.sidecar.skipTlsVerify }}
        - name: SKIP_TLS_VERIFY
          value: "{{ . }}"
-@@ -782,10 +768,9 @@
+@@ -846,10 +832,9 @@
        - name: UNIQUE_FILENAMES
          value: "{{ . }}"
        {{- end }}

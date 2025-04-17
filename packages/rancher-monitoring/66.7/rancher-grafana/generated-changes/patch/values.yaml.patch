@@ -1,17 +1,15 @@
 --- charts-original/values.yaml
 +++ charts/values.yaml
-@@ -1,6 +1,8 @@
+@@ -1,6 +1,6 @@
  global:
 -  # -- Overrides the Docker registry globally for all images
 -  imageRegistry: null
 +  cattle:
-+    psp:
-+      enabled: false
 +    systemDefaultRegistry: ""
  
    # To help compatibility with other charts which use global.imagePullSecrets.
    # Allow either an array of {name: pullSecret} maps (k8s-style), or an array of strings (more common helm-style).
-@@ -44,7 +46,7 @@
+@@ -44,7 +44,7 @@
  
    ## autoMount is deprecated in favor of automountServiceAccountToken
    # autoMount: false
@@ -20,7 +18,7 @@
  
  replicas: 1
  
-@@ -95,12 +97,9 @@
+@@ -95,12 +95,9 @@
  # schedulerName: "default-scheduler"
  
  image:
@@ -31,42 +29,52 @@
 +  repository: rancher/mirrored-grafana-grafana
    # Overrides the Grafana image tag whose default is the chart appVersion
 -  tag: ""
-+  tag: 10.4.9
++  tag: 11.1.0
    sha: ""
    pullPolicy: IfNotPresent
  
-@@ -113,15 +112,11 @@
+@@ -112,27 +109,6 @@
+   pullSecrets: []
    #   - myRegistrKeySecretName
  
- testFramework:
+-testFramework:
 -  enabled: true
+-  ## The type of Helm hook used to run this test. Defaults to test.
+-  ## ref: https://helm.sh/docs/topics/charts_hooks/#the-available-hooks
+-  ##
+-  # hookType: test
 -  image:
 -    # -- The Docker registry
 -    registry: docker.io
 -    repository: bats/bats
 -    tag: "v1.4.1"
-+  enabled: false
-   imagePullPolicy: IfNotPresent
+-  imagePullPolicy: IfNotPresent
 -  securityContext: {}
 -  resources: {}
-+  securityContext:
-+    runAsNonRoot: true
-+    runAsUser: 1000
-   #  limits:
-   #    cpu: 100m
-   #    memory: 128Mi
-@@ -178,9 +173,7 @@
+-  #  limits:
+-  #    cpu: 100m
+-  #    memory: 128Mi
+-  #  requests:
+-  #    cpu: 100m
+-  #    memory: 128Mi
+-
+ # dns configuration for pod
+ dnsPolicy: ~
+ dnsConfig: {}
+@@ -183,10 +159,8 @@
  # priorityClassName:
  
  downloadDashboardsImage:
 -  # -- The Docker registry
 -  registry: docker.io
 -  repository: curlimages/curl
+-  tag: 7.85.0
 +  repository: rancher/mirrored-curlimages-curl
-   tag: 7.85.0
++  tag: 8.9.1
    sha: ""
    pullPolicy: IfNotPresent
-@@ -398,9 +391,7 @@
+ 
+@@ -452,9 +426,7 @@
    ## initChownData container image
    ##
    image:
@@ -77,7 +85,7 @@
      tag: "1.31.1"
      sha: ""
      pullPolicy: IfNotPresent
-@@ -843,9 +834,7 @@
+@@ -925,9 +897,7 @@
  ## Requires at least Grafana 5 to work and can't be used together with parameters dashboardProviders, datasources and dashboards
  sidecar:
    image:
@@ -85,10 +93,10 @@
 -    registry: quay.io
 -    repository: kiwigrid/k8s-sidecar
 +    repository: rancher/mirrored-kiwigrid-k8s-sidecar
-     tag: 1.26.1
+     tag: 1.28.0
      sha: ""
    imagePullPolicy: IfNotPresent
-@@ -1010,10 +999,10 @@
+@@ -1171,10 +1141,10 @@
      reloadURL: "http://localhost:3000/api/admin/provisioning/datasources/reload"
      # Absolute path to shell script to execute after a datasource got reloaded
      script: null
@@ -98,12 +106,12 @@
      # Deploy the datasources sidecar as an initContainer.
 -    initDatasources: false
 +    initDatasources: true
+     # Additional datasources sidecar volume mounts
+     extraMounts: []
      # Sets the size limit of the datasource sidecar emptyDir volume
-     sizeLimit: {}
-   plugins:
-@@ -1119,12 +1108,10 @@
-     targetMemory: ""
-     behavior: {}
+@@ -1324,12 +1294,10 @@
+   # The callback url of grafana instances if it is not in the same namespace with the remote image renderer
+   renderingCallbackURL: ""
    image:
 -    # -- The Docker registry
 -    registry: docker.io
@@ -112,7 +120,7 @@
 +    repository: rancher/mirrored-grafana-grafana-image-renderer
      # image-renderer Image tag
 -    tag: latest
-+    tag: 3.10.5
++    tag: 3.11.1
      # image-renderer Image sha (optional)
      sha: ""
      # image-renderer ImagePullPolicy
