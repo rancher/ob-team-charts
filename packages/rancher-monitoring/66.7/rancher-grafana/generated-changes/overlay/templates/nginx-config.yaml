@@ -86,6 +86,13 @@ data:
           if ($request_filename ~ .*\.(?:js|css|jpg|jpeg|gif|png|ico|cur|gz|svg|svgz|mp4|ogg|ogv|webm)$) {
             expires             90d;
           }
+          {{- if .Values.ingress.enabled }}
+             {{- if eq .Values.global.cattle.clusterId "local" }}
+             rewrite ^/api/v1/namespaces/{{ template "grafana.namespace" . }}/services/http:{{ template "grafana.fullname" . }}:{{ .Values.service.port }}/proxy/public/plugins/(.*)$ /public/plugins/$1 break;
+             {{- else }}
+             rewrite ^/k8s/clusters/{{ .Values.global.cattle.clusterId }}/api/v1/namespaces/{{ template "grafana.namespace" . }}/services/http:{{ template "grafana.fullname" . }}:{{ .Values.service.port }}/proxy/public/plugins/(.*)$ /public/plugins/$1 break;
+             {{- end }}
+           {{- end }}
 
           rewrite ^/k8s/clusters/.*/proxy(.*) /$1 break;
 
