@@ -1,0 +1,79 @@
+name: Chart Bug 🐛
+description: Report a bug with one of our Helm charts
+title: "[<chart-slug> <version>] <title>"
+labels: [bug]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### 🧾 Suggested Title Format:
+        ```
+        [<chart-slug>][<version>] <short description>
+        ```
+        Example:
+        ```
+        [rancher-monitoring][61.3] Update Curl version to 8.12+
+        ```
+        If there are multiple versions affected you can skip the version tag.
+  - type: markdown
+    attributes:
+      value: |
+        ### 🧠 Title Guidelines
+        Try to follow [Conventional Commits](https://www.conventionalcommits.org/) for the `<title>` part when possible.
+
+        Example formats:
+        - `fix: unexpected pod restarts in Grafana`
+        - `feat: support custom scrape configs`
+        - `chore: bump image version for Prometheus`
+
+        This helps keep changelogs clean and meaningful!
+
+  - type: input
+    id: chart_slug
+    attributes:
+      label: Chart Slug
+      description: The slug of the chart (used in title), e.g. rancher-monitoring
+      placeholder: rancher-monitoring
+    validations:
+      required: true
+
+  - type: input
+    id: chart_versions
+    attributes:
+      label: Affected Chart Versions
+      description: Version where the bug occurs
+      placeholder: "61.3, or multiple versions"
+    validations:
+      required: true
+
+  - type: textarea
+    id: bug_details
+    attributes:
+      label: Bug Details
+      description: Describe the issue, steps to reproduce, logs, and any configuration involved.
+      placeholder: |
+        Steps to reproduce:
+        1. ...
+        
+        Logs:
+        ```log
+        ...
+        ```
+
+        Helm values (if any):
+        ```yaml
+        ...
+        ```
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Expected Behavior
+      description: What should have happened instead?
+      placeholder: Describe the expected result
+    validations:
+      required: false

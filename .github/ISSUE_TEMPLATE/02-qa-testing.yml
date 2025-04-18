@@ -1,0 +1,78 @@
+name: Chart QA Request 🧪
+description: Request QA to test chart changes in a PR before merge
+title: "[QA][ob-team-charts] <chart-slug> <chart-version>"
+labels: [qa-request]
+assignees: []
+
+body:
+  - type: input
+    id: pull_request
+    attributes:
+      label: Pull Request
+      description: Link to the PR being with a chart needing to be tested
+      placeholder: e.g. https://github.com/org/repo/pr/1234
+    validations:
+      required: true
+  - type: input
+    id: root_issue
+    attributes:
+      label: Root Issue
+      description: Link to the main issue being addressed (this QA task blocks it)
+      placeholder: e.g. https://github.com/org/repo/issues/1234
+    validations:
+      required: false
+  - type: markdown
+    attributes:
+      value: |
+        ✅ After QA finishes testing:
+        - QA will close this issue as normal.
+        - Engineer merges the PR and updates the **root issue**.
+        - When the change is included in the release branch (RC), QA will test the full release using the **root issue**.
+
+        🔗 Keep traceability: Always link this issue to the main one it supports. (Unless one does not exist.)
+
+
+  - type: markdown
+    attributes:
+      value: |
+        Required ClusterRepo template:
+        ````yaml
+        ```yaml
+        apiVersion: catalog.cattle.io/v1
+        kind: ClusterRepo
+        metadata:
+          name: ob-team-charts-<your-name>
+        spec:
+          gitBranch: <your-feature-branch>
+          gitRepo: https://github.com/<your-github-username>/ob-team-charts
+        ```
+        ````
+  - type: textarea
+    id: clusterrepo_config
+    attributes:
+      label: ClusterRepo Config for QA
+      description: Provide the QA team a customized ClusterRepo YAML to install and test this chart
+      placeholder: |
+        ```yaml
+        apiVersion: catalog.cattle.io/v1
+        kind: ClusterRepo
+        metadata:
+          name: ob-team-charts-joe
+        spec:
+          gitBranch: joes-monitoring-bug-fix
+          gitRepo: https://github.com/joe/ob-team-charts
+        ```
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Testing Considerations
+      description: Optional context for QA — what to test, what's changed, anything worth highlighting
+      placeholder: |
+        - This PR addresses issue #1234
+        - Focus on curl upgrade and verify alertmanager dashboards
+        - Can test using values from prior test case
+    validations:
+      required: false
