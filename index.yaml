@@ -550,9 +550,9 @@ entries:
       catalog.cattle.io/upstream-version: 4.10.0
     apiVersion: v2
     appVersion: 4.10.0
-    created: "2025-05-09T10:43:23.915525644+05:30"
+    created: "2025-05-09T10:58:36.570995288+05:30"
     description: Logging operator for Kubernetes based on Fluentd and Fluentbit.
-    digest: 2f8ff63b3f0c3ca03483d797b34989371d4930eea73008806e1288e40a8d99e7
+    digest: 58426a0b3014957a3e24c7db0dc1b7b693b007b84176afb219cf34e110f8f3fb
     home: https://kube-logging.github.io
     keywords:
     - logging

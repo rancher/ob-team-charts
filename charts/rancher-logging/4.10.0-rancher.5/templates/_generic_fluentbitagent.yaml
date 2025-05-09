@@ -41,9 +41,7 @@ spec:
     Skip_Long_Lines: {{ .Values.fluentbit.inputTail.Skip_Long_Lines | toString | quote }}
     {{- end }}
   {{- end }}
-  {{- with (concat (.Values.tolerations) (.Values.fluentbit.tolerations)) }}
-  tolerations: {{- toYaml . | nindent 6 }}
-  {{- end }}
+  tolerations: {{- include "customTolerations" . | nindent 6 }}
   {{- with .Values.nodeSelector }}
   nodeSelector: {{- toYaml . | nindent 6 }}
   {{- end }}

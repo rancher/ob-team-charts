@@ -13,9 +13,11 @@ spec:
     Tag: {{ .Values.additionalLoggingSources.kubeAudit.fluentbit.logTag }}
     Path: /kube-audit-logs/{{ template "kubeAuditFilename" . }}
     Parser: json
-  {{- with (concat (.Values.tolerations) (.Values.fluentbit.tolerations) (.Values.additionalLoggingSources.kubeAudit.fluentbit.tolerations)) }}
-  tolerations: {{- toYaml . | nindent 6 }}
-  {{- end }}
+  tolerations:
+    {{- include "customTolerations" . | nindent 6 }}
+    {{- with .Values.additionalLoggingSources.kubeAudit.fluentbit.tolerations }}
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
   nodeSelector: {{ include "controlplaneSelector" . | nindent 6 }}
   {{- include "logging-operator.individualFluentbit" $individualValues | nindent 2 }}
 {{- end -}}
