@@ -36,7 +36,7 @@
        # -- storage class for event tailer pvc
        accessModes:
          - ReadWriteOnce
-@@ -309,14 +304,176 @@
+@@ -309,14 +304,164 @@
    image: fluent/fluent-bit
    pullPolicy: IfNotPresent
    port: 8080
@@ -161,13 +161,7 @@
 +    pathPrefix: ""
 +    fluentbit:
 +      logTag: kube-audit
-+      tolerations:
-+      - key: node-role.kubernetes.io/control-plane
-+        value: "true"
-+        effect: NoSchedule
-+      - key: node-role.kubernetes.io/etcd
-+        value: "true"
-+        effect: NoExecute
++      tolerations: []
 +
 +# configures node agent options for windows node agents
 +nodeAgents:
@@ -202,13 +196,7 @@
 +    Skip_Long_Lines: ""
 +  podPriorityClassName: ""
 +  resources: {}
-+  tolerations:
-+    - key: node-role.kubernetes.io/control-plane
-+      operator: Exists
-+      effect: NoSchedule
-+    - key: node-role.kubernetes.io/etcd
-+      operator: Exists
-+      effect: NoExecute
++  tolerations: []
 +  filterKubernetes:
 +    Merge_Log: ""
 +    Merge_Log_Key: ""
@@ -221,7 +209,7 @@
  
  # -- Extra manifests to deploy as an array
  extraManifests: []
-@@ -327,3 +484,12 @@
+@@ -327,3 +472,12 @@
    #     name: extra-manifest
    #   data:
    #     extra-data: "value"
