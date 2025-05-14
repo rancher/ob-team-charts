@@ -95,6 +95,24 @@ true
 {{- end -}}
 
 {{/*
+Set tolerations based on Kubernetes distribution and merge with values.yaml
+*/}}
+{{- define "customTolerations" -}}
+{{- $isRKE := .Values.additionalLoggingSources.rke.enabled -}}
+{{- $defaultTolerations := list -}}
+{{- if $isRKE }}
+  {{- $defaultTolerations = append $defaultTolerations (dict "key" "node-role.kubernetes.io/controlplane" "value" "true" "effect" "NoSchedule") -}}
+{{- else }}
+  {{- $defaultTolerations = append $defaultTolerations (dict "key" "node-role.kubernetes.io/control-plane" "value" "true" "effect" "NoSchedule") -}}
+{{- end }}
+{{- $defaultTolerations = append $defaultTolerations (dict "key" "node-role.kubernetes.io/etcd" "value" "true" "effect" "NoExecute") -}}
+{{- $userTolerations := .Values.tolerations | default list -}}
+{{- $fluentbitTolerations := .Values.fluentbit.tolerations | default list -}}
+{{- $mergedTolerations := concat $defaultTolerations $userTolerations $fluentbitTolerations -}}
+{{- toYaml $mergedTolerations }}
+{{- end -}}
+
+{{/*
 Set the controlplane selector based on kubernetes distribution
 */}}
 {{- define "controlplaneSelector" -}}
