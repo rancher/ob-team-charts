@@ -89,7 +89,7 @@
 +[PARSER]
 +    Name              etcd
 +    Format            json
-+    Time_Key          timestamp
++    Time_Key          ts
 +    Time_Format       %FT%H:%M:%S.%L
 +{{- end -}}
 +
@@ -144,7 +144,7 @@
 +{{- define "logging-operator.individualFluentd" -}}
 +{{- if .fluentd -}}
 +{{- if .fluentd.scaling -}}
-+scaling: 
++scaling:
 +    replicas: {{ .fluentd.scaling.replicas }}
 +{{- end }}
 +{{- with .fluentd.resources }}
