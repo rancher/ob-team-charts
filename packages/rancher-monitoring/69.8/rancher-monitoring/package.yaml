@@ -1,7 +1,7 @@
 url: https://github.com/prometheus-community/helm-charts.git
 subdirectory: charts/kube-prometheus-stack
 commit: 0c7bf42ac2265d13845ffe0c499d16e6b8cdedea
-version: 69.8.2-rancher.6
+version: 69.8.2-rancher.7
 additionalCharts:
   - workingDir: charts-crd
     upstreamOptions:
