@@ -33,6 +33,9 @@ spec:
         imagePullPolicy: {{ $.Values.global.kubectl.pullPolicy }}
         command: ["kubectl", "patch", "serviceaccount", "default", "-p", "{\"automountServiceAccountToken\": false}"]
         args: ["-n", "{{ $ns }}"]
+        env:
+          - name: KUBERLR_ALLOWDOWNLOAD
+            value: {{ $.Values.global.kubectl.allowDownload | default false }}
       {{- end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
