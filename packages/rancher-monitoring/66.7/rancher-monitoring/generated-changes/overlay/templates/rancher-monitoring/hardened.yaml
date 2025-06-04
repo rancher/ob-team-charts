@@ -35,7 +35,7 @@ spec:
         args: ["-n", "{{ $ns }}"]
         env:
           - name: KUBERLR_ALLOWDOWNLOAD
-            value: {{ $.Values.global.kubectl.allowDownload | default false }}
+            value: {{ (default false $.Values.global.kubectl.allowDownload) | quote }}
       {{- end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
