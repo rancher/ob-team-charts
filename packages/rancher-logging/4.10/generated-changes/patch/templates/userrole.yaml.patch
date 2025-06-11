@@ -1,0 +1,14 @@
+--- charts-original/templates/userrole.yaml
++++ charts/templates/userrole.yaml
+@@ -5,8 +5,10 @@
+ metadata:
+   name: {{ template "logging-operator.fullname" . }}-edit
+   labels:
++    {{- if .Values.rbac.createAggregatedEditClusterRole }}
++      rbac.authorization.k8s.io/aggregate-to-edit: "true"
++    {{- end }}
+     rbac.authorization.k8s.io/aggregate-to-admin: "true"
+-    rbac.authorization.k8s.io/aggregate-to-edit: "true"
+ rules:
+ - apiGroups:
+   - logging.banzaicloud.io

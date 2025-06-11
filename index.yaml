@@ -550,6 +550,39 @@ entries:
       catalog.cattle.io/upstream-version: 4.10.0
     apiVersion: v2
     appVersion: 4.10.0
+    created: "2025-06-10T21:08:49.138631-03:00"
+    description: Logging operator for Kubernetes based on Fluentd and Fluentbit.
+    digest: 46d178ad797c156320b6e146d5ad2d62179b7153dc26d5fd5e42f4bebe5b1292
+    home: https://kube-logging.github.io
+    keywords:
+    - logging
+    - fluentd
+    - fluentbit
+    kubeVersion: '>=1.22.0-0'
+    name: rancher-logging
+    sources:
+    - https://github.com/kube-logging/logging-operator
+    - https://github.com/kube-logging/helm-charts/tree/main/charts/logging-operator
+    type: application
+    urls:
+    - assets/rancher-logging/rancher-logging-4.10.0-rancher.7.tgz
+    version: 4.10.0-rancher.7
+  - annotations:
+      catalog.cattle.io/auto-install: rancher-logging-crd=match
+      catalog.cattle.io/certified: rancher
+      catalog.cattle.io/deploys-on-os: windows
+      catalog.cattle.io/display-name: Logging
+      catalog.cattle.io/kube-version: '>= 1.22.0-0'
+      catalog.cattle.io/namespace: cattle-logging-system
+      catalog.cattle.io/permits-os: linux,windows
+      catalog.cattle.io/provides-gvr: logging.banzaicloud.io.clusterflow/v1beta1
+      catalog.cattle.io/rancher-version: '>= 2.9.0-0'
+      catalog.cattle.io/release-name: rancher-logging
+      catalog.cattle.io/type: cluster-tool
+      catalog.cattle.io/ui-component: logging
+      catalog.cattle.io/upstream-version: 4.10.0
+    apiVersion: v2
+    appVersion: 4.10.0
     created: "2025-05-29T21:10:06.868998-03:00"
     description: Logging operator for Kubernetes based on Fluentd and Fluentbit.
     digest: e02d5da80833513380cf69e9d239a65a2a087cd6c83df864438d76d1a0aa8831
@@ -733,6 +766,20 @@ entries:
     - assets/rancher-logging/rancher-logging-4.10.0-rancher.1.tgz
     version: 4.10.0-rancher.1
   rancher-logging-crd:
+  - annotations:
+      catalog.cattle.io/certified: rancher
+      catalog.cattle.io/hidden: "true"
+      catalog.cattle.io/namespace: cattle-logging-system
+      catalog.cattle.io/release-name: rancher-logging-crd
+    apiVersion: v1
+    created: "2025-06-10T21:08:49.174412-03:00"
+    description: Installs the CRDs for rancher-logging.
+    digest: 22f1047168dc12c86d73744962f2cf3aa11a4ab6b82aca3b12af70beacec9cec
+    name: rancher-logging-crd
+    type: application
+    urls:
+    - assets/rancher-logging-crd/rancher-logging-crd-4.10.0-rancher.7.tgz
+    version: 4.10.0-rancher.7
   - annotations:
       catalog.cattle.io/certified: rancher
       catalog.cattle.io/hidden: "true"
