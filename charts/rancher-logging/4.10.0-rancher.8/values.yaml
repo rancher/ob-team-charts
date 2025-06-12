@@ -97,6 +97,10 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
+# -- Operator Deployment and rke/rke2/k3s additionalResources dnsConfig
+dnsConfig: {}
+
+# -- Node nodeSelectors
 nodeSelector: {}
 
 # -- Node Tolerations
@@ -241,7 +245,7 @@ logging:
       # -- imagePullSecrets of eventTailer image
       imagePullSecrets: []
     pvc:
-      # -- enable pvc for 
+      # -- enable pvc for
       enabled: false
       # -- storage class for event tailer pvc
       accessModes:
@@ -312,7 +316,7 @@ testReceiver:
   #   requests:
   #     cpu: 20m
   #     memory: 25Mi
-  
+
   # Service definition for query http service
   service:
     type: ClusterIP
