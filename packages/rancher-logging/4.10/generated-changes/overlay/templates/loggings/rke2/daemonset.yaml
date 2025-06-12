@@ -39,6 +39,9 @@ spec:
             - mountPath: /etc/machine-id
               name: machine-id
               readOnly: true
+      {{- with .Values.dnsConfig }}
+      dnsConfig:  {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with .Values.tolerations }}
       tolerations: {{- toYaml . | nindent 8 }}
       {{- end }}
