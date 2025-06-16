@@ -94,9 +94,9 @@
 +[PARSER]
 +    Name              klog
 +    Format            regex
-+    Regex             ^(?<level>[IWEF])(?<timestamp>\d{4} \d{2}:\d{2}:\d{2}).\d{6} +?(?<thread_id>\d+) (?<filename>.+):(?<linenumber>\d+)] (?<message>.+)
++    Regex             ^(?<level>[IWEF])(?<timestamp>\d{4} \d{2}:\d{2}:\d{2}\.\d{6}) +?(?<thread_id>\d+) (?<filename>.+?):(?<linenumber>\d+)] (?<message>.+)
 +    Time_Key          timestamp
-+    Time_Format       %m%d %T
++    Time_Format       %m%d %H:%M:%S.%L
 +    Time_Keep         On
 +
 +[PARSER]
