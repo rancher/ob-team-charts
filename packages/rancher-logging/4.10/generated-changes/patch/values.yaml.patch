@@ -27,7 +27,18 @@
    # specify service account manually
    # serviceAccountName: custom
  
-@@ -119,7 +116,7 @@
+@@ -102,6 +99,10 @@
+   #   cpu: 100m
+   #   memory: 128Mi
+ 
++# -- Operator Deployment and rke/rke2/k3s additionalResources dnsConfig
++dnsConfig: {}
++
++# -- Node NodeSelectors
+ nodeSelector: {}
+ 
+ # -- Node Tolerations
+@@ -119,7 +120,7 @@
    # -- Logging resources are disabled by default
    enabled: false
  
@@ -36,7 +47,7 @@
    loggingRef: ""
  
    # -- Disable configuration check before applying new fluentd configuration.
-@@ -247,7 +244,7 @@
+@@ -247,7 +248,7 @@
        imagePullSecrets: []
      pvc:
        # -- enable pvc for
@@ -45,7 +56,7 @@
        # -- storage class for event tailer pvc
        accessModes:
          - ReadWriteOnce
-@@ -309,14 +306,164 @@
+@@ -309,14 +310,164 @@
    image: fluent/fluent-bit
    pullPolicy: IfNotPresent
    port: 8080
@@ -218,7 +229,7 @@
  
  # -- Extra manifests to deploy as an array
  extraManifests: []
-@@ -327,3 +474,12 @@
+@@ -327,3 +478,12 @@
    #     name: extra-manifest
    #   data:
    #     extra-data: "value"

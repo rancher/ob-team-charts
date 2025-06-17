@@ -9,3 +9,31 @@
            args:
            {{- range .Values.extraArgs }}
              - {{ . }}
+@@ -59,18 +59,21 @@
+     {{- if .Values.podSecurityContext }}
+       securityContext: {{ toYaml .Values.podSecurityContext | nindent 8 }}
+     {{- end }}
+-
+-      {{- with .Values.nodeSelector }}
++    {{- with .Values.dnsConfig }}
++      dnsConfig:
++    {{- toYaml . | nindent 8 }}
++    {{- end }}
++    {{- with .Values.nodeSelector }}
+       nodeSelector:
+-        {{- toYaml . | nindent 8 }}
+-      {{- end }}
++    {{- toYaml . | nindent 8 }}
++    {{- end }}
+     {{- with .Values.affinity }}
+       affinity:
+-        {{- toYaml . | nindent 8 }}
++    {{- toYaml . | nindent 8 }}
+     {{- end }}
+     {{- with .Values.tolerations }}
+       tolerations:
+-        {{- toYaml . | nindent 8 }}
++    {{- toYaml . | nindent 8 }}
+     {{- end }}
+     {{- if .Values.rbac.serviceAccountName }}
+       serviceAccountName: {{ .Values.rbac.serviceAccountName }}
