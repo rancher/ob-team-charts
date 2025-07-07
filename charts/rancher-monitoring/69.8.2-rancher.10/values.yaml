@@ -6108,3 +6108,8 @@ extraManifests: []
   #     name: prometheus-extra
   #   data:
   #     extra-data: "value"
+
+rancherBackupMonitoring:
+
+  ## Deploys the rancher-backup specific dashboards. Make sure to also have metrics enabled in the rancher-backup chart.
+  dashboards:
