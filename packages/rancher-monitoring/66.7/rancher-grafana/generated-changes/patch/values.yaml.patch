@@ -120,7 +120,7 @@
 +    repository: rancher/mirrored-grafana-grafana-image-renderer
      # image-renderer Image tag
 -    tag: latest
-+    tag: 3.12.6
++    tag: v4.0.5
      # image-renderer Image sha (optional)
      sha: ""
      # image-renderer ImagePullPolicy
