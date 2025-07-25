@@ -17,6 +17,10 @@ spec:
   bufferStorageVolume: {{- toYaml . | nindent 6 }}
   {{- end }}
   {{- end }}
+  configHotReload:
+    image:
+      repository: {{ template "system_default_registry" . }}{{ .Values.images.config_reloader.repository }}
+      tag:  {{ .Values.images.config_reloader.tag }}
   {{- if .Values.global.seLinux.enabled }}
   security:
     securityContext:
