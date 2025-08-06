@@ -6,7 +6,7 @@ metadata:
   name: {{ template "logging-operator.fullname" . }}-edit
   labels:
     {{- if .Values.rbac.createAggregatedEditClusterRole }}
-      rbac.authorization.k8s.io/aggregate-to-edit: "true"
+    rbac.authorization.k8s.io/aggregate-to-edit: "true"
     {{- end }}
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
 rules:

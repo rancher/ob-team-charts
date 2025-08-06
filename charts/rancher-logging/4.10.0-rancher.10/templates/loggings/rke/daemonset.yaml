@@ -54,7 +54,6 @@ spec:
       dnsConfig:  {{- toYaml . | nindent 8 }}
       {{- end }}
       tolerations: {{ include "customTolerations" . | default (toYaml .Values.tolerations) | nindent 8 }}
-      tolerations: {{- include "customTolerations" . | nindent 8 }}
       {{- with .Values.nodeSelector }}
       nodeSelector: {{- toYaml . | nindent 8 }}
       {{- end }}
