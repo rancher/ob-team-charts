@@ -1,0 +1,11 @@
+--- charts-original/templates/prometheus/rules-1.14/k8s.rules.container_cpu_usage_seconds_total.yaml
++++ charts/templates/prometheus/rules-1.14/k8s.rules.container_cpu_usage_seconds_total.yaml
+@@ -26,7 +26,7 @@
+     rules:
+     - expr: |-
+         sum by ({{ range $.Values.defaultRules.additionalAggregationLabels }}{{ . }},{{ end }}cluster, namespace, pod, container) (
+-          irate(container_cpu_usage_seconds_total{job="kubelet", metrics_path="/metrics/cadvisor", image!=""}[5m])
++          irate(container_cpu_usage_seconds_total{job="{{ include "exporter.kubelet.jobName" . }}", metrics_path="/metrics/cadvisor", image!=""}[5m])
+         ) * on ({{ range $.Values.defaultRules.additionalAggregationLabels }}{{ . }},{{ end }}cluster, namespace, pod) group_left(node) topk by ({{ range $.Values.defaultRules.additionalAggregationLabels }}{{ . }},{{ end }}cluster, namespace, pod) (
+           1, max by ({{ range $.Values.defaultRules.additionalAggregationLabels }}{{ . }},{{ end }}cluster, namespace, pod, node) (kube_pod_info{node!=""})
+         )
