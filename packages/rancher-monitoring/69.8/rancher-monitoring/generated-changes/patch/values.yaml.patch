@@ -1308,3 +1308,13 @@
      ## The route prefix ThanosRuler registers HTTP handlers for. This is useful, if using ExternalURL and a proxy is rewriting HTTP routes of a request, and the actual ExternalURL is still true,
      ## but the server serves requests under a different route prefix. For example for use with kubectl proxy.
      ##
+@@ -5292,3 +6106,8 @@
+   #     name: prometheus-extra
+   #   data:
+   #     extra-data: "value"
++
++rancherBackupMonitoring:
++
++  ## Deploys the rancher-backup specific dashboards. Make sure to also have metrics enabled in the rancher-backup chart.
++  dashboards:
++    enabled: false
