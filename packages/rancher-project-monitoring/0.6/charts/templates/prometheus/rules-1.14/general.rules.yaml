@@ -63,6 +63,7 @@ spec:
       labels:
         severity: none
 {{ include "rules.additionalLabels" . }}
+{{ include "rules.clusterIdLabel" .  | nindent 8}}
 {{- end }}
 {{- if not (.Values.defaultRules.disabled.InfoInhibitor | default false) }}
     - alert: InfoInhibitor
