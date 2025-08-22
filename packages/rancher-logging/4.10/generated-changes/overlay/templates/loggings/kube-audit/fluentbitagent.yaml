@@ -20,6 +20,10 @@ spec:
     {{- end }}
   nodeSelector: {{ include "controlplaneSelector" . | nindent 6 }}
   {{- include "logging-operator.individualFluentbit" $individualValues | nindent 2 }}
+  {{- if $individualValues.positiondb }}
+  positiondb:
+    {{- toYaml $individualValues.positiondb | nindent 4 }}
+  {{- end }}
 {{- end -}}
 {{- if .Values.additionalLoggingSources.kubeAudit.enabled }}
 {{- include "logging-operator.fluentbitagent" (list . "logging-operator.fluentbitagent.kube-audit") -}}
