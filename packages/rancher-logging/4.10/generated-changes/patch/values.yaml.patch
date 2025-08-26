@@ -47,7 +47,18 @@
    loggingRef: ""
  
    # -- Disable configuration check before applying new fluentd configuration.
-@@ -247,7 +248,7 @@
+@@ -202,7 +203,9 @@
+   #        enabled: false
+ 
+   # -- configCheck provides possibility for timeout-based configuration checks https://kube-logging.dev/docs/whats-new/#timeout-based-configuration-checks
+-  configCheck: {}
++  configCheck:
++    strategy: "StartWithTimeout"
++    timeoutSeconds: 60
+ 
+   # -- EnableRecreateWorkloadOnImmutableFieldChange enables the operator to recreate the fluentbit daemonset and the fluentd statefulset (and possibly other resource in the future) in case there is a change in an immutable field that otherwise couldn’t be managed with a simple update.
+   enableRecreateWorkloadOnImmutableFieldChange: false
+@@ -247,7 +250,7 @@
        imagePullSecrets: []
      pvc:
        # -- enable pvc for
@@ -56,7 +67,7 @@
        # -- storage class for event tailer pvc
        accessModes:
          - ReadWriteOnce
-@@ -309,14 +310,164 @@
+@@ -309,14 +312,164 @@
    image: fluent/fluent-bit
    pullPolicy: IfNotPresent
    port: 8080
@@ -229,7 +240,7 @@
  
  # -- Extra manifests to deploy as an array
  extraManifests: []
-@@ -327,3 +478,12 @@
+@@ -327,3 +480,12 @@
    #     name: extra-manifest
    #   data:
    #     extra-data: "value"
