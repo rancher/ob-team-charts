@@ -1,4 +1,5 @@
-{{- if .Values.rancherMonitoring.enabled }}
+{{- $fleetNamespace := lookup "v1" "Namespace" "" "cattle-fleet-system" -}}
+{{- if and .Values.rancherMonitoring.enabled (gt (len $fleetNamespace) 0) -}}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -25,7 +26,7 @@ spec:
       app: fleet-controller
 {{- end }}
 ---
-{{- if .Values.rancherMonitoring.enabled }}
+{{- if and .Values.rancherMonitoring.enabled (gt (len $fleetNamespace) 0) -}}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
