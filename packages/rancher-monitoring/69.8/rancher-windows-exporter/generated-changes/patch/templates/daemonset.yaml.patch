@@ -27,7 +27,7 @@
      spec:
        automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
        {{- with .Values.securityContext }}
-@@ -37,12 +37,16 @@
+@@ -37,8 +37,12 @@
        initContainers:
          - name: configure-firewall
            image: {{ include "prometheus-windows-exporter.image" . }}
@@ -35,10 +35,14 @@
 -          args: [ "New-NetFirewallRule", "-DisplayName", "'windows-exporter'", "-Direction", "inbound", "-Profile", "Any", "-Action", "Allow", "-LocalPort", "{{ .Values.service.port }}", "-Protocol", "TCP" ]
 +          command:
 +          - C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe
-+          args: ["-f", "scripts/configure-firewall.ps1"]
++          args: [ "-f", "scripts/configure-firewall.ps1" ]
 +          volumeMounts:
 +            - mountPath: /scripts
 +              name: exporter-scripts
+           {{- with .Values.resources }}
+           resources:
+             {{- toYaml . | nindent 12 }}
+@@ -46,7 +50,7 @@
          {{- with .Values.extraInitContainers }}
          {{- toYaml . | nindent 8 }}
          {{- end }}
@@ -47,7 +51,7 @@
        containers:
          - name: windows-exporter
            image: {{ include "prometheus-windows-exporter.image" . }}
-@@ -54,7 +58,7 @@
+@@ -58,7 +62,7 @@
              {{- with .Values.extraArgs }}
              {{- toYaml . | nindent 12 }}
              {{- end }}
@@ -56,7 +60,7 @@
            securityContext:
              {{- toYaml . | nindent 12 }}
            {{- end }}
-@@ -64,8 +68,9 @@
+@@ -68,8 +72,9 @@
                value: {{ $value | quote }}
              {{- end }}
            ports:
@@ -67,7 +71,7 @@
                protocol: TCP
            livenessProbe:
              failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
-@@ -162,6 +167,9 @@
+@@ -166,6 +171,9 @@
          {{- toYaml . | nindent 8 }}
        {{- end }}
        volumes:
