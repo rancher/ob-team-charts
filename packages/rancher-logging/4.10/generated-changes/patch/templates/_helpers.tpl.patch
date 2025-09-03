@@ -147,7 +147,7 @@
  {{/*
  Formats the cluster domain as a suffix, e.g.:
  .Values.clusterDomain == "", returns ""
-@@ -74,3 +214,37 @@
+@@ -74,3 +214,62 @@
  {{- printf ".%s" .Values.clusterDomain -}}
  {{- end -}}
  {{- end -}}
@@ -185,3 +185,29 @@
 +resources: {{ toYaml . | nindent 2 }}
 +{{- end -}}
 +{{- end -}}
++
++{{/* Implements logic to add kubeAudit loggingOverlay fields to custom loggings based on the cluster type */}}
++{{- define "logging-operator.logging.kube-audit.logging-overlay" -}}
++{{ .Values.additionalLoggingSources.kubeAudit.loggingOverlay }}
++{{ end }}
++
++{{/* Implements logic to add root loggingOverlay fields to custom loggings based on the cluster type */}}
++{{- define "logging-operator.logging.root.logging-overlay" -}}
++{{ .Values.additionalLoggingSources.root.loggingOverlay }}
++{{ end }}
++
++{{/* Implements logic to add gke loggingOverlay fields to custom loggings based on the cluster type */}}
++{{- define "logging-operator.logging.gke.logging-overlay" -}}
++{{ .Values.additionalLoggingSources.gke.loggingOverlay }}
++{{ end }}
++
++{{/* Implements logic to add eks loggingOverlay fields to custom loggings based on the cluster type */}}
++{{- define "logging-operator.logging.eks.logging-overlay" -}}
++{{ .Values.additionalLoggingSources.eks.loggingOverlay }}
++{{ end }}
++
++{{/* Implements logic to add aks loggingOverlay fields to custom loggings based on the cluster type */}}
++{{- define "logging-operator.logging.aks.logging-overlay" -}}
++{{ .Values.additionalLoggingSources.aks.loggingOverlay }}
++{{ end }}
+\ No newline at end of file

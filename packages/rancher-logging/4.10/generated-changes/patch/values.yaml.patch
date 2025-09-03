@@ -56,7 +56,7 @@
        # -- storage class for event tailer pvc
        accessModes:
          - ReadWriteOnce
-@@ -309,14 +310,164 @@
+@@ -309,14 +310,173 @@
    image: fluent/fluent-bit
    pullPolicy: IfNotPresent
    port: 8080
@@ -120,6 +120,9 @@
 +# If your additional logging sources collect logs from systemd configure the systemd log path here
 +systemdLogPath: "/run/log/journal"
 +
++# Overlays the default values on the generic logging
++loggingOverlay: {}
++
 +global:
 +  cattle:
 +    systemDefaultRegistry: ""
@@ -171,17 +174,23 @@
 +    stripUnderscores: false
 +  aks:
 +    enabled: false
++    loggingOverlay: {}
 +  eks:
 +    enabled: false
++    loggingOverlay: {}
 +  gke:
 +    enabled: false
++    loggingOverlay: {}
 +  kubeAudit:
 +    auditFilename: ""
 +    enabled: false
++    loggingOverlay: {}
 +    pathPrefix: ""
 +    fluentbit:
 +      logTag: kube-audit
 +      tolerations: []
++  root:
++    loggingOverlay: {}
 +
 +# configures node agent options for windows node agents
 +nodeAgents:
@@ -229,7 +238,7 @@
  
  # -- Extra manifests to deploy as an array
  extraManifests: []
-@@ -327,3 +478,12 @@
+@@ -327,3 +487,12 @@
    #     name: extra-manifest
    #   data:
    #     extra-data: "value"
