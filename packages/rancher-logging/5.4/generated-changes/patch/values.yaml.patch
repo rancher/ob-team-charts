@@ -1,0 +1,21 @@
+--- charts-original/values.yaml
++++ charts/values.yaml
+@@ -37,18 +37,6 @@
+ # -- Deploy CRDs used by Logging operator.
+ createCustomResource: false
+ 
+-## Custom resource configuration defined as a dependency chart
+-logging-operator-crds:
+-  # -- Toggle to install and upgrade CRDs from a subchart. Make sure to use it with `--skip-crds` to avoid conflicts. [More info about limitations on CRDs in Helm 3](https://helm.sh/docs/topics/charts/#limitations-on-crds)
+-  install: false
+-  # -- Annotations to be added to all CRDs
+-  annotations: {}
+-
+-## Telemetry Controller defined as a dependency chart
+-telemetry-controller:
+-  # -- Toggle to install and upgrade Telemetry Controller from a subchart.
+-  install: false
+-
+ http:
+   # -- HTTP listen port number.
+   port: 8080
