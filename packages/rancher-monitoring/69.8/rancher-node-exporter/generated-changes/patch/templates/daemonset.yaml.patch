@@ -1,0 +1,19 @@
+--- charts-original/templates/daemonset.yaml
++++ charts/templates/daemonset.yaml
+@@ -64,10 +64,14 @@
+             {{- with .Values.extraArgs }}
+             {{- toYaml . | nindent 12 }}
+             {{- end }}
+-          {{- with .Values.containerSecurityContext }}
+           securityContext:
++            {{- with .Values.containerSecurityContext }}
+             {{- toYaml . | nindent 12 }}
+-          {{- end }}
++            {{- end }}
++            {{- if .Values.global.seLinux.enabled }}
++            seLinuxOptions:
++              type: prom_node_exporter_t
++            {{- end }}
+           env:
+             - name: HOST_IP
+               {{- if .Values.kubeRBACProxy.enabled }}
