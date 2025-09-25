@@ -1,0 +1,4 @@
+url: https://github.com/prometheus-community/helm-charts.git
+subdirectory: charts/kube-state-metrics
+commit: b93b9d562b01733df25ac266d84c16d562df3b4e
+doNotRelease: true

@@ -1,0 +1,77 @@
+--- charts-original/values.yaml
++++ charts/values.yaml
+@@ -3,16 +3,17 @@
+ # Declare variables to be passed into your templates.
+
+ image:
+-  registry: ghcr.io
+-  repository: prometheus-community/windows-exporter
++  registry: docker.io
++  repository: rancher/mirrored-prometheus-windows-exporter
++  os: "windows"
+   # Overrides the image tag whose default is {{ printf "v%s" .Chart.AppVersion }}
+-  tag: ""
++  tag: v0.31.3
+   pullPolicy: IfNotPresent
+   digest: ""
+
+ config: |-
+   collectors:
+-    enabled: '[defaults],memory,container'
++    enabled: '[defaults],tcp,memory,container'
+
+ imagePullSecrets: []
+ # - name: "image-pull-secret"
+@@ -32,20 +33,19 @@
+   #   - pullSecret1
+   #   - pullSecret2
+   imagePullSecrets: []
+-  #
+-  # Allow parent charts to override registry hostname
+-  imageRegistry: ""
++  cattle:
++    systemDefaultRegistry: ""
+
+ ## Service configuration
+ service:
+   ## Service type
+   type: ClusterIP
+   ## Default service port. Sets the port of the exposed container as well (windows-exporter).
+-  port: 9182
++  port: 9796
+   ## Port number for service type NodePort
+   nodePort:
+   ## Name of the service port. Sets the port name of the main container (windows-exporter) as well.
+-  portName: metrics
++  portName: windows-metrics
+   ## Additional annotations and labels for the service.
+   annotations: {}
+
+@@ -56,15 +56,15 @@
+
+ prometheus:
+   monitor:
+-    enabled: false
++    enabled: true
+     additionalLabels: {}
+     namespace: ""
+
+-    jobLabel: ""
++    jobLabel: "component"
+
+     # List of pod labels to add to windows exporter metrics
+     # https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api-reference/api.md#servicemonitor
+-    podTargetLabels: []
++    podTargetLabels: ["component"]
+
+     scheme: http
+     basicAuth: {}
+@@ -234,8 +234,6 @@
+     hostProcess: true
+     runAsUserName: "NT AUTHORITY\\system"
+
+-containerSecurityContext: {}
+-
+ rbac:
+   ## If true, create & use RBAC resources
+   ##
