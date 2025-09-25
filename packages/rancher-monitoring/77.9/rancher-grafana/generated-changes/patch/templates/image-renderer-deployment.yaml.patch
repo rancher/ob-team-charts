@@ -1,6 +1,6 @@
 --- charts-original/templates/image-renderer-deployment.yaml
 +++ charts/templates/image-renderer-deployment.yaml
-@@ -66,11 +66,11 @@
+@@ -64,11 +64,11 @@
        {{- end }}
        containers:
          - name: {{ .Chart.Name }}-image-renderer

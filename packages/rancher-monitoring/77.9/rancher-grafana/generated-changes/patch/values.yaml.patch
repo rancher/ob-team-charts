@@ -20,7 +20,7 @@
  
  replicas: 1
  
-@@ -95,12 +97,9 @@
+@@ -96,12 +98,9 @@
  # schedulerName: "default-scheduler"
  
  image:
@@ -31,11 +31,11 @@
 +  repository: rancher/mirrored-grafana-grafana
    # Overrides the Grafana image tag whose default is the chart appVersion
 -  tag: ""
-+  tag: 11.5.5
++  tag: 12.1.1
    sha: ""
    pullPolicy: IfNotPresent
  
-@@ -113,18 +112,11 @@
+@@ -114,18 +113,11 @@
    #   - myRegistrKeySecretName
  
  testFramework:
@@ -58,7 +58,7 @@
    containerSecurityContext: {}
    resources: {}
    #  limits:
-@@ -184,9 +176,7 @@
+@@ -185,9 +177,7 @@
  # priorityClassName:
  
  downloadDashboardsImage:
@@ -69,7 +69,7 @@
    tag: 8.9.1
    sha: ""
    pullPolicy: IfNotPresent
-@@ -455,9 +445,7 @@
+@@ -458,9 +448,7 @@
    ## initChownData container image
    ##
    image:
@@ -80,29 +80,29 @@
      tag: "1.31.1"
      sha: ""
      pullPolicy: IfNotPresent
-@@ -933,10 +921,8 @@
+@@ -956,10 +944,8 @@
  ## Requires at least Grafana 5 to work and can't be used together with parameters dashboardProviders, datasources and dashboards
  sidecar:
    image:
 -    # -- The Docker registry
 -    registry: quay.io
 -    repository: kiwigrid/k8s-sidecar
--    tag: 1.30.0
+-    tag: 1.30.10
 +    repository: rancher/appco-k8s-sidecar
 +    tag: 1.30.7-11.3
      sha: ""
    imagePullPolicy: IfNotPresent
    resources: {}
-@@ -1011,7 +997,7 @@
-     reloadURL: "http://localhost:3000/api/admin/provisioning/alerting/reload"
-     # Absolute path to shell script to execute after a alert got reloaded
+@@ -1056,7 +1042,7 @@
+     # It runs before calls to REQ_URI. If the file is not executable it will be passed to sh.
+     # Otherwise, it's executed as is. Shebangs known to work are #!/bin/sh and #!/usr/bin/env python
      script: null
 -    skipReload: false
 +    skipReload: true
      # This is needed if skipReload is true, to load any alerts defined at startup time.
      # Deploy the alert sidecar as an initContainer.
      initAlerts: false
-@@ -1182,7 +1168,7 @@
+@@ -1244,7 +1230,7 @@
      skipReload: false
      # This is needed if skipReload is true, to load any datasources defined at startup time.
      # Deploy the datasources sidecar as an initContainer.
@@ -111,7 +111,7 @@
      # Additional datasources sidecar volume mounts
      extraMounts: []
      # Sets the size limit of the datasource sidecar emptyDir volume
-@@ -1332,12 +1318,10 @@
+@@ -1412,12 +1398,10 @@
    # The callback url of grafana instances if it is not in the same namespace with the remote image renderer
    renderingCallbackURL: ""
    image:
@@ -122,7 +122,7 @@
 +    repository: rancher/mirrored-grafana-grafana-image-renderer
      # image-renderer Image tag
 -    tag: latest
-+    tag: v4.0.5
++    tag: v4.0.15
      # image-renderer Image sha (optional)
      sha: ""
-     # image-renderer ImagePullPolicy
+     # image-renderer Image pull secrets (optional)
