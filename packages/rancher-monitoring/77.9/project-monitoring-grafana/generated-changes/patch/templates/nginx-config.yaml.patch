@@ -1,6 +1,6 @@
 --- charts-original/templates/nginx-config.yaml
 +++ charts/templates/nginx-config.yaml
-@@ -75,10 +75,10 @@
+@@ -76,10 +76,10 @@
  
            sub_filter_once off;
  

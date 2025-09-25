@@ -1,18 +1,18 @@
 --- charts-original/templates/_pod.tpl
 +++ charts/templates/_pod.tpl
-@@ -144,10 +144,8 @@
+@@ -149,10 +149,8 @@
        - name: UNIQUE_FILENAMES
          value: "{{ . }}"
        {{- end }}
 -      {{- with .Values.sidecar.alerts.searchNamespace }}
        - name: NAMESPACE
--        value: {{ . | join "," | quote }}
+-        value: "{{ tpl (. | join ",") $root }}"
 -      {{- end }}
 +        value: "{{ template "project-prometheus-stack.projectNamespaceList" . }}"
        {{- with .Values.sidecar.alerts.skipTlsVerify }}
        - name: SKIP_TLS_VERIFY
          value: {{ quote . }}
-@@ -222,10 +220,8 @@
+@@ -227,10 +225,8 @@
        - name: UNIQUE_FILENAMES
          value: "{{ . }}"
        {{- end }}
@@ -24,7 +24,7 @@
        {{- with .Values.sidecar.skipTlsVerify }}
        - name: SKIP_TLS_VERIFY
          value: "{{ . }}"
-@@ -280,10 +276,8 @@
+@@ -292,10 +288,8 @@
        - name: UNIQUE_FILENAMES
          value: "{{ . }}"
        {{- end }}
@@ -36,19 +36,19 @@
        {{- with .Values.sidecar.skipTlsVerify }}
        - name: SKIP_TLS_VERIFY
          value: "{{ . }}"
-@@ -357,10 +351,8 @@
+@@ -385,10 +379,8 @@
        - name: UNIQUE_FILENAMES
          value: "{{ . }}"
        {{- end }}
 -      {{- with .Values.sidecar.alerts.searchNamespace }}
        - name: NAMESPACE
--        value: {{ . | join "," | quote }}
+-        value: "{{ tpl (. | join ",") $root }}"
 -      {{- end }}
 +        value: "{{ template "project-prometheus-stack.projectNamespaceList" . }}"
        {{- with .Values.sidecar.alerts.skipTlsVerify }}
        - name: SKIP_TLS_VERIFY
          value: {{ quote . }}
-@@ -481,10 +473,8 @@
+@@ -513,10 +505,8 @@
        - name: UNIQUE_FILENAMES
          value: "{{ . }}"
        {{- end }}
@@ -60,7 +60,7 @@
        {{- with .Values.sidecar.skipTlsVerify }}
        - name: SKIP_TLS_VERIFY
          value: "{{ . }}"
-@@ -609,10 +599,8 @@
+@@ -645,10 +635,8 @@
        - name: UNIQUE_FILENAMES
          value: "{{ . }}"
        {{- end }}
@@ -72,7 +72,7 @@
        {{- if .Values.sidecar.skipTlsVerify }}
        - name: SKIP_TLS_VERIFY
          value: "{{ .Values.sidecar.skipTlsVerify }}"
-@@ -728,10 +716,8 @@
+@@ -768,10 +756,8 @@
        - name: UNIQUE_FILENAMES
          value: "{{ .Values.sidecar.enableUniqueFilenames }}"
        {{- end }}
@@ -84,15 +84,14 @@
        {{- with .Values.sidecar.skipTlsVerify }}
        - name: SKIP_TLS_VERIFY
          value: "{{ . }}"
-@@ -847,10 +833,9 @@
+@@ -891,9 +877,8 @@
        - name: UNIQUE_FILENAMES
          value: "{{ . }}"
        {{- end }}
 -      {{- with .Values.sidecar.plugins.searchNamespace }}
        - name: NAMESPACE
-         value: "{{ tpl (. | join ",") $root }}"
--      {{- end }}
+-        value: "{{ tpl (. | join ",") $root }}"
 +        value: "{{ template "project-prometheus-stack.projectNamespaceList" . }}"
+       {{- end }}
        {{- with .Values.sidecar.plugins.script }}
        - name: SCRIPT
-         value: "{{ . }}"
