@@ -98,7 +98,7 @@
 +    Time_Key          timestamp
 +    Time_Format       %m%d %H:%M:%S.%L
 +    Time_Keep         On
-+
++    Time_System_TZ    On
 +[PARSER]
 +    Name              rancher
 +    Format            regex
