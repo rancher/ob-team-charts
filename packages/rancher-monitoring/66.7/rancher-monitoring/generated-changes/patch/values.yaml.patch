@@ -1062,7 +1062,7 @@
 -    # if not set appVersion field from Chart.yaml is used
 -    tag: ""
 +    repository: rancher/mirrored-prometheus-operator-prometheus-operator
-+    tag: v0.79.0
++    tag: v0.79.2
      sha: ""
      pullPolicy: IfNotPresent
  
@@ -1075,7 +1075,7 @@
 -      # if not set appVersion field from Chart.yaml is used
 -      tag: ""
 +      repository: rancher/mirrored-prometheus-operator-prometheus-config-reloader
-+      tag: v0.79.0
++      tag: v0.79.2
        sha: ""
  
      # add prometheus config reloader liveness and readiness probe. Default: false
