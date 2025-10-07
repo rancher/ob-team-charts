@@ -50,7 +50,7 @@ spec:
   {{- with .Values.nodeSelector }}
   nodeSelector: {{- toYaml . | nindent 6 }}
   {{- end }}
-  {{- with (default .Values.priorityClassName .Values.fluentd.podPriorityClassName) }}
+  {{- with (default .Values.priorityClassName .Values.fluentbit.podPriorityClassName) }}
   podPriorityClassName: {{ . }}
   {{- end }}
   {{- with .Values.fluentbit.resources }}
