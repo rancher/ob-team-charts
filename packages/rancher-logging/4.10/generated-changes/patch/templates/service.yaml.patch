@@ -1,0 +1,18 @@
+--- charts-original/templates/service.yaml
++++ charts/templates/service.yaml
+@@ -4,7 +4,14 @@
+   name: {{ include "logging-operator.fullname" . }}
+   namespace: {{ include "logging-operator.namespace" . }}
+   labels:
+-{{ include "logging-operator.labels" . | indent 4 }}
++    {{- include "logging-operator.labels" . | nindent 4 }}
++    {{- with .Values.http.service.labels }}
++    {{- toYaml . | nindent 4 }}
++    {{- end }}
++  {{- with .Values.http.service.annotations }}
++  annotations:
++    {{- toYaml . | nindent 4 }}
++  {{- end }}
+ spec:
+   type: {{ .Values.http.service.type }}
+   {{- with  .Values.http.service.clusterIP }}
