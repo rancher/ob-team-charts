@@ -115,7 +115,7 @@
 +Set kubernetes log options if they are configured
 +*/}}
 +{{- define "requireFilterKubernetes" -}}
-+{{- if or .Values.fluentbit.filterKubernetes.Merge_Log .Values.fluentbit.filterKubernetes.Merge_Log_Key .Values.fluentbit.filterKubernetes.Merge_Trim .Values.fluentbit.filterKubernetes.Merge_Parser -}}
++{{- if or .Values.fluentbit.filterKubernetes.Merge_Log .Values.fluentbit.filterKubernetes.Merge_Log_Key .Values.fluentbit.filterKubernetes.Merge_Log_Trim .Values.fluentbit.filterKubernetes.Merge_Parser -}}
 +true
 +{{- end -}}
 +{{- end -}}
