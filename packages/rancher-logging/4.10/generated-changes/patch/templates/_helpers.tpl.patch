@@ -23,7 +23,7 @@
 +{{- end }}
 +
 +{{- define "windowsPathPrefix" -}}
-+{{- trimSuffix "/" (default "c:\\" .Values.global.cattle.rkeWindowsPathPrefix | replace "\\" "/" | replace "//" "/" | replace "c:" "C:") -}}
++{{- trimSuffix "/" (default "c:\\" .Values.global.rkeWindowsPathPrefix | replace "\\" "/" | replace "//" "/" | replace "c:" "C:") -}}
 +{{- end -}}
 +
 +{{- define "windowsKubernetesFilter" -}}
