@@ -12,7 +12,7 @@ cd "$PROJECT_ROOT"
 
 
 if [[ -f ./bin/ob-charts-tool ]]; then
-  exec ./bin/ob-charts-tool getRebaseInfo "$@"
+  exec ./bin/ob-charts-tool monitoring:getRebaseInfo "$@"
 else
   echo "Your ob-charts-tool bin is missing..."
 fi
