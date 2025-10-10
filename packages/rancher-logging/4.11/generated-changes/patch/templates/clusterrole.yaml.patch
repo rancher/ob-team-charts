@@ -1,0 +1,23 @@
+--- charts-original/templates/clusterrole.yaml
++++ charts/templates/clusterrole.yaml
+@@ -112,20 +112,6 @@
+   - update
+   - watch
+ - apiGroups:
+-  - extensions
+-  - policy
+-  resources:
+-  - podsecuritypolicies
+-  verbs:
+-  - create
+-  - delete
+-  - get
+-  - list
+-  - patch
+-  - update
+-  - use
+-  - watch
+-- apiGroups:
+   - logging-extensions.banzaicloud.io
+   resources:
+   - eventtailers
