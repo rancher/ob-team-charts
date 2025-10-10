@@ -12,11 +12,11 @@
 -
 -  # -- [Image pull policy](https://kubernetes.io/docs/concepts/containers/images/#updating-images) for updating already existing images on a node.
 +  repository: rancher/mirrored-kube-logging-logging-operator
-+  tag: 4.10.0
++  tag: 4.11.4
    pullPolicy: IfNotPresent
  
  env: []
-@@ -53,7 +48,9 @@
+@@ -60,7 +55,9 @@
  rbac:
    # -- Create rbac service account and roles.
    enabled: true
@@ -27,7 +27,7 @@
    # specify service account manually
    # serviceAccountName: custom
  
-@@ -70,17 +67,18 @@
+@@ -77,17 +74,18 @@
  ## SecurityContext holds pod-level security attributes and common container settings.
  ## This defaults to non root user with uid 1000 and gid 2000.	*v1.PodSecurityContext	false
  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
@@ -55,7 +55,7 @@
  
  # -- Operator priorityClassName.
  priorityClassName: {}
-@@ -102,6 +100,10 @@
+@@ -109,6 +107,10 @@
    #   cpu: 100m
    #   memory: 128Mi
  
@@ -66,7 +66,7 @@
  nodeSelector: {}
  
  # -- Node Tolerations
-@@ -119,7 +121,7 @@
+@@ -132,7 +134,7 @@
    # -- Logging resources are disabled by default
    enabled: false
  
@@ -75,7 +75,7 @@
    loggingRef: ""
  
    # -- Disable configuration check before applying new fluentd configuration.
-@@ -247,7 +249,7 @@
+@@ -260,7 +262,7 @@
        imagePullSecrets: []
      pvc:
        # -- enable pvc for
@@ -84,7 +84,7 @@
        # -- storage class for event tailer pvc
        accessModes:
          - ReadWriteOnce
-@@ -309,14 +311,164 @@
+@@ -322,14 +324,164 @@
    image: fluent/fluent-bit
    pullPolicy: IfNotPresent
    port: 8080
@@ -182,7 +182,7 @@
 +    tag: 3.1.8-debug
 +  fluentd:
 +    repository: rancher/mirrored-kube-logging-fluentd
-+    tag: v1.16-4.10-full
++    tag: v1.16-4.11-full
 +
 +additionalLoggingSources:
 +  rke:
@@ -257,7 +257,7 @@
  
  # -- Extra manifests to deploy as an array
  extraManifests: []
-@@ -327,3 +479,12 @@
+@@ -340,3 +492,12 @@
    #     name: extra-manifest
    #   data:
    #     extra-data: "value"
