@@ -1,6 +1,14 @@
 --- charts-original/README.md
 +++ charts/README.md
-@@ -64,6 +64,7 @@
+@@ -57,13 +57,14 @@
+ | monitoring.serviceMonitor.relabelings | list | `[]` |  |
+ | podSecurityContext | object | `{}` | Pod SecurityContext for Logging operator. [More info](https://kubernetes.io/docs/concepts/policy/security-context/) # SecurityContext holds pod-level security attributes and common container settings. # This defaults to non root user with uid 1000 and gid 2000.	*v1.PodSecurityContext	false # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/ |
+ | securityContext | object | `{}` | Container SecurityContext for Logging operator. [More info](https://kubernetes.io/docs/concepts/policy/security-context/) |
+-| priorityClassName | object | `{}` | Operator priorityClassName. |
++| priorityClassName | string | `""` | Operator priorityClassName. |
+ | serviceAccount.annotations | object | `{}` | Define annotations for logging-operator ServiceAccount. |
+ | resources | object | `{}` | CPU/Memory resource requests/limits |
+ | nodeSelector | object | `{}` |  |
  | tolerations | list | `[]` | Node Tolerations |
  | affinity | object | `{}` | Node Affinity |
  | podLabels | object | `{}` | Define which Nodes the Pods are scheduled on. |
@@ -8,3 +16,12 @@
  | logging.enabled | bool | `false` | Logging resources are disabled by default |
  | logging.loggingRef | string | `""` | Reference to the logging system. Each of the loggingRefs can manage a fluentbit daemonset and a fluentd statefulset. |
  | logging.flowConfigCheckDisabled | bool | `false` | Disable configuration check before applying new fluentd configuration. |
+@@ -82,7 +83,7 @@
+ | logging.clusterDomain | string | `"cluster.local."` | Cluster domain name to be used when templating URLs to services |
+ | logging.controlNamespace | string | `""` | Namespace for cluster wide configuration resources like ClusterFlow and ClusterOutput. This should be a protected namespace from regular users. Resources like fluentbit and fluentd will run in this namespace as well. |
+ | logging.allowClusterResourcesFromAllNamespaces | bool | `false` | Allow configuration of cluster resources from any namespace. Mutually exclusive with ControlNamespace restriction of Cluster resources |
+-| logging.nodeAgents | object | `{}` | NodeAgent Configuration |
++| logging.nodeAgents | list | `[]` | NodeAgent Configuration |
+ | logging.configCheck | object | `{}` | configCheck provides possibility for timeout-based configuration checks https://kube-logging.dev/docs/whats-new/#timeout-based-configuration-checks |
+ | logging.enableRecreateWorkloadOnImmutableFieldChange | bool | `false` | EnableRecreateWorkloadOnImmutableFieldChange enables the operator to recreate the fluentbit daemonset and the fluentd statefulset (and possibly other resource in the future) in case there is a change in an immutable field that otherwise couldn’t be managed with a simple update. |
+ | logging.enableDockerParserCompatibilityForCRI | bool | `false` | EnableDockerParserCompatibilityForCRI enables Docker log format compatibility for CRI workloads. |
