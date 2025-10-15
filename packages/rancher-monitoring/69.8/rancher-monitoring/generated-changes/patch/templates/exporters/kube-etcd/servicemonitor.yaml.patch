@@ -6,11 +6,9 @@
      {{- end }}
 -{{- if .Values.kubeEtcd.serviceMonitor.metricRelabelings }}
      metricRelabelings:
--{{ tpl (toYaml .Values.kubeEtcd.serviceMonitor.metricRelabelings | indent 4) . }}
--{{- end }}
-+    {{- if .Values.kubeEtcd.serviceMonitor.metricRelabelings }}
-+    {{ tpl (toYaml .Values.kubeEtcd.serviceMonitor.metricRelabelings | indent 4) . }}
-+    {{- end }}
++{{- if .Values.kubeEtcd.serviceMonitor.metricRelabelings }}
+ {{ tpl (toYaml .Values.kubeEtcd.serviceMonitor.metricRelabelings | indent 4) . }}
+ {{- end }}
 +    {{ if .Values.global.cattle.clusterId }}
 +      - sourceLabels: [__address__]
 +        targetLabel: cluster_id
