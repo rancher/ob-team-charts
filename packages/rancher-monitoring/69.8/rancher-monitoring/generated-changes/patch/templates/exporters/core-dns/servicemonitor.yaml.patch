@@ -6,11 +6,9 @@
      bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
 -{{- if .Values.coreDns.serviceMonitor.metricRelabelings }}
      metricRelabelings:
--{{ tpl (toYaml .Values.coreDns.serviceMonitor.metricRelabelings | indent 4) . }}
--{{- end }}
-+    {{- if .Values.coreDns.serviceMonitor.metricRelabelings }}
-+    {{ tpl (toYaml .Values.coreDns.serviceMonitor.metricRelabelings | indent 4) . }}
-+    {{- end }}
++{{- if .Values.coreDns.serviceMonitor.metricRelabelings }}
+ {{ tpl (toYaml .Values.coreDns.serviceMonitor.metricRelabelings | indent 4) . }}
+ {{- end }}
 +    {{ if .Values.global.cattle.clusterId }}
 +    - sourceLabels: [__address__]
 +      targetLabel: cluster_id
