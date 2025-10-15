@@ -11,5 +11,5 @@ spec:
   {{- include "logging-operator.individualFluentd" $individualValues | nindent 4 }}
 {{- end -}}
 {{- if .Values.additionalLoggingSources.kubeAudit.enabled }}
-{{- include "logging-operator.logging" (list . "logging-operator.logging.kube-audit") -}}
+{{- include "logging-operator.logging" (list . "logging-operator.logging.kube-audit.logging-overlay" "logging-operator.logging.kube-audit") -}}
 {{- end }}

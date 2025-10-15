@@ -63,19 +63,35 @@ spec:
 {{/* Top context to expose fields like `.Release` and `.Values` */}}
 {{- $top := first . -}}
 
+{{/* individualLoggingOverlay is the loggingOverlay specific to the logging implementation */}}
+{{- $individualLoggingOverlay := dict -}}
+
 {{/* tpl is the template specific to the logging implementation */}}
-{{- $tpl := fromYaml (include (index . 1) $top) | default (dict ) -}}
+{{- $tpl := dict -}}
 
-{{/* Generic is the shared rancher logging setttings from `_generic_logging.yaml` */}}
-{{- $generic := fromYaml (include (index . 2) $top) | default (dict ) -}}
+{{/* Generic is the shared rancher logging settings from `_generic_logging.yaml` */}}
+{{- $generic := dict -}}
 
-{{/* values are from the values.yaml */}}
-{{- $values := $top.Values.loggingOverlay | default (dict ) -}}
+{{/* genericLoggingOverlay are from the values.yaml */}}
+{{- $genericLoggingOverlay := $top.Values.loggingOverlay | default (dict) -}}
 
-####### {{$generic}}
+{{/* Defensive indexing - check if template names exist before including */}}
+{{- if ge (len .) 2 }}
+  {{- $tplName := index . 1 -}}
+  {{- $tpl := fromYaml (include $tplName $top | default "") | default (dict) -}}
+  {{- if ge (len .) 3 }}
+    {{- $overlayName := index . 2 -}}
+    {{- $individualLoggingOverlay = fromYaml (include $overlayName $top | default "") | default (dict) -}}
+  {{- end }}
+{{- end }}
 
-{{/* the sources are merge right to left meaning tpl is the highest prcedence and values is the lowest */}}
-{{- toYaml (merge $tpl $values $generic) -}}
+{{/* Generic base template (always included) */}}
+{{- $generic = fromYaml (include "logging-operator.logging.tpl" $top | default "") | default (dict) -}}
+
+{{/* Merge order - lowest to highest precedence */}}
+{{- $merged := merge $generic $tpl $individualOverlay $genericOverlay -}}
+
+{{- toYaml $merged -}}
 {{- end -}}
 
 {{- define "logging-operator.logging" -}}

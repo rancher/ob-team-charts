@@ -8,5 +8,5 @@ spec:
     {{- include "logging-operator.individualFluentd" $individualValues | nindent 4 }}
 {{- end -}}
 {{- if .Values.additionalLoggingSources.gke.enabled }}
-{{- include "logging-operator.logging" (list . "logging-operator.logging.gke") -}}
+{{- include "logging-operator.logging" (list . "logging-operator.logging.gke.logging-overlay" "logging-operator.logging.gke") -}}
 {{- end }}

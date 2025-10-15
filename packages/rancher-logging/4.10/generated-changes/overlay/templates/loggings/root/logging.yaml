@@ -74,4 +74,4 @@ spec:
         {{ toYaml . | nindent 10 }}
     {{- end -}}
 {{- end -}}
-{{- include "logging-operator.logging" (list . "logging-operator.logging.root") -}}
+{{- include "logging-operator.logging" (list . "logging-operator.logging.root.logging-overlay" "logging-operator.logging.root") -}}

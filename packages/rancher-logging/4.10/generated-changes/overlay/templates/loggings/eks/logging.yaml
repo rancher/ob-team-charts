@@ -14,5 +14,5 @@ spec:
     {{- end }}
 {{- end -}}
 {{- if .Values.additionalLoggingSources.eks.enabled }}
-{{- include "logging-operator.logging" (list . "logging-operator.logging.eks") -}}
+{{- include "logging-operator.logging" (list . "logging-operator.logging.eks.logging-overlay" "logging-operator.logging.eks") -}}
 {{- end }}

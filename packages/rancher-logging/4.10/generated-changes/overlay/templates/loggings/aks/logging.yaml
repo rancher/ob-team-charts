@@ -8,5 +8,5 @@ spec:
   {{- include "logging-operator.individualFluentd" $individualValues | nindent 4 }}
 {{- end -}}
 {{- if .Values.additionalLoggingSources.aks.enabled }}
-{{- include "logging-operator.logging" (list . "logging-operator.logging.aks") -}}
+{{- include "logging-operator.logging" (list . "logging-operator.logging.aks.logging-overlay" "logging-operator.logging.aks") -}}
 {{- end }}
