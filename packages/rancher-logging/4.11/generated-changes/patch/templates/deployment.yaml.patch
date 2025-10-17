@@ -1,0 +1,23 @@
+--- charts-original/templates/deployment.yaml
++++ charts/templates/deployment.yaml
+@@ -37,7 +37,7 @@
+     {{- end }}
+       containers:
+         - name: {{ .Chart.Name }}
+-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
++          image: "{{ template "system_default_registry" . }}{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+           args:
+           {{- range .Values.extraArgs }}
+             - {{ . }}
+@@ -64,6 +64,11 @@
+       securityContext: {{ toYaml .Values.podSecurityContext | nindent 8 }}
+     {{- end }}
+ 
++      {{- with .Values.dnsConfig }}
++      dnsConfig:
++        {{- toYaml . | nindent 8 }}
++      {{- end }}
++
+       {{- with .Values.nodeSelector }}
+       nodeSelector:
+         {{- toYaml . | nindent 8 }}
