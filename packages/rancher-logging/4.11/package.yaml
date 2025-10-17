@@ -1,5 +1,5 @@
 url: oci://ghcr.io/kube-logging/helm-charts/logging-operator:4.11.4
-version: 4.11.4-rancher.0
+version: 4.11.4-rancher.1
 additionalCharts:
   - workingDir: charts-crd
     crdOptions:
