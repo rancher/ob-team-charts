@@ -1,3 +1,0 @@
-# -- Define annotations for CRDs
-annotations: {}
-#   argocd.argoproj.io/sync-options: Replace=false,ServerSideApply=true

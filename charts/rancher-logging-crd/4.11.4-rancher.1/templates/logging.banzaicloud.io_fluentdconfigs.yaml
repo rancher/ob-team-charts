@@ -4,6 +4,9 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.16.3
+{{- with .Values.annotations }}
+{{- toYaml . | nindent 4 }}
+{{- end }}
   name: fluentdconfigs.logging.banzaicloud.io
 spec:
   group: logging.banzaicloud.io

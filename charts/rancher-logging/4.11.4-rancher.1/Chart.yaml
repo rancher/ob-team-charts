@@ -13,11 +13,6 @@ annotations:
   catalog.cattle.io/upstream-version: 4.11.4
 apiVersion: v2
 appVersion: 4.11.4
-dependencies:
-- condition: crds.install
-  name: crds
-  repository: ""
-  version: 0.0.0
 description: Logging operator for Kubernetes based on Fluentd and Fluentbit.
 home: https://kube-logging.github.io
 keywords:
