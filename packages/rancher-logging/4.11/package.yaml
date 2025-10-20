@@ -2,8 +2,11 @@ url: oci://ghcr.io/kube-logging/helm-charts/logging-operator:4.11.4
 version: 4.11.4-rancher.1
 additionalCharts:
   - workingDir: charts-crd
+    upstreamOptions:
+      url: oci://ghcr.io/kube-logging/helm-charts/logging-operator:4.11.4
+      subdirectory: charts/crds/templates
     crdOptions:
+      addCRDValidationToMainChart: false
       templateDirectory: crd-template
       crdDirectory: templates
-      addCRDValidationToMainChart: true
 doNotRelease: false
