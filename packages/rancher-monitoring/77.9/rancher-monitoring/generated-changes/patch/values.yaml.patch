@@ -930,7 +930,7 @@
 +  proxy:
 +    image:
 +      repository: rancher/mirrored-library-nginx
-+      tag: 1.27.2-alpine
++      tag: 1.29.1-alpine
 +
 +  ## Enable an Specify container in extraContainers. This is meant to allow adding an authentication proxy to a grafana pod
 +  extraContainers: |
@@ -1212,7 +1212,7 @@
 +    proxy:
 +      image:
 +        repository: rancher/mirrored-library-nginx
-+        tag: 1.27.2-alpine
++        tag: 1.29.1-alpine
  
      ## Containers allows injecting additional containers. This is meant to allow adding an authentication proxy to a Prometheus pod.
      ## if using proxy extraContainer update targetPort with proxy container port
