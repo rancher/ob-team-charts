@@ -89,7 +89,7 @@ spec:
 {{- $generic = fromYaml (include "logging-operator.logging.tpl" $top | default "") | default (dict) -}}
 
 {{/* Merge order - lowest to highest precedence */}}
-{{- $merged := merge $generic $tpl $individualOverlay $genericOverlay -}}
+{{- $merged := merge $tpl $individualLoggingOverlay $genericLoggingOverlay $generic -}}
 
 {{- toYaml $merged -}}
 {{- end -}}
