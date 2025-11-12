@@ -1,0 +1,10 @@
+--- charts-original/templates/logging/hosttailer.yaml
++++ charts/templates/logging/hosttailer.yaml
+@@ -5,6 +5,7 @@
+ kind: HostTailer
+ metadata:
+   name: {{ .name }}
++  namespace: {{ include "logging-operator.namespace" . }}
+ spec:
+   {{- with .fileTailers }}
+   fileTailers:

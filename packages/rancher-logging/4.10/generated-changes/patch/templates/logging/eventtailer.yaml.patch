@@ -1,0 +1,10 @@
+--- charts-original/templates/logging/eventtailer.yaml
++++ charts/templates/logging/eventtailer.yaml
+@@ -4,6 +4,7 @@
+ kind: EventTailer
+ metadata:
+   name: {{ .name }}
++  namespace: {{ include "logging-operator.namespace" . }}
+ spec:
+   controlNamespace: {{ $.Values.logging.controlNamespace | default $.Release.Namespace }}
+   {{- with .image }}

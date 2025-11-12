@@ -1,0 +1,10 @@
+--- charts-original/templates/logging/logging.yaml
++++ charts/templates/logging/logging.yaml
+@@ -3,6 +3,7 @@
+ kind: Logging
+ metadata:
+   name: {{ include "logging-operator.releasename" . }}
++  namespace: {{ include "logging-operator.namespace" . }}
+   labels:
+ {{ include "logging-operator.labels" . | indent 4 }}
+ spec:
