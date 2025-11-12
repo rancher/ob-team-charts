@@ -1,0 +1,99 @@
+{{- define "logging-operator.logging.tpl" -}}
+apiVersion: logging.banzaicloud.io/v1beta1
+kind: Logging
+metadata:
+  namespace: {{ .Release.Namespace }}
+  labels:
+{{ include "logging-operator.labels" . | indent 4 }}
+spec:
+  controlNamespace: {{ .Release.Namespace }}
+  fluentd:
+    {{- with .Values.fluentd.logLevel }}
+    logLevel: {{ . }}
+    {{- end }}
+    image:
+      repository: {{ template "system_default_registry" . }}{{ .Values.images.fluentd.repository }}
+      tag: {{ .Values.images.fluentd.tag }}
+    configReloaderImage:
+      repository: {{ template "system_default_registry" . }}{{ .Values.images.config_reloader.repository }}
+      tag: {{ .Values.images.config_reloader.tag }}
+    {{- with .Values.fluentd.bufferStorageVolume }}
+    bufferStorageVolume: {{- toYaml . | nindent 6 }}
+    {{- end }}
+    disablePvc: {{ .Values.disablePvc }}
+    {{- if .Values.fluentd.replicas }}
+    scaling:
+      replicas: {{ .Values.fluentd.replicas }}
+    {{- end }}
+    security:
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: false
+        capabilities:
+          drop:
+            - ALL
+      podSecurityContext:
+        fsGroup: 101
+        runAsUser: 100
+        runAsGroup: 101
+    {{- with .Values.fluentd.env }}
+    envVars: {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with (default .Values.tolerations .Values.fluentd.tolerations) }}
+    tolerations: {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with (default .Values.priorityClassName .Values.fluentd.podPriorityClassName) }}
+    podPriorityClassName: {{ . }}
+    {{- end }}
+    {{- with (default .Values.nodeSelector .Values.fluentd.nodeSelector) }}
+    nodeSelector: {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with .Values.fluentd.resources }}
+    resources: {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with .Values.fluentd.livenessProbe }}
+    livenessProbe: {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with .Values.fluentd.metrics }}
+    metrics: {{- toYaml . | nindent 6 }}
+    {{- end }}
+{{- end -}}
+
+{{- define "logging-operator.util.merge.logging" -}}
+{{/* Top context to expose fields like `.Release` and `.Values` */}}
+{{- $top := first . -}}
+
+{{/* individualLoggingOverlay is the loggingOverlay specific to the logging implementation */}}
+{{- $individualLoggingOverlay := dict -}}
+
+{{/* tpl is the template specific to the logging implementation */}}
+{{- $tpl := dict -}}
+
+{{/* Generic is the shared rancher logging settings from `_generic_logging.yaml` */}}
+{{- $generic := dict -}}
+
+{{/* genericLoggingOverlay are from the values.yaml */}}
+{{- $genericLoggingOverlay := $top.Values.loggingOverlay | default (dict) -}}
+
+{{/* Defensive indexing - check if template names exist before including */}}
+{{- if ge (len .) 2 }}
+  {{- $overlayName := index . 1 -}}
+  {{- $individualLoggingOverlay := fromYaml (include $overlayName $top | default "") | default (dict) -}}
+  {{- if ge (len .) 3 }}
+    {{- $tplName := index . 2 -}}
+    {{- $tpl = fromYaml (include $tplName $top | default "") | default (dict) -}}
+  {{- end }}
+{{- end }}
+
+{{/* Generic base template (always included) */}}
+{{- $generic = fromYaml (include "logging-operator.logging.tpl" $top | default "") | default (dict) -}}
+
+{{/* Merge order - highest to lowest precedence */}}
+{{- $merged := merge $individualLoggingOverlay $genericLoggingOverlay $tpl $generic -}}
+
+{{- toYaml $merged -}}
+{{- end -}}
+
+{{- define "logging-operator.logging" -}}
+{{- include "logging-operator.util.merge.logging" (append . "logging-operator.logging.tpl") -}}
+{{- end -}}
