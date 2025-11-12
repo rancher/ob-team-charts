@@ -77,19 +77,19 @@ spec:
 
 {{/* Defensive indexing - check if template names exist before including */}}
 {{- if ge (len .) 2 }}
-  {{- $tplName := index . 1 -}}
-  {{- $tpl := fromYaml (include $tplName $top | default "") | default (dict) -}}
+  {{- $overlayName := index . 1 -}}
+  {{- $individualLoggingOverlay := fromYaml (include $overlayName $top | default "") | default (dict) -}}
   {{- if ge (len .) 3 }}
-    {{- $overlayName := index . 2 -}}
-    {{- $individualLoggingOverlay = fromYaml (include $overlayName $top | default "") | default (dict) -}}
+    {{- $tplName := index . 2 -}}
+    {{- $tpl = fromYaml (include $tplName $top | default "") | default (dict) -}}
   {{- end }}
 {{- end }}
 
 {{/* Generic base template (always included) */}}
 {{- $generic = fromYaml (include "logging-operator.logging.tpl" $top | default "") | default (dict) -}}
 
-{{/* Merge order - lowest to highest precedence */}}
-{{- $merged := merge $tpl $individualLoggingOverlay $genericLoggingOverlay $generic -}}
+{{/* Merge order - highest to lowest precedence */}}
+{{- $merged := merge $individualLoggingOverlay $genericLoggingOverlay $tpl $generic -}}
 
 {{- toYaml $merged -}}
 {{- end -}}
