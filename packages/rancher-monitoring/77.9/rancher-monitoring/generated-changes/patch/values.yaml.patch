@@ -820,16 +820,18 @@
    ## Configuration for creating an Ingress that will map to each Alertmanager replica service
    ## alertmanager.servicePerReplica must be enabled
    ##
-@@ -911,8 +1613,7 @@
+@@ -911,9 +1613,8 @@
      ## Image of Alertmanager
      ##
      image:
 -      registry: quay.io
 -      repository: prometheus/alertmanager
-+      repository: rancher/mirrored-prometheus-alertmanager
-       tag: v0.28.1
+-      tag: v0.28.1
++      repository: rancher/appco-alertmanager
++      tag: 0.28.1-12.7
        sha: ""
        pullPolicy: IfNotPresent
+ 
 @@ -1057,9 +1758,13 @@
      ## Define resources requests and limits for single Pods.
      ## ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
@@ -1088,9 +1090,10 @@
    thanosImage:
 -    registry: quay.io
 -    repository: thanos/thanos
-+    repository: rancher/mirrored-thanos-thanos
-     tag: v0.39.2
+-    tag: v0.39.2
 -    sha: ""
++    repository: rancher/appco-thanos
++    tag: 0.39.2-7.3
  
    ## Set a Label Selector to filter watched prometheus and prometheusAgent
    ##
@@ -1269,9 +1272,10 @@
      image:
 -      registry: quay.io
 -      repository: thanos/thanos
-+      repository: rancher/mirrored-thanos-thanos
-       tag: v0.39.2
+-      tag: v0.39.2
 -      sha: ""
++      repository: rancher/appco-thanos
++      tag: 0.39.2-7.3
  
      ## Namespaces to be selected for PrometheusRules discovery.
      ## If nil, select own namespace. Namespaces to be selected for ServiceMonitor discovery.
