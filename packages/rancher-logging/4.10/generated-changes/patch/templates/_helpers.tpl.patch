@@ -1,6 +1,6 @@
 --- charts-original/templates/_helpers.tpl
 +++ charts/templates/_helpers.tpl
-@@ -64,6 +64,145 @@
+@@ -64,6 +64,170 @@
  app.kubernetes.io/managed-by: {{ .Release.Service }}
  {{- end -}}
  
@@ -120,6 +120,31 @@
 +{{- end -}}
 +{{- end -}}
 +
++{{/* Implements logic to add kubeAudit loggingOverlay fields to custom loggings based on the cluster type */}}
++{{- define "logging-operator.logging.kube-audit.logging-overlay" -}}
++{{ .Values.additionalLoggingSources.kubeAudit.loggingOverlay }}
++{{ end }}
++
++{{/* Implements logic to add root loggingOverlay fields to custom loggings based on the cluster type */}}
++{{- define "logging-operator.logging.root.logging-overlay" -}}
++{{ .Values.additionalLoggingSources.root.loggingOverlay }}
++{{ end }}
++
++{{/* Implements logic to add gke loggingOverlay fields to custom loggings based on the cluster type */}}
++{{- define "logging-operator.logging.gke.logging-overlay" -}}
++{{ .Values.additionalLoggingSources.gke.loggingOverlay }}
++{{ end }}
++
++{{/* Implements logic to add eks loggingOverlay fields to custom loggings based on the cluster type */}}
++{{- define "logging-operator.logging.eks.logging-overlay" -}}
++{{ .Values.additionalLoggingSources.eks.loggingOverlay }}
++{{ end }}
++
++{{/* Implements logic to add aks loggingOverlay fields to custom loggings based on the cluster type */}}
++{{- define "logging-operator.logging.aks.logging-overlay" -}}
++{{ .Values.additionalLoggingSources.aks.loggingOverlay }}
++{{ end }}
++
 +{{/*Fluent Bit Image Repository */}}
 +{{- define "logging-operator.fluentbitImageRepository" -}}
 +{{- if .Values.debug -}}
@@ -146,7 +171,7 @@
  {{/*
  Formats the cluster domain as a suffix, e.g.:
  .Values.clusterDomain == "", returns ""
-@@ -74,3 +213,37 @@
+@@ -74,3 +238,37 @@
  {{- printf ".%s" .Values.clusterDomain -}}
  {{- end -}}
  {{- end -}}
