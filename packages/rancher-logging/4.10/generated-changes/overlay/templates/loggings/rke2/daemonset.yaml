@@ -1,5 +1,10 @@
 {{- if .Values.additionalLoggingSources.rke2.enabled }}
 {{- $individualValues := .Values.additionalLoggingSources.rke2.fluentbit -}}
+
+{{- $rootTols := .Values.tolerations | default list }}
+{{- $fbTols := .Values.fluentbit.tolerations | default list }}
+{{- $combinedTols := concat $rootTols $fbTols }}
+
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -47,9 +52,7 @@ spec:
       {{- with .Values.dnsConfig }}
       dnsConfig:  {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.tolerations }}
-      tolerations: {{- toYaml . | nindent 8 }}
-      {{- end }}
+      tolerations: {{- toYaml $combinedTols | nindent 8 }}
       {{- with .Values.nodeSelector }}
       nodeSelector: {{- toYaml . | nindent 8 }}
       {{- end }}
