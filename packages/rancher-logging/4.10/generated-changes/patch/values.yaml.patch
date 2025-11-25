@@ -16,7 +16,17 @@
    pullPolicy: IfNotPresent
  
  env: []
-@@ -53,7 +48,9 @@
+@@ -34,9 +29,6 @@
+ # -- Define annotations for logging-operator pods.
+ annotations: {}
+ 
+-# -- Deploy CRDs used by Logging Operator.
+-createCustomResource: false
+-
+ http:
+   # -- HTTP listen port number.
+   port: 8080
+@@ -53,7 +45,9 @@
  rbac:
    # -- Create rbac service account and roles.
    enabled: true
@@ -27,7 +37,7 @@
    # specify service account manually
    # serviceAccountName: custom
  
-@@ -70,17 +67,18 @@
+@@ -70,20 +64,21 @@
  ## SecurityContext holds pod-level security attributes and common container settings.
  ## This defaults to non root user with uid 1000 and gid 2000.	*v1.PodSecurityContext	false
  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
@@ -54,8 +64,12 @@
 +       - ALL
  
  # -- Operator priorityClassName.
- priorityClassName: {}
-@@ -102,6 +100,10 @@
+-priorityClassName: {}
++priorityClassName: ""
+ 
+ serviceAccount:
+   # -- Define annotations for logging-operator ServiceAccount.
+@@ -102,6 +97,10 @@
    #   cpu: 100m
    #   memory: 128Mi
  
@@ -66,7 +80,7 @@
  nodeSelector: {}
  
  # -- Node Tolerations
-@@ -119,7 +121,7 @@
+@@ -119,7 +118,7 @@
    # -- Logging resources are disabled by default
    enabled: false
  
@@ -75,7 +89,16 @@
    loggingRef: ""
  
    # -- Disable configuration check before applying new fluentd configuration.
-@@ -247,7 +249,7 @@
+@@ -179,7 +178,7 @@
+   allowClusterResourcesFromAllNamespaces: false
+ 
+   # -- NodeAgent Configuration
+-  nodeAgents: {}
++  nodeAgents: []
+   #  - name: win-agent
+   #    profile: windows
+   #    nodeAgentFluentbit:
+@@ -247,7 +246,7 @@
        imagePullSecrets: []
      pvc:
        # -- enable pvc for
@@ -84,7 +107,7 @@
        # -- storage class for event tailer pvc
        accessModes:
          - ReadWriteOnce
-@@ -309,14 +311,164 @@
+@@ -309,14 +308,164 @@
    image: fluent/fluent-bit
    pullPolicy: IfNotPresent
    port: 8080
@@ -228,9 +251,9 @@
 +  nodeSelector: {}
 +  podPriorityClassName: ""
 +  resources: {}
-+  tolerations: {}
++  tolerations: []
 +  env: []
-+  logLevel: {}
++  logLevel: ""
 +  metrics:
 +    # Ref: https://kube-logging.dev/docs/operation/logging-operator-monitoring/
 +    serviceMonitor: false
@@ -257,7 +280,7 @@
  
  # -- Extra manifests to deploy as an array
  extraManifests: []
-@@ -327,3 +479,12 @@
+@@ -327,3 +476,12 @@
    #     name: extra-manifest
    #   data:
    #     extra-data: "value"
