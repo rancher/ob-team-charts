@@ -41,11 +41,11 @@
 +{{- $isRKE := .Values.additionalLoggingSources.rke.enabled -}}
 +{{- $defaultTolerations := list -}}
 +{{- if $isRKE }}
-+  {{- $defaultTolerations = append $defaultTolerations (dict "key" "node-role.kubernetes.io/controlplane" "value" "true" "effect" "NoSchedule") -}}
++  {{- $defaultTolerations = append $defaultTolerations (dict "key" "node-role.kubernetes.io/controlplane" "operator" "Exists" "effect" "NoSchedule") -}}
 +{{- else }}
-+  {{- $defaultTolerations = append $defaultTolerations (dict "key" "node-role.kubernetes.io/control-plane" "value" "true" "effect" "NoSchedule") -}}
++  {{- $defaultTolerations = append $defaultTolerations (dict "key" "node-role.kubernetes.io/control-plane" "operator" "Exists" "effect" "NoSchedule") -}}
 +{{- end }}
-+{{- $defaultTolerations = append $defaultTolerations (dict "key" "node-role.kubernetes.io/etcd" "value" "true" "effect" "NoExecute") -}}
++{{- $defaultTolerations = append $defaultTolerations (dict "key" "node-role.kubernetes.io/etcd" "operator" "Exists" "effect" "NoExecute") -}}
 +{{- $userTolerations := .Values.tolerations | default list -}}
 +{{- $fluentbitTolerations := .Values.fluentbit.tolerations | default list -}}
 +{{- $mergedTolerations := concat $defaultTolerations $userTolerations $fluentbitTolerations -}}
