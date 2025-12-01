@@ -1,10 +1,36 @@
 --- charts-original/templates/logging/hosttailer.yaml
 +++ charts/templates/logging/hosttailer.yaml
-@@ -5,6 +5,7 @@
- kind: HostTailer
- metadata:
-   name: {{ .name }}
-+  namespace: {{ include "logging-operator.namespace" . }}
- spec:
-   {{- with .fileTailers }}
+@@ -10,22 +10,28 @@
    fileTailers:
+     {{- toYaml . | nindent 4 }}
+   {{- end }}
++
+   {{- with .systemdTailers }}
+   systemdTailers:
+     {{- toYaml . | nindent 4 }}
+   {{- end }}
++
+   enableRecreateWorkloadOnImmutableFieldChange: {{ $.Values.logging.enableRecreateWorkloadOnImmutableFieldChange }}
+-  {{- with .workloadMetaOverrides }}
+   workloadMetaOverrides:
+-    {{- toYaml . | nindent 4 }}
+-  {{- end }}
++    {{- if .workloadMetaOverrides }}
++    {{- toYaml .workloadMetaOverrides | nindent 4 }}
++    {{- else }}
++    {}
++    {{- end }}
++
+   {{- with .workloadOverrides }}
+   workloadOverrides:
+     {{- toYaml . | nindent 4 }}
+   {{- end }}
++
+   {{- with .image }}
+   image:
+     {{- toYaml . | nindent 4 }}
+   {{- end }}
+ {{- end }}
+-{{- end }}
++{{- end }}
+\ No newline at end of file
