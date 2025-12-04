@@ -1,0 +1,136 @@
+name: push
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: registry.suse.com/bci/bci-base:latest
+    steps:
+      - name: Install Dependencies
+        run: zypper --non-interactive in curl tar gzip git make jq go awk patch
+
+      - name: Checkout current repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Mark git directory as safe
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Detect new chart version
+        id: detect_new_charts
+        run: |
+          # Explicitly fetch the 'before' commit to ensure it's available for diffing
+          git fetch origin ${{ github.event.before }}
+
+          NEW_CHARTS=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E '^charts/(rancher-monitoring|rancher-logging)/[^/]*/Chart.yaml$' | sed -e 's|charts/\(.*\)/\(.*\)/Chart.yaml|\1/\2|' | tr '\n' ' ')
+          echo "new_charts=${NEW_CHARTS}" >> $GITHUB_OUTPUT
+
+      - name: Update Downstream Chart and Open PR
+        if: steps.detect_new_charts.outputs.new_charts != ''
+        env:
+          NEW_CHARTS: ${{ steps.detect_new_charts.outputs.new_charts }}
+          GH_TOKEN: ${{ secrets.CHARTS_REPO_PAT }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          set -eux
+
+          if [ -z "$NEW_CHARTS" ]; then
+            echo "No new charts detected. Exiting."
+            exit 0
+          fi
+
+          # --- Dependency Installation ---
+          ARCH=$(uname -m)
+          if [ "$ARCH" = "x86_64" ]; then SYSTEM_ARCH="amd64"; elif [ "$ARCH" = "aarch64" ]; then SYSTEM_ARCH="arm64"; else echo "Unsupported architecture: $ARCH"; exit 1; fi
+          curl -L "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${SYSTEM_ARCH}" -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
+          curl -L "https://github.com/cli/cli/releases/download/v2.82.0/gh_2.82.0_linux_${SYSTEM_ARCH}.tar.gz" -o gh.tar.gz && tar -zxvf gh.tar.gz && mv "gh_2.82.0_linux_${SYSTEM_ARCH}/bin/gh" /usr/local/bin/gh && rm -rf gh.tar.gz "gh_2.82.0_linux_${SYSTEM_ARCH}"
+
+          # --- Group charts by target branch ---
+          rm -rf /tmp/branch_charts && mkdir /tmp/branch_charts
+          for chart_full_version in $NEW_CHARTS; do
+            CHART_NAME=$(echo $chart_full_version | cut -d'/' -f1)
+            CHART_VERSION=$(echo $chart_full_version | cut -d'/' -f2)
+            UPSTREAM_VERSION=$(echo $CHART_VERSION | cut -d'.' -f1,2)
+            TARGET_BRANCHES=$(yq e ".packages.$CHART_NAME.\"$UPSTREAM_VERSION\".branches[]" "charts-config.yaml")
+            for branch in $TARGET_BRANCHES; do
+              echo "$chart_full_version" >> "/tmp/branch_charts/$branch"
+            done
+          done
+          ls /tmp/branch_charts/
+          # --- Checkout downstream repo ---
+          git clone https://oauth2:${GH_TOKEN}@github.com/rancher/charts.git charts-repo
+          cd charts-repo
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # --- Process each target branch ---
+          for branch_file in /tmp/branch_charts/*; do
+            TARGET_BRANCH=$(basename "$branch_file")
+            CHARTS_FOR_BRANCH=$(cat "$branch_file")
+            echo $CHARTS_FOR_BRANCH
+            git checkout -B "$TARGET_BRANCH" "origin/$TARGET_BRANCH"
+            BRANCH_NAME="bot/update-charts-for-$TARGET_BRANCH-$(date +%s)"
+            git checkout -b "$BRANCH_NAME"
+
+            # --- 1. Update package.yaml files ---
+            declare -A new_package_versions
+            for chart_full_version in $CHARTS_FOR_BRANCH; do
+              CHART_NAME=$(echo $chart_full_version | cut -d'/' -f1)
+              CHART_VERSION=$(echo $chart_full_version | cut -d'/' -f2)
+              UPSTREAM_VERSION=$(echo $CHART_VERSION | cut -d'.' -f1,2)
+              PACKAGE_PATH=$(yq e ".packages.$CHART_NAME.\"$UPSTREAM_VERSION\".package" ../charts-config.yaml)
+              PACKAGE_YAML_PATH="packages/$PACKAGE_PATH/package.yaml"
+              if [ ! -f "$PACKAGE_YAML_PATH" ]; then echo "package.yaml not found at $PACKAGE_YAML_PATH"; continue; fi
+          
+              yq e -i ".subdirectory = \"charts/$CHART_NAME/$CHART_VERSION\"" "$PACKAGE_YAML_PATH"
+              yq e -i ".commit = \"$COMMIT_SHA\"" "$PACKAGE_YAML_PATH"
+              CURRENT_VERSION=$(yq e '.version' "$PACKAGE_YAML_PATH")
+              if [[ "$CURRENT_VERSION" == *"-rc."* ]]; then
+                NEW_VERSION=$(echo $CURRENT_VERSION | awk -F- '{split($2, a, "."); print $1"-rc."a[2]+1}')
+              else
+                NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print $1"."$2"."$3+1"-rc.1"}')
+              fi
+              yq e -i ".version = \"$NEW_VERSION\"" "$PACKAGE_YAML_PATH"
+              new_package_versions[$CHART_NAME]=$NEW_VERSION
+              if yq e '.additionalCharts | has(0)' "$PACKAGE_YAML_PATH" &> /dev/null; then
+                  CRD_CHART_NAME="${CHART_NAME}-crd"
+                  yq e -i '.additionalCharts[0].upstreamOptions.subdirectory = "charts/'"$CRD_CHART_NAME"'/'"$CHART_VERSION"'"' "$PACKAGE_YAML_PATH"
+                  yq e -i '.additionalCharts[0].upstreamOptions.commit = "'"$COMMIT_SHA"'"' "$PACKAGE_YAML_PATH"
+              fi
+            done
+            if ! git diff --quiet --exit-code; then git add . && git commit -m "chore(charts): Update package.yaml"; else echo "No package.yaml changes for $TARGET_BRANCH."; continue; fi
+
+            # --- 2. Generate chart assets ---
+            for chart_full_version in $CHARTS_FOR_BRANCH; do
+              CHART_NAME=$(echo $chart_full_version | cut -d'/' -f1)
+              CHART_VERSION=$(echo $chart_full_version | cut -d'/' -f2)
+              UPSTREAM_VERSION=$(echo $CHART_VERSION | cut -d'.' -f1,2)
+              PACKAGE_PATH=$(yq e ".packages.$CHART_NAME.\"$UPSTREAM_VERSION\".package" ../charts-config.yaml)
+              make charts PACKAGE="$PACKAGE_PATH"
+            done
+            if ! git diff --quiet --exit-code; then git add . && git commit -m "feat(charts): Generate new chart assets"; fi
+
+            # --- 3. Update release.yaml ---
+            for chart_full_version in $CHARTS_FOR_BRANCH; do
+              CHART_NAME=$(echo $chart_full_version | cut -d'/' -f1)
+              CHART_VERSION=$(echo $chart_full_version | cut -d'/' -f2)
+              NEW_PACKAGE_VERSION=${new_package_versions[$CHART_NAME]}
+              FULL_VERSION="${NEW_PACKAGE_VERSION}+up${CHART_VERSION}"
+              yq e -i ".${CHART_NAME} |= [\"${FULL_VERSION}\"] + ." "release.yaml"
+              CRD_CHART_NAME="${CHART_NAME}-crd"
+              if yq e ".${CRD_CHART_NAME}" "release.yaml" &> /dev/null; then yq e -i ".${CRD_CHART_NAME} |= [\"${FULL_VERSION}\"] + ." "release.yaml"; fi
+            done
+            if ! git diff --quiet --exit-code; then git add release.yaml && git commit -m "chore(charts): Update release.yaml"; fi
+
+            # --- Push and create PR ---
+            git push origin "$BRANCH_NAME"
+            PR_TITLE="chore(charts): Update from upstream for $TARGET_BRANCH"
+            PR_BODY="Automated PR to update charts from ${{ github.repository }} commit ${{ github.sha }}"
+            gh pr create --title "$PR_TITLE" --body "$PR_BODY" --base "$TARGET_BRANCH" --head "$BRANCH_NAME" --repo rancher/charts
+          done
