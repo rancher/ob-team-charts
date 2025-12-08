@@ -6,8 +6,9 @@
      {{- end}}
 -{{- if .Values.kubeScheduler.serviceMonitor.metricRelabelings }}
      metricRelabelings:
+-{{ tpl (toYaml .Values.kubeScheduler.serviceMonitor.metricRelabelings | indent 4) . }}
 +{{- if .Values.kubeScheduler.serviceMonitor.metricRelabelings }}
- {{ tpl (toYaml .Values.kubeScheduler.serviceMonitor.metricRelabelings | indent 4) . }}
++{{ tpl (toYaml .Values.kubeScheduler.serviceMonitor.metricRelabelings | indent 6) . }}
  {{- end }}
 +    {{ if .Values.global.cattle.clusterId }}
 +      - sourceLabels: [__address__]
