@@ -1,0 +1,29 @@
+packages:
+  rancher-logging:
+    "4.10":
+      branches:
+        - branch: "dev-v2.10"
+          package: rancher-logging
+        - branch: "dev-v2.11"
+          package: rancher-logging
+        - branch: "dev-v2.12"
+          package: rancher-logging
+        - branch: "dev-v2.13"
+          package: rancher-logging
+  rancher-monitoring:
+    "66.7":
+      branches:
+        - branch: "dev-v2.10"
+          package: rancher-monitoring/rancher-monitoring
+        - branch: "dev-v2.11"
+          package: rancher-monitoring/66.7/rancher-monitoring
+    "69.8":
+      branches:
+        - branch: "dev-v2.11"
+          package: rancher-monitoring/69.8/rancher-monitoring
+        - branch: "dev-v2.12"
+          package: rancher-monitoring/69.8/rancher-monitoring
+    "77.9":
+      branches:
+        - branch: "dev-v2.13"
+          package: rancher-monitoring/rancher-monitoring
