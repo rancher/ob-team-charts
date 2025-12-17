@@ -97,7 +97,7 @@
 +    Regex             ^(?<level>[IWEF])(?<timestamp>\d{4} \d{2}:\d{2}:\d{2}\.\d{6}) +?(?<thread_id>\d+) (?<filename>.+?):(?<linenumber>\d+)] (?<message>.+)
 +    Time_Key          timestamp
 +    Time_Format       %m%d %H:%M:%S.%L
-+    Time_System_TZ    On
++    Time_System_timezone  On
 +[PARSER]
 +    Name              rancher
 +    Format            regex
