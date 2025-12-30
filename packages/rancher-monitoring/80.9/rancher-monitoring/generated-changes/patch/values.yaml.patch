@@ -1,6 +1,6 @@
 --- charts-original/values.yaml
 +++ charts/values.yaml
-@@ -2,13 +2,632 @@
+@@ -2,13 +2,630 @@
  # This is a YAML-formatted file.
  # Declare variables to be passed into your templates.
  
@@ -602,15 +602,15 @@
 +    ##
 +    proxyUrl: ""
 +
-+    ## 	metric relabel configs to apply to samples before ingestion.
-+    ##
++      ## 	metric relabel configs to apply to samples before ingestion.
++      ##
 +    metricRelabelings: []
-+    # - action: keep
-+    #   regex: 'kube_(daemonset|deployment|pod|namespace|node|statefulset).+'
-+    #   sourceLabels: [__name__]
++      # - action: keep
++      #   regex: 'kube_(daemonset|deployment|pod|namespace|node|statefulset).+'
++      #   sourceLabels: [__name__]
 +
-+    # 	relabel configs to apply to samples before ingestion.
-+    ##
++      # 	relabel configs to apply to samples before ingestion.
++      ##
 +    relabelings: []
 +    # - sourceLabels: [__meta_kubernetes_pod_node_name]
 +    #   separator: ;
@@ -622,20 +622,18 @@
 +# Prometheus Operator Configuration
 +
  ## Provide a name in place of kube-prometheus-stack for `app:` labels
-+## NOTE: If you change this value, you must update the prometheus-adapter.prometheus.url
  ##
 -nameOverride: ""
 +nameOverride: "rancher-monitoring"
  
  ## Override the deployment namespace
-+## NOTE: If you change this value, you must update the prometheus-adapter.prometheus.url
  ##
 -namespaceOverride: ""
 +namespaceOverride: "cattle-monitoring-system"
  
  ## Provide a k8s version to auto dashboard import script example: kubeTargetVersionOverride: 1.26.6
  ##
-@@ -41,16 +660,12 @@
+@@ -41,16 +658,12 @@
      forceConflicts: false
      image:
        busybox:
@@ -656,12 +654,11 @@
          pullPolicy: IfNotPresent
  
      env: {}
-@@ -331,16 +946,43 @@
+@@ -331,16 +944,40 @@
  
  ##
  global:
 +  cattle:
-+
 +    systemDefaultRegistry: ""
 +    ## Windows Monitoring
 +    ## ref: https://github.com/rancher/charts/tree/dev-v2.5-source/packages/rancher-windows-exporter
@@ -680,7 +677,6 @@
 +     pullPolicy: IfNotPresent
    rbac:
 +    ## Create RBAC resources for ServiceAccounts and users
-+    ##
      create: true
  
 +    userRoles:
@@ -692,16 +688,16 @@
      ## Create ClusterRoles that extend the existing view, edit and admin ClusterRoles to interact with prometheus-operator CRDs
      ## Ref: https://kubernetes.io/docs/reference/access-authn-authz/rbac/#aggregated-clusterroles
      createAggregateClusterRoles: false
+-
 +  disableProxyIPv6: false
- 
-   ## Global image registry to use if it needs to be overridden for some specific use cases (e.g local registries, custom images, ...)
+   ## Global image registry to use if it needs to be overridden for some specific use cases (e.g. local registries, custom images, ...)
    ##
 -  imageRegistry: ""
 +  imageRegistry: "docker.io"
  
    ## Reference to one or more secrets to be used when pulling images
    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
-@@ -354,6 +996,12 @@
+@@ -354,6 +991,12 @@
    ## Deploys the windows-exporter and Windows-specific dashboards and rules (job name must be 'windows-exporter')
    enabled: false
  
@@ -714,7 +710,7 @@
  ## Configuration for prometheus-windows-exporter
  ## ref: https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus-windows-exporter
  ##
-@@ -571,25 +1219,76 @@
+@@ -571,25 +1214,76 @@
    ## ref: https://prometheus.io/docs/alerting/notifications/
    ##      https://prometheus.io/docs/alerting/notification_examples/
    ##
@@ -810,46 +806,28 @@
  
    ingress:
      enabled: false
-@@ -674,6 +1373,9 @@
+@@ -673,6 +1367,8 @@
+   ##
    secret:
      annotations: {}
- 
 +  # by default the alertmanager secret is not overwritten if it already exists
 +    recreateIfExists: false
-+
+ 
    ## Configuration for creating an Ingress that will map to each Alertmanager replica service
    ## alertmanager.servicePerReplica must be enabled
-   ##
-@@ -911,9 +1613,8 @@
+@@ -911,9 +1607,8 @@
      ## Image of Alertmanager
      ##
      image:
 -      registry: quay.io
 -      repository: prometheus/alertmanager
--      tag: v0.28.1
+-      tag: v0.30.0
 +      repository: rancher/appco-alertmanager
-+      tag: 0.28.1-12.7
++      tag: 0.30.0-12.15
        sha: ""
        pullPolicy: IfNotPresent
  
-@@ -1057,9 +1758,13 @@
-     ## Define resources requests and limits for single Pods.
-     ## ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
-     ##
--    resources: {}
--    # requests:
--    #   memory: 400Mi
-+    resources:
-+      limits:
-+        memory: 500Mi
-+        cpu: 1000m
-+      requests:
-+        memory: 100Mi
-+        cpu: 100m
- 
-     ## Pod anti-affinity can prevent the scheduler from placing Prometheus replicas on the same node.
-     ## The default value "soft" means that the scheduler should *prefer* to not schedule two replica pods onto the same node but no guarantee is provided.
-@@ -1225,6 +1930,29 @@
+@@ -1225,7 +1920,29 @@
  grafana:
    enabled: true
    namespaceOverride: ""
@@ -873,13 +851,13 @@
 +    security:
 +      # Required to embed dashboards in Rancher Cluster Overview Dashboard on Cluster Explorer
 +      allow_embedding: true
-+
+ 
 +  deploymentStrategy:
 +    type: Recreate
- 
    ## ForceDeployDatasources Create datasource configmap even if grafana deployment has been disabled
    ##
-@@ -1237,7 +1965,17 @@
+   forceDeployDatasources: false
+@@ -1237,7 +1954,17 @@
    ## Deploy default dashboards
    ##
    defaultDashboardsEnabled: true
@@ -898,7 +876,7 @@
    ## Deploy GrafanaDashboard CRDs that reference dashboards from ConfigMaps when grafana-operator is used
    ## These settings control how dashboards are integrated with the Grafana Operator
    ## Note: End user still need to create is own kind: GrafanaDataSource for Prometheus
-@@ -1364,8 +2102,7 @@
+@@ -1386,8 +2113,7 @@
        enabled: true
        label: grafana_dashboard
        labelValue: "1"
@@ -908,7 +886,7 @@
  
        # Support for new table panels, when enabled grafana auto migrates the old table panels to newer table panels
        enableNewTablePanelSyntax: false
-@@ -1467,10 +2204,70 @@
+@@ -1493,10 +2219,69 @@
    ## Passed to grafana subchart and used by servicemonitor below
    ##
    service:
@@ -934,7 +912,7 @@
 +    image:
 +      repository: rancher/mirrored-library-nginx
 +      tag: 1.29.1-alpine
-+
+ 
 +  ## Enable an Specify container in extraContainers. This is meant to allow adding an authentication proxy to a grafana pod
 +  extraContainers: |
 +    - name: grafana-proxy
@@ -962,7 +940,6 @@
 +        capabilities:
 +          drop:
 +            - ALL
- 
 +  ## Volumes that can be used in containers
 +  extraContainerVolumes:
 +    - name: nginx-home
@@ -980,7 +957,7 @@
    serviceMonitor:
      # If true, a ServiceMonitor CRD is created for a prometheus operator
      # https://github.com/prometheus-operator/prometheus-operator
-@@ -1503,7 +2300,15 @@
+@@ -1529,7 +2314,15 @@
      #   targetLabel: nodename
      #   replacement: $1
      #   action: replace
@@ -997,16 +974,16 @@
  ## Flag to disable all the kubernetes component scrapers
  ##
  kubernetesServiceMonitors:
-@@ -1832,7 +2637,7 @@
+@@ -1862,7 +2655,7 @@
  ## Component scraping the kube controller manager
  ##
  kubeControllerManager:
 -  enabled: true
 +  enabled: false
  
-   ## If your kube controller manager is not deployed as a pod, specify IPs it can be found on
-   ##
-@@ -2119,7 +2924,7 @@
+   # Overrides the job selector in Grafana dashboards and Prometheus rules
+   # For k3s clusters, change to k3s-server
+@@ -2153,7 +2946,7 @@
  ## Component scraping etcd
  ##
  kubeEtcd:
@@ -1015,25 +992,25 @@
  
    ## If your etcd is not deployed as a pod, specify IPs it can be found on
    ##
-@@ -2228,7 +3033,7 @@
+@@ -2262,7 +3055,7 @@
  ## Component scraping kube scheduler
  ##
  kubeScheduler:
 -  enabled: true
 +  enabled: false
  
-   ## If your kube scheduler is not deployed as a pod, specify IPs it can be found on
-   ##
-@@ -2334,7 +3139,7 @@
+   # Overrides the job selector in Grafana dashboards and Prometheus rules
+   # For k3s clusters, change to k3s-server
+@@ -2372,7 +3165,7 @@
  ## Component scraping kube proxy
  ##
  kubeProxy:
 -  enabled: true
 +  enabled: false
  
-   ## If your kube proxy is not deployed as a pod, specify IPs it can be found on
-   ##
-@@ -2806,10 +3611,9 @@
+   # Overrides the job selector in Grafana dashboards and Prometheus rules
+   # For k3s clusters, change to k3s-server
+@@ -2796,10 +3589,9 @@
        ## Prometheus-operator webhook image
        ##
        image:
@@ -1042,23 +1019,11 @@
 +        repository: rancher/mirrored-prometheus-operator-admission-webhook
          # if not set appVersion field from Chart.yaml is used
 -        tag: ""
-+        tag: v0.85.0
++        tag: v0.87.1
          sha: ""
          pullPolicy: IfNotPresent
  
-@@ -2918,9 +3722,8 @@
-     patch:
-       enabled: true
-       image:
--        registry: registry.k8s.io
--        repository: ingress-nginx/kube-webhook-certgen
--        tag: v1.6.2  # latest tag: https://github.com/kubernetes/ingress-nginx/blob/main/images/kube-webhook-certgen/TAG
-+        repository: rancher/mirrored-ingress-nginx-kube-webhook-certgen
-+        tag: v1.6.2
-         sha: ""
-         pullPolicy: IfNotPresent
-       resources: {}
-@@ -3308,10 +4111,8 @@
+@@ -3298,10 +4090,8 @@
    ## Prometheus-operator image
    ##
    image:
@@ -1067,11 +1032,11 @@
 -    # if not set appVersion field from Chart.yaml is used
 -    tag: ""
 +    repository: rancher/mirrored-prometheus-operator-prometheus-operator
-+    tag: v0.85.0
++    tag: v0.87.1
      sha: ""
      pullPolicy: IfNotPresent
  
-@@ -3335,10 +4136,8 @@
+@@ -3325,10 +4115,8 @@
    ##
    prometheusConfigReloader:
      image:
@@ -1080,33 +1045,34 @@
 -      # if not set appVersion field from Chart.yaml is used
 -      tag: ""
 +      repository: rancher/mirrored-prometheus-operator-prometheus-config-reloader
-+      tag: v0.80.1
++      tag: v0.87.1
        sha: ""
  
      # add prometheus config reloader liveness and readiness probe. Default: false
-@@ -3356,10 +4155,8 @@
+@@ -3346,10 +4134,8 @@
    ## Thanos side-car image when configured
    ##
    thanosImage:
 -    registry: quay.io
 -    repository: thanos/thanos
--    tag: v0.39.2
+-    tag: v0.40.1
 -    sha: ""
 +    repository: rancher/appco-thanos
-+    tag: 0.39.2-7.3
++    tag: 0.40.1-7.13
  
    ## Set a Label Selector to filter watched prometheus and prometheusAgent
    ##
-@@ -3392,6 +4189,8 @@
+@@ -3382,7 +4168,8 @@
  ##
  prometheus:
    enabled: true
+-
 +  # disables the discovery and collection of metrics provided by PodMonitor, Probe and ServiceMonitor CRs
 +  disableServiceDiscovery: false
- 
    ## Toggle prometheus into agent mode
    ## Note many of features described below (e.g. rules, query, alerting, remote read, thanos) will not work in agent mode.
-@@ -3557,7 +4356,7 @@
+   ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/platform/prometheus-agent.md
+@@ -3549,7 +4336,7 @@
      port: 9090
  
      ## To be used with a proxy extraContainer port
@@ -1115,7 +1081,7 @@
  
      ## Port for Prometheus Reloader to listen on
      ##
-@@ -3935,11 +4734,11 @@
+@@ -3927,11 +4714,11 @@
      ## Defaults to 30s.
      ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/release-0.44/pkg/prometheus/promcfg.go#L180-L183
      ##
@@ -1129,7 +1095,7 @@
  
      ## List of scrape classes to expose to scraping objects such as
      ## PodMonitors, ServiceMonitors, Probes and ScrapeConfigs.
-@@ -3958,7 +4757,7 @@
+@@ -3950,7 +4737,7 @@
  
      ## Interval between consecutive evaluations.
      ##
@@ -1138,19 +1104,19 @@
  
      ## ListenLocal makes the Prometheus server listen on loopback, so that it does not bind against the Pod IP.
      ##
-@@ -4008,10 +4807,8 @@
+@@ -4000,10 +4787,8 @@
      ## Image of Prometheus.
      ##
      image:
 -      registry: quay.io
 -      repository: prometheus/prometheus
 +      repository: rancher/prom-prometheus
-       tag: v3.5.0
+       tag: v3.8.1
 -      sha: ""
        pullPolicy: IfNotPresent
  
      ## Tolerations for use with node taints
-@@ -4110,7 +4907,7 @@
+@@ -4102,7 +4887,7 @@
      ## prometheus resource to be created with selectors based on values in the helm deployment,
      ## which will also match the PrometheusRule resources created
      ##
@@ -1159,7 +1125,7 @@
  
      ## PrometheusRules to be selected for target discovery.
      ## If {}, select all PrometheusRules
-@@ -4135,7 +4932,7 @@
+@@ -4127,7 +4912,7 @@
      ## prometheus resource to be created with selectors based on values in the helm deployment,
      ## which will also match the servicemonitors created
      ##
@@ -1168,7 +1134,7 @@
  
      ## ServiceMonitors to be selected for target discovery.
      ## If {}, select all ServiceMonitors
-@@ -4158,7 +4955,7 @@
+@@ -4150,7 +4935,7 @@
      ## prometheus resource to be created with selectors based on values in the helm deployment,
      ## which will also match the podmonitors created
      ##
@@ -1177,7 +1143,7 @@
  
      ## PodMonitors to be selected for target discovery.
      ## If {}, select all PodMonitors
-@@ -4324,9 +5121,13 @@
+@@ -4316,9 +5101,13 @@
  
      ## Resource limits & requests
      ##
@@ -1194,7 +1160,7 @@
  
      ## Prometheus StorageSpec for persistent data
      ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/platform/storage.md
-@@ -4349,7 +5150,13 @@
+@@ -4341,7 +5130,13 @@
      #    medium: Memory
  
      # Additional volumes on the output StatefulSet definition.
@@ -1209,21 +1175,21 @@
  
      # Additional VolumeMounts on the output StatefulSet definition.
      volumeMounts: []
-@@ -4520,26 +5327,39 @@
+@@ -4512,26 +5307,38 @@
        #     #   region: ""
        #     #   access_key: ""
        #     #   secret_key: ""
+-
 +    proxy:
 +      image:
 +        repository: rancher/mirrored-library-nginx
 +        tag: 1.29.1-alpine
- 
      ## Containers allows injecting additional containers. This is meant to allow adding an authentication proxy to a Prometheus pod.
      ## if using proxy extraContainer update targetPort with proxy container port
 -    containers: []
 -    # containers:
 -    # - name: oauth-proxy
--    #   image: quay.io/oauth2-proxy/oauth2-proxy:v7.12.0
+-    #   image: quay.io/oauth2-proxy/oauth2-proxy:v7.13.0
 -    #   args:
 -    #   - --upstream=http://127.0.0.1:9090
 -    #   - --http-address=0.0.0.0:8081
@@ -1237,7 +1203,7 @@
 -    #     name: oauth-metrics
 -    #     protocol: TCP
 -    #   resources: {}
-+    containers:  |
++    containers: |
 +      - name: prometheus-proxy
 +        args:
 +        - nginx
@@ -1266,20 +1232,20 @@
  
      ## InitContainers allows injecting additional initContainers. This is meant to allow doing some changes
      ## (permissions, dir tree) on mounted volumes before starting prometheus
-@@ -5111,10 +5931,8 @@
+@@ -5103,10 +5910,8 @@
      ## Image of ThanosRuler
      ##
      image:
 -      registry: quay.io
 -      repository: thanos/thanos
--      tag: v0.39.2
+-      tag: v0.40.1
 -      sha: ""
 +      repository: rancher/appco-thanos
-+      tag: 0.39.2-7.3
++      tag: 0.40.1-7.13
  
      ## Namespaces to be selected for PrometheusRules discovery.
      ## If nil, select own namespace. Namespaces to be selected for ServiceMonitor discovery.
-@@ -5210,10 +6028,6 @@
+@@ -5202,10 +6007,6 @@
      ##
      externalPrefix:
  
@@ -1290,7 +1256,24 @@
      ## The route prefix ThanosRuler registers HTTP handlers for. This is useful, if using ExternalURL and a proxy is rewriting HTTP routes of a request, and the actual ExternalURL is still true,
      ## but the server serves requests under a different route prefix. For example for use with kubectl proxy.
      ##
-@@ -5432,3 +6246,9 @@
+@@ -5283,9 +6084,13 @@
+     ## Define resources requests and limits for single Pods.
+     ## ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+     ##
+-    resources: {}
+-    # requests:
+-    #   memory: 400Mi
++    resources:
++      limits:
++        memory: 500Mi
++        cpu: 1000m
++      requests:
++        memory: 100Mi
++        cpu: 100m
+ 
+     ## Pod anti-affinity can prevent the scheduler from placing Prometheus replicas on the same node.
+     ## The default value "soft" means that the scheduler should *prefer* to not schedule two replica pods onto the same node but no guarantee is provided.
+@@ -5424,3 +6229,9 @@
    #   data:
    #     plaintext: Zm9vYmFy
    #     templated: '{{ print "foobar" | upper | b64enc }}'

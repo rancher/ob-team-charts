@@ -166,9 +166,9 @@
  chart: {{ template "kube-prometheus-stack.chartref" . }}
  release: {{ $.Release.Name | quote }}
  heritage: {{ $.Release.Service | quote }}
-@@ -317,4 +469,4 @@
- - {key: app.kubernetes.io/name, operator: In, values: [prometheus]}
- - {key: app.kubernetes.io/instance, operator: In, values: [{{ template "kube-prometheus-stack.prometheus.crname" . }}]}
+@@ -385,4 +537,4 @@
+ {{- else if $folderRef }}
+ folderRef: {{ $folderRef | quote }}
  {{- end }}
 -{{- end }}
 \ No newline at end of file
