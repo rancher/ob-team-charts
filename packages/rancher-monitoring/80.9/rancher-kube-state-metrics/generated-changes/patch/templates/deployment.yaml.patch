@@ -1,0 +1,17 @@
+--- charts-original/templates/deployment.yaml
++++ charts/templates/deployment.yaml
+@@ -344,12 +344,12 @@
+         {{- tpl .Values.affinity $ | nindent 8 }}
+         {{- end }}
+       {{- end }}
++      nodeSelector: {{ include "linux-node-selector" . | nindent 8 }}
+       {{- with .Values.nodeSelector }}
+-      nodeSelector:
+ {{ tpl (toYaml .) $ | indent 8 }}
+       {{- end }}
++      tolerations: {{ include "linux-node-tolerations" . | nindent 8 }}
+       {{- with .Values.tolerations }}
+-      tolerations:
+ {{ tpl (toYaml .) $ | indent 8 }}
+       {{- end }}
+       {{- if .Values.topologySpreadConstraints }}

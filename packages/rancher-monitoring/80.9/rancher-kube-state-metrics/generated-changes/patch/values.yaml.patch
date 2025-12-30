@@ -1,0 +1,38 @@
+--- charts-original/values.yaml
++++ charts/values.yaml
+@@ -1,10 +1,9 @@
+ # Default values for kube-state-metrics.
+ prometheusScrape: true
+ image:
+-  registry: registry.k8s.io
+-  repository: kube-state-metrics/kube-state-metrics
+-  # If unset use v + .Charts.appVersion
+-  tag: ""
++  registry: docker.io
++  repository: rancher/appco-kube-state-metrics
++  tag: 2.17.0-10.7
+   sha: ""
+   pullPolicy: IfNotPresent
+ 
+@@ -12,6 +11,8 @@
+ # - name: "image-pull-secret"
+ 
+ global:
++  cattle:
++    systemDefaultRegistry: ""
+   # To help compatibility with other charts which use global.imagePullSecrets.
+   # Allow either an array of {name: pullSecret} maps (k8s-style), or an array of strings (more common helm-style).
+   # global:
+@@ -104,9 +105,9 @@
+ kubeRBACProxy:
+   enabled: false
+   image:
+-    registry: quay.io
+-    repository: brancz/kube-rbac-proxy
+-    tag: v0.19.1
++    registry: ''
++    repository: rancher/appco-kube-rbac-proxy
++    tag: 0.19.1-15.2
+     sha: ""
+     pullPolicy: IfNotPresent
+ 
