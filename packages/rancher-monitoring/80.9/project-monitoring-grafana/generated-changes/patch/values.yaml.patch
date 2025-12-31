@@ -8,7 +8,7 @@
  
    # To help compatibility with other charts which use global.imagePullSecrets.
    # Allow either an array of {name: pullSecret} maps (k8s-style), or an array of strings (more common helm-style).
-@@ -994,10 +995,6 @@
+@@ -1000,10 +1001,6 @@
      labelValue: ""
      # Log level. Can be one of: DEBUG, INFO, WARN, ERROR, CRITICAL.
      # logLevel: INFO
@@ -19,7 +19,7 @@
      # Method to use to detect ConfigMap changes. With WATCH the sidecar will do a WATCH requests, with SLEEP it will list all ConfigMaps, then sleep for 60 seconds.
      watchMethod: WATCH
      # search in configmap, secret or both
-@@ -1080,10 +1077,6 @@
+@@ -1096,10 +1093,6 @@
      folder: /tmp/dashboards
      # The default folder name, it will create a subfolder under the `folder` and put dashboards in there instead
      defaultFolderName: null
@@ -30,7 +30,7 @@
      # Method to use to detect ConfigMap changes. With WATCH the sidecar will do a WATCH requests, with SLEEP it will list all ConfigMaps, then sleep for 60 seconds.
      watchMethod: WATCH
      # search in configmap, secret or both
-@@ -1179,10 +1172,6 @@
+@@ -1208,10 +1201,6 @@
      labelValue: ""
      # Log level. Can be one of: DEBUG, INFO, WARN, ERROR, CRITICAL.
      # logLevel: INFO

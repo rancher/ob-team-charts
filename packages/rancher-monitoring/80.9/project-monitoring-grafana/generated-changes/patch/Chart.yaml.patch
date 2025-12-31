@@ -1,9 +1,9 @@
 --- charts-original/Chart.yaml
 +++ charts/Chart.yaml
-@@ -27,7 +27,7 @@
-   name: torstenwalter
- - email: github@jkroepke.de
+@@ -29,7 +29,7 @@
    name: jkroepke
+ - email: quentin.bisson@gmail.com
+   name: QuentinBisson
 -name: grafana
 +name: rancher-grafana
  sources:
