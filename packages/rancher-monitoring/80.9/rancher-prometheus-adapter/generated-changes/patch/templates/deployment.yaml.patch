@@ -1,6 +1,6 @@
 --- charts-original/templates/deployment.yaml
 +++ charts/templates/deployment.yaml
-@@ -51,7 +51,7 @@
+@@ -52,7 +52,7 @@
        {{- end }}
        containers:
        - name: {{ .Chart.Name }}
@@ -9,7 +9,7 @@
          imagePullPolicy: {{ .Values.image.pullPolicy }}
          {{- with .Values.env }}
          env:
-@@ -113,7 +113,10 @@
+@@ -114,7 +114,10 @@
        {{- toYaml . | nindent 6 }}
        {{- end }}
        nodeSelector:
@@ -21,7 +21,7 @@
        affinity:
          {{- toYaml .Values.affinity | nindent 8 }}
        topologySpreadConstraints:
-@@ -125,8 +128,10 @@
+@@ -126,8 +129,10 @@
        securityContext:
          {{- toYaml .Values.podSecurityContext | nindent 8 }}
        {{- end }}
