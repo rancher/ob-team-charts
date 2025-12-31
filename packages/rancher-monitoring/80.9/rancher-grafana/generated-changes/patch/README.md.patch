@@ -5,9 +5,9 @@
  | `lifecycleHooks`                          | Lifecycle hooks for podStart and preStop [Example](https://kubernetes.io/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/#define-poststart-and-prestop-handlers)     | `{}`                                                    |
  | `sidecar.image.registry`                  | Sidecar image registry                        | `quay.io`                          |
 -| `sidecar.image.repository`                | Sidecar image repository                      | `kiwigrid/k8s-sidecar`                          |
--| `sidecar.image.tag`                       | Sidecar image tag                             | `1.30.10`                                                |
-+| `sidecar.image.repository`                | Sidecar image repository                      | `rancher/appco-k8s-sidecar`                             |
-+| `sidecar.image.tag`                       | Sidecar image tag                             | `1.30.7-11.3`                                           |
+-| `sidecar.image.tag`                       | Sidecar image tag                             | `2.1.2`                                                |
++| `sidecar.image.repository`                | Sidecar image repository                      | `rancher/appco-k8s-sidecar`                          |
++| `sidecar.image.tag`                       | Sidecar image tag                             | `2.1.2-1.10`                                            |
  | `sidecar.image.sha`                       | Sidecar image sha (optional)                  | `""`                                                    |
  | `sidecar.imagePullPolicy`                 | Sidecar image pull policy                     | `IfNotPresent`                                          |
  | `sidecar.resources`                       | Sidecar resources                             | `{}`                                                    |
