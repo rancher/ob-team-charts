@@ -1,0 +1,39 @@
+--- charts-original/templates/prometheus/rules-1.14/kubernetes-system-kubelet.yaml
++++ charts/templates/prometheus/rules-1.14/kubernetes-system-kubelet.yaml
+@@ -6,7 +6,7 @@
+ {{- $kubeTargetVersion := default .Capabilities.KubeVersion.GitVersion .Values.kubeTargetVersionOverride }}
+ {{- if and (semverCompare ">=1.14.0-0" $kubeTargetVersion) (semverCompare "<9.9.9-9" $kubeTargetVersion) .Values.defaultRules.create .Values.defaultRules.rules.kubernetesSystem }}
+ {{- $kubeStateMetricsJob := include "kube-prometheus-stack-kube-state-metrics.name" . }}
+-{{- $kubeletJob := include "kube-prometheus-stack-kubelet.name" . }}
++{{- $kubeletJob := include "exporter.kubelet.jobName" . }}
+ apiVersion: monitoring.coreos.com/v1
+ kind: PrometheusRule
+ metadata:
+@@ -442,7 +442,7 @@
+         {{- end }}
+       {{- end }}
+ {{- end }}
+-{{- if .Values.prometheusOperator.kubeletService.enabled }}
++{{- if (include "exporter.kubelet.enabled" .)}}
+ {{- if not (.Values.defaultRules.disabled.KubeletDown | default false) }}
+     - alert: KubeletDown
+       annotations:
+@@ -456,10 +456,7 @@
+         runbook_url: {{ .Values.defaultRules.runbookUrl }}/kubernetes/kubeletdown
+         summary: Target disappeared from Prometheus target discovery.
+       expr: absent(up{job="{{ $kubeletJob }}", metrics_path="/metrics"})
+-      for: {{ dig "KubeletDown" "for" "15m" .Values.customRules }}
+-      {{- with .Values.defaultRules.keepFiringFor }}
+-      keep_firing_for: "{{ . }}"
+-      {{- end }}
++      for: 15m
+       labels:
+         severity: {{ dig "KubeletDown" "severity" "critical" .Values.customRules }}
+       {{- if or .Values.defaultRules.additionalRuleLabels .Values.defaultRules.additionalRuleGroupLabels.kubernetesSystem }}
+@@ -472,4 +469,4 @@
+       {{- end }}
+ {{- end }}
+ {{- end }}
+-{{- end }}
+\ No newline at end of file
++{{- end }}
