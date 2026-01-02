@@ -1453,15 +1453,15 @@ entries:
       catalog.cattle.io/requests-memory: 4000Mi
       catalog.cattle.io/type: cluster-tool
       catalog.cattle.io/ui-component: monitoring
-      catalog.cattle.io/upstream-version: 77.9.1
+      catalog.cattle.io/upstream-version: 80.9.1
     apiVersion: v2
-    appVersion: v0.85.0
-    created: "2026-01-02T20:43:42.819443-03:00"
+    appVersion: v0.87.1
+    created: "2026-01-02T20:45:07.189777-03:00"
     dependencies:
     - condition: grafana.enabled
       name: grafana
       repository: file://./charts/grafana
-      version: 10.0.0
+      version: 10.4.1
     - condition: hardenedKubelet.enabled
       name: hardenedKubelet
       repository: file://./charts/hardenedKubelet
@@ -1477,7 +1477,7 @@ entries:
     - condition: kubeStateMetrics.enabled
       name: kube-state-metrics
       repository: file://./charts/kube-state-metrics
-      version: 6.3.0
+      version: 7.0.0
     - condition: kubeAdmControllerManager.enabled
       name: kubeAdmControllerManager
       repository: file://./charts/kubeAdmControllerManager
@@ -1497,11 +1497,11 @@ entries:
     - condition: prometheus-adapter.enabled
       name: prometheus-adapter
       repository: file://./charts/prometheus-adapter
-      version: 5.1.0
+      version: 5.2.0
     - condition: nodeExporter.enabled
       name: prometheus-node-exporter
       repository: file://./charts/prometheus-node-exporter
-      version: 4.47.3
+      version: 4.49.2
     - condition: rke2ControllerManager.enabled
       name: rke2ControllerManager
       repository: file://./charts/rke2ControllerManager
@@ -1550,7 +1550,7 @@ entries:
       and Prometheus rules combined with documentation and scripts to provide easy
       to operate end-to-end Kubernetes cluster monitoring with Prometheus using the
       Prometheus Operator.
-    digest: 1ffeb13f75c903a0ebac45d2f05a5312701221bd4a7d8334d11f55ff19ab3718
+    digest: faf248ff94ca956733bbf48cf88c4fbe7ae76c3d1852b618592f0064d3496b0f
     home: https://github.com/prometheus-operator/kube-prometheus
     icon: file://assets/logos/rancher-monitoring.png
     keywords:
@@ -11160,9 +11160,9 @@ entries:
       catalog.cattle.io/namespace: cattle-monitoring-system
       catalog.cattle.io/release-name: rancher-monitoring-crd
     apiVersion: v2
-    created: "2026-01-02T20:43:42.986505-03:00"
+    created: "2026-01-02T20:45:07.35299-03:00"
     description: Installs the CRDs for rancher-monitoring.
-    digest: 29110605a19cd5c4c88f46577edc2b8948471df838143097406a3e2649021ddb
+    digest: afcddf6c3feabb176d24e50f14c974380ed4c1b77cd76748a8a527ec722ff949
     name: rancher-monitoring-crd
     type: application
     urls:

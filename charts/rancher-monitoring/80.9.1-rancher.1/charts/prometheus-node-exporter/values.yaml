@@ -5,7 +5,7 @@ image:
   registry: docker.io
   repository: rancher/appco-node-exporter
   # Overrides the image tag whose default is {{ printf "v%s" .Chart.AppVersion }}
-  tag: 1.9.1-11.3
+  tag: 1.10.2-11.21
   pullPolicy: IfNotPresent
   digest: ""
 
@@ -47,7 +47,7 @@ kubeRBACProxy:
   image:
     registry: ''
     repository: rancher/appco-kube-rbac-proxy
-    tag: 0.19.1-15.2
+    tag: 0.20.1-16.14
     sha: ""
     pullPolicy: IfNotPresent
 

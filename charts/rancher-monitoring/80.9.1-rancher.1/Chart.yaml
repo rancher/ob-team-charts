@@ -22,14 +22,14 @@ annotations:
   catalog.cattle.io/requests-memory: 4000Mi
   catalog.cattle.io/type: cluster-tool
   catalog.cattle.io/ui-component: monitoring
-  catalog.cattle.io/upstream-version: 77.9.1
+  catalog.cattle.io/upstream-version: 80.9.1
 apiVersion: v2
-appVersion: v0.85.0
+appVersion: v0.87.1
 dependencies:
 - condition: grafana.enabled
   name: grafana
   repository: file://./charts/grafana
-  version: 10.0.0
+  version: 10.4.1
 - condition: hardenedKubelet.enabled
   name: hardenedKubelet
   repository: file://./charts/hardenedKubelet
@@ -45,7 +45,7 @@ dependencies:
 - condition: kubeStateMetrics.enabled
   name: kube-state-metrics
   repository: file://./charts/kube-state-metrics
-  version: 6.3.0
+  version: 7.0.0
 - condition: kubeAdmControllerManager.enabled
   name: kubeAdmControllerManager
   repository: file://./charts/kubeAdmControllerManager
@@ -65,11 +65,11 @@ dependencies:
 - condition: prometheus-adapter.enabled
   name: prometheus-adapter
   repository: file://./charts/prometheus-adapter
-  version: 5.1.0
+  version: 5.2.0
 - condition: nodeExporter.enabled
   name: prometheus-node-exporter
   repository: file://./charts/prometheus-node-exporter
-  version: 4.47.3
+  version: 4.49.2
 - condition: rke2ControllerManager.enabled
   name: rke2ControllerManager
   repository: file://./charts/rke2ControllerManager
