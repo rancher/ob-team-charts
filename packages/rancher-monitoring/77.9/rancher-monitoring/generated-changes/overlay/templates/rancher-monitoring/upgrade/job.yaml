@@ -19,8 +19,11 @@ spec:
     spec:
       serviceAccountName: {{ template "kube-prometheus-stack.fullname" . }}-upgrade
       securityContext:
-        runAsNonRoot: false
-        runAsUser: 0
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       restartPolicy: Never
       nodeSelector: {{ include "linux-node-selector" . | nindent 8 }}
       tolerations: {{ include "linux-node-tolerations" . | nindent 8 }}
@@ -36,13 +39,15 @@ spec:
           - /bin/sh
           - -c
           - >
-            for s in $(find /etc/scripts -type f); do 
+            for s in $(find /etc/scripts -type f); do
               echo "Running $s...";
               cat $s | bash
             done;
           volumeMounts:
             - name: upgrade
               mountPath: /etc/scripts
+            - name: run
+              mountPath: /run
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
@@ -50,6 +55,8 @@ spec:
               drop:
                 - ALL
       volumes:
+      - name: run
+        emptyDir: {}
       - name: upgrade
         configMap:
           name: {{ template "kube-prometheus-stack.fullname" . }}-upgrade
