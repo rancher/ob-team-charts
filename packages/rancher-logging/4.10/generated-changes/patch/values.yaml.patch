@@ -107,7 +107,19 @@
        # -- storage class for event tailer pvc
        accessModes:
          - ReadWriteOnce
-@@ -309,14 +308,164 @@
+@@ -302,21 +301,175 @@
+     #     maxEntries: 20
+     #     containerOverrides:
+     #     image:
+-    systemdTailers: []
++    systemdTailers:
++    - name: rancher-system-agent
++      systemdFilter: rancher-system-agent.service
++      disabled: false
++      maxEntries: 100
+ 
+ testReceiver:
+   enabled: false
    image: fluent/fluent-bit
    pullPolicy: IfNotPresent
    port: 8080
@@ -280,7 +292,7 @@
  
  # -- Extra manifests to deploy as an array
  extraManifests: []
-@@ -327,3 +476,12 @@
+@@ -327,3 +480,12 @@
    #     name: extra-manifest
    #   data:
    #     extra-data: "value"
