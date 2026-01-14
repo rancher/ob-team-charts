@@ -102,8 +102,21 @@
      # This is needed if skipReload is true, to load any alerts defined at startup time.
      # Deploy the alert sidecar as an initContainer.
      initAlerts: false
-@@ -1273,7 +1259,7 @@
-     skipReload: false
+@@ -1227,7 +1213,7 @@
+     # It's also possible to specify ALL to search in all namespaces
+     searchNamespace: null
+     # Method to use to detect ConfigMap changes. With WATCH the sidecar will do a WATCH requests, with SLEEP it will list all ConfigMaps, then sleep for 60 seconds.
+-    watchMethod: WATCH
++    watchMethod: LIST
+     # search in configmap, secret or both
+     resource: both
+     #
+@@ -1270,10 +1256,10 @@
+     # It runs before calls to REQ_URI. If the file is not executable it will be passed to sh.
+     # Otherwise, it's executed as is. Shebangs known to work are #!/bin/sh and #!/usr/bin/env python
+     script: null
+-    skipReload: false
++    skipReload: true
      # This is needed if skipReload is true, to load any datasources defined at startup time.
      # Deploy the datasources sidecar as an initContainer.
 -    initDatasources: false
