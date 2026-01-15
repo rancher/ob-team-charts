@@ -1,0 +1,19 @@
+--- charts-original/Chart.yaml
++++ charts/Chart.yaml
+@@ -1,6 +1,6 @@
+ annotations:
+   artifacthub.io/license: Apache-2.0
+-  artifacthub.io/links: |
++  artifacthub.io/links: |-
+     - name: Chart Source
+       url: https://github.com/prometheus-community/helm-charts
+ apiVersion: v2
+@@ -21,7 +21,7 @@
+ - email: rootsandtrees@posteo.de
+   name: zeritti
+   url: https://github.com/zeritti
+-name: prometheus-node-exporter
++name: rancher-node-exporter
+ sources:
+ - https://github.com/prometheus/node_exporter/
+ type: application
