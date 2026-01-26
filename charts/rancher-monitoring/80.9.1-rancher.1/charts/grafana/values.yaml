@@ -100,7 +100,7 @@ livenessProbe:
 image:
   repository: rancher/appco-grafana
   # Overrides the Grafana image tag whose default is the chart appVersion
-  tag: 12.1.1-2.2
+  tag: 12.3.1-1.6
   sha: ""
   pullPolicy: IfNotPresent
 
@@ -114,10 +114,10 @@ image:
 
 testFramework:
   enabled: false
-  imagePullPolicy: IfNotPresent
   securityContext:
     runAsNonRoot: true
     runAsUser: 1000
+  imagePullPolicy: IfNotPresent
   containerSecurityContext: {}
   resources: {}
   #  limits:
@@ -340,6 +340,12 @@ route:
 
     ## Additional custom rules that can be added to the route
     additionalRules: []
+
+    ## httpsRedirect adds a filter for redirecting to https (HTTP 301 Moved Permanently).
+    ## To redirect HTTP traffic to HTTPS, you need to have a Gateway with both HTTP and HTTPS listeners.
+    ## Matches and filters do not take effect if enabled.
+    ## Ref. https://gateway-api.sigs.k8s.io/guides/http-redirect-rewrite/
+    httpsRedirect: false
 
 resources: {}
 #  limits:
@@ -945,7 +951,7 @@ smtp:
 sidecar:
   image:
     repository: rancher/appco-k8s-sidecar
-    tag: 1.30.7-11.3
+    tag: 2.1.2-1.10
     sha: ""
   imagePullPolicy: IfNotPresent
   resources: {}
@@ -1046,6 +1052,16 @@ sidecar:
     # This is needed if skipReload is true, to load any alerts defined at startup time.
     # Deploy the alert sidecar as an initContainer.
     initAlerts: false
+    # Use native sidecar https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/
+    # restartPolicy: Always
+    # # only applies to native sidecars
+    # startupProbe:
+    #   httpGet:
+    #     path: /healthz
+    #     port: 8080
+    #   initialDelaySeconds: 5
+    #   periodSeconds: 5
+    #   failureThreshold: 60 # 5 minutes
     # Additional alerts sidecar volume mounts
     extraMounts: []
     # Sets the size limit of the alert sidecar emptyDir volume
@@ -1122,6 +1138,19 @@ sidecar:
     # Otherwise, it's executed as is. Shebangs known to work are #!/bin/sh and #!/usr/bin/env python
     script: null
     skipReload: false
+    # This is needed if skipReload is true, to load any dashboards defined at startup time.
+    # Deploy the dashboard sidecar as an initContainer.
+    initDashboards: false
+    # Use native sidecar https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/
+    # restartPolicy: Always
+    # # only applies to native sidecars
+    # startupProbe:
+    #   httpGet:
+    #     path: /healthz
+    #     port: 8083
+    #   initialDelaySeconds: 5
+    #   periodSeconds: 5
+    #   failureThreshold: 60 # 5 minutes
     # watchServerTimeout: request to the server, asking it to cleanly close the connection after that.
     # defaults to 60sec; much higher values like 3600 seconds (1h) are feasible for non-Azure K8S
     # watchServerTimeout: 3600
@@ -1184,7 +1213,7 @@ sidecar:
     # It's also possible to specify ALL to search in all namespaces
     searchNamespace: null
     # Method to use to detect ConfigMap changes. With WATCH the sidecar will do a WATCH requests, with SLEEP it will list all ConfigMaps, then sleep for 60 seconds.
-    watchMethod: WATCH
+    watchMethod: LIST
     # search in configmap, secret or both
     resource: both
     #
@@ -1227,10 +1256,20 @@ sidecar:
     # It runs before calls to REQ_URI. If the file is not executable it will be passed to sh.
     # Otherwise, it's executed as is. Shebangs known to work are #!/bin/sh and #!/usr/bin/env python
     script: null
-    skipReload: false
+    skipReload: true
     # This is needed if skipReload is true, to load any datasources defined at startup time.
     # Deploy the datasources sidecar as an initContainer.
     initDatasources: true
+    # Use native sidecar https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/
+    # restartPolicy: Always
+    # # only applies to native sidecars
+    # startupProbe:
+    #   httpGet:
+    #     path: /healthz
+    #     port: 8081
+    #   initialDelaySeconds: 5
+    #   periodSeconds: 5
+    #   failureThreshold: 60 # 5 minutes
     # Additional datasources sidecar volume mounts
     extraMounts: []
     # Sets the size limit of the datasource sidecar emptyDir volume
@@ -1367,6 +1406,16 @@ sidecar:
     # Deploy the notifier sidecar as an initContainer in addition to a container.
     # This is needed if skipReload is true, to load any notifiers defined at startup time.
     initNotifiers: false
+    # Use native sidecar https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/
+    # restartPolicy: Always
+    # # only applies to native sidecars
+    # startupProbe:
+    #   httpGet:
+    #     path: /healthz
+    #     port: 8082
+    #   initialDelaySeconds: 5
+    #   periodSeconds: 5
+    #   failureThreshold: 60 # 5 minutes
     # Additional notifiers sidecar volume mounts
     extraMounts: []
     # Sets the size limit of the notifier sidecar emptyDir volume
@@ -1398,10 +1447,9 @@ imageRenderer:
   # The callback url of grafana instances if it is not in the same namespace with the remote image renderer
   renderingCallbackURL: ""
   image:
-    # image-renderer Image repository
     repository: rancher/mirrored-grafana-grafana-image-renderer
     # image-renderer Image tag
-    tag: v4.0.15
+    tag: v5.1.0
     # image-renderer Image sha (optional)
     sha: ""
     # image-renderer Image pull secrets (optional)

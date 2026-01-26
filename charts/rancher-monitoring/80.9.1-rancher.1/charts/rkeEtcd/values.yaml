@@ -14,6 +14,8 @@ global:
     systemDefaultRegistry: ""
   seLinux:
     enabled: false
+  # imagePullSecretName: ""  # (deprecated) Use imagePullSecrets instead for multiple secrets
+  # imagePullSecrets: []     # List of image pull secret names (e.g., ["credentials-harbor", "docker-registry"])
 
 # A list of Semver constraint strings (defined by https://github.com/Masterminds/semver) and values.yaml overrides.
 #
@@ -129,8 +131,8 @@ clients:
   affinity: {}
 
   image:
-    repository: rancher/pushprox-client
-    tag: v0.1.5-rancher2-client
+    repository: rancher/pushprox
+    tag: v0.1.9
   command: ["pushprox-client"]
 
   copyCertsImage:
@@ -161,6 +163,6 @@ proxy:
   tolerations: []
 
   image:
-    repository: rancher/pushprox-proxy
-    tag: v0.1.5-rancher2-proxy
+    repository: rancher/pushprox
+    tag: v0.1.9
   command: ["pushprox-proxy"]

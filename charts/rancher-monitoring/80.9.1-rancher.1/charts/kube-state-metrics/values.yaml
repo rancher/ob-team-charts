@@ -3,7 +3,7 @@ prometheusScrape: true
 image:
   registry: docker.io
   repository: rancher/appco-kube-state-metrics
-  tag: 2.17.0-10.7
+  tag: 2.17.0-10.11
   sha: ""
   pullPolicy: IfNotPresent
 
@@ -107,7 +107,7 @@ kubeRBACProxy:
   image:
     registry: ''
     repository: rancher/appco-kube-rbac-proxy
-    tag: 0.19.1-15.2
+    tag: 0.20.1-16.14
     sha: ""
     pullPolicy: IfNotPresent
 
@@ -130,8 +130,10 @@ kubeRBACProxy:
       drop:
       - ALL
 
+  # Configure specific upstream port for kube-state-metrics container
+  port: 9090
   # Configure specific proxy endpoints port
-  # This port is for healthz on readinessProbe
+  # This port is for healthz on readinessProbe kube-rbac-proxy-http container
   proxyEndpointsPort: 8888
 
   resources: {}
@@ -409,7 +411,7 @@ collectors:
   - cronjobs
   - daemonsets
   - deployments
-  - endpoints
+  - endpointslices
   - horizontalpodautoscalers
   - ingresses
   - jobs

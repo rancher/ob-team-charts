@@ -16,6 +16,7 @@ metadata:
   namespace: {{ include "k8s-prometheus-adapter.namespace" . }}
 spec:
   replicas: {{ .Values.replicas }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
   strategy: {{ toYaml .Values.strategy | nindent 4 }}
   selector:
     matchLabels:
@@ -48,6 +49,10 @@ spec:
       {{- with .Values.dnsConfig }}
       dnsConfig:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- include "monitoring-global.imagePullSecrets" . | indent 8 }}
       {{- end }}
       containers:
       - name: {{ .Chart.Name }}
