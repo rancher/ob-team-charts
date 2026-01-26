@@ -1,13 +1,19 @@
 --- charts-original/values.yaml
 +++ charts/values.yaml
-@@ -1,11 +1,18 @@
+@@ -1,11 +1,24 @@
 +# Default values for k8s-prometheus-adapter..
 +global:
 +  cattle:
 +    psp:
 +      enabled: false
 +    systemDefaultRegistry: ""
-+
++  ## Reference to one or more secrets to be used when pulling images
++  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
++  ##
++  imagePullSecrets: [ ]
++  # - name: "image-pull-secret"
++  # or
++  # - "image-pull-secret"
  affinity: {}
  
  topologySpreadConstraints: []

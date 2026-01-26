@@ -1,7 +1,13 @@
 --- charts-original/templates/deployment.yaml
 +++ charts/templates/deployment.yaml
-@@ -52,7 +52,7 @@
+@@ -50,9 +50,13 @@
+       dnsConfig:
+         {{- toYaml . | nindent 8 }}
        {{- end }}
++      {{- if .Values.global.imagePullSecrets }}
++      imagePullSecrets:
++        {{- include "monitoring-global.imagePullSecrets" . | indent 8 }}
++      {{- end }}
        containers:
        - name: {{ .Chart.Name }}
 -        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -9,7 +15,7 @@
          imagePullPolicy: {{ .Values.image.pullPolicy }}
          {{- with .Values.env }}
          env:
-@@ -114,7 +114,10 @@
+@@ -114,7 +118,10 @@
        {{- toYaml . | nindent 6 }}
        {{- end }}
        nodeSelector:
@@ -21,7 +27,7 @@
        affinity:
          {{- toYaml .Values.affinity | nindent 8 }}
        topologySpreadConstraints:
-@@ -126,8 +129,10 @@
+@@ -126,8 +133,10 @@
        securityContext:
          {{- toYaml .Values.podSecurityContext | nindent 8 }}
        {{- end }}
