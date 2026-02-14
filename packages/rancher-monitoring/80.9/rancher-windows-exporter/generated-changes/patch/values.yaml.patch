@@ -6,7 +6,7 @@
  image:
 -  registry: ghcr.io
 -  repository: prometheus-community/windows-exporter
-+  registry: docker.io
++  registry: ""
 +  repository: rancher/mirrored-prometheus-windows-exporter
 +  os: "windows"
    # Overrides the image tag whose default is {{ printf "v%s" .Chart.AppVersion }}

@@ -99,17 +99,33 @@ jobs:
 
           # --- Group charts by target branch ---
           rm -rf /tmp/branch_data && mkdir /tmp/branch_data
+          VALID_CHARTS_FOUND=false
+
           for chart_full_version in $NEW_CHARTS; do
             CHART_NAME=$(echo $chart_full_version | cut -d'/' -f1)
             CHART_VERSION=$(echo $chart_full_version | cut -d'/' -f2)
             UPSTREAM_VERSION=$(echo $CHART_VERSION | cut -d'.' -f1,2)
-          
+
+            # Check if configuration exists for this chart
+            CONFIG_EXISTS=$(yq e ".packages.$CHART_NAME.\"$UPSTREAM_VERSION\".branches" "charts-config.yaml")
+            if [ "$CONFIG_EXISTS" = "null" ] || [ -z "$CONFIG_EXISTS" ]; then
+              echo "⚠️ No configuration found for $CHART_NAME version $UPSTREAM_VERSION in charts-config.yaml. Skipping." >> $GITHUB_STEP_SUMMARY
+              continue
+            fi
+
+            VALID_CHARTS_FOUND=true
             yq e ".packages.$CHART_NAME.\"$UPSTREAM_VERSION\".branches" -o=json "charts-config.yaml" | jq -c '.[]' | while read -r branch_config; do
               TARGET_BRANCH=$(echo "$branch_config" | jq -r '.branch')
               PACKAGE_PATH=$(echo "$branch_config" | jq -r '.package')
               echo "${chart_full_version},${PACKAGE_PATH}" >> "/tmp/branch_data/${TARGET_BRANCH}"
             done
           done
+
+          # Exit early if no valid charts were found
+          if [ "$VALID_CHARTS_FOUND" = "false" ]; then
+            echo "No charts with valid configuration found. Exiting." >> $GITHUB_STEP_SUMMARY
+            exit 0
+          fi
 
           # --- Checkout downstream repo ---
           git clone https://oauth2:${GH_TOKEN}@github.com/rancher/charts.git charts-repo

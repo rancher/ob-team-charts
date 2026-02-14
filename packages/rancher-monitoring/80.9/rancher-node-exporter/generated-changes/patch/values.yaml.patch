@@ -6,7 +6,7 @@
  image:
 -  registry: quay.io
 -  repository: prometheus/node-exporter
-+  registry: docker.io
++  registry: ""
 +  repository: rancher/appco-node-exporter
    # Overrides the image tag whose default is {{ printf "v%s" .Chart.AppVersion }}
 -  tag: ""

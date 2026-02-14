@@ -1030,7 +1030,7 @@
 -        registry: ghcr.io
 -        repository: jkroepke/kube-webhook-certgen
 +        registry: ""
-+        repository: rancher/mirrored-ingress-nginx-kube-webhook-certgen
++        repository: rancher/mirrored-jkroepke-kube-webhook-certgen
          tag: 1.7.4
          sha: ""
          pullPolicy: IfNotPresent
