@@ -1,25 +1,48 @@
 --- charts-original/templates/exporters/kube-api-server/servicemonitor.yaml
 +++ charts/templates/exporters/kube-api-server/servicemonitor.yaml
-@@ -26,10 +26,20 @@
+@@ -26,14 +26,32 @@
      {{- end }}
      port: https
      scheme: https
 -{{- if .Values.kubeApiServer.serviceMonitor.metricRelabelings }}
++
++    {{- /* Logic Fix: Wrap metricRelabelings to ensure valid YAML structure */ -}}
++    {{- $mrl := .Values.kubeApiServer.serviceMonitor.metricRelabelings -}}
++    {{- $hasCattle := or .Values.global.cattle.clusterId .Values.global.cattle.clusterName -}}
++    {{- if or $mrl $hasCattle }}
      metricRelabelings:
-+    {{- if .Values.kubeApiServer.serviceMonitor.metricRelabelings }}
- {{ tpl (toYaml .Values.kubeApiServer.serviceMonitor.metricRelabelings | indent 6) . }}
+-{{ tpl (toYaml .Values.kubeApiServer.serviceMonitor.metricRelabelings | indent 6) . }}
 -{{- end }}
-+    {{- end }}
-+    {{ if .Values.global.cattle.clusterId }}
+-{{- if .Values.kubeApiServer.serviceMonitor.relabelings }}
++      {{- if $mrl }}
++      {{- tpl (toYaml $mrl | nindent 6) . }}
++      {{- end }}
++      {{- if .Values.global.cattle.clusterId }}
 +      - sourceLabels: [__address__]
 +        targetLabel: cluster_id
-+        replacement: {{ .Values.global.cattle.clusterId }}
-+    {{- end }}
-+    {{ if .Values.global.cattle.clusterName}}
++        replacement: {{ .Values.global.cattle.clusterId | quote }}
++      {{- end }}
++      {{- if .Values.global.cattle.clusterName }}
 +      - sourceLabels: [__address__]
 +        targetLabel: cluster_name
-+        replacement: {{ .Values.global.cattle.clusterName }}
++        replacement: {{ .Values.global.cattle.clusterName | quote }}
++      {{- end }}
 +    {{- end }}
- {{- if .Values.kubeApiServer.serviceMonitor.relabelings }}
++
++    {{- if .Values.kubeApiServer.serviceMonitor.relabelings }}
      relabelings:
- {{ tpl (toYaml .Values.kubeApiServer.serviceMonitor.relabelings | indent 6) . }}
+-{{ tpl (toYaml .Values.kubeApiServer.serviceMonitor.relabelings | indent 6) . }}
+-{{- end }}
++      {{- tpl (toYaml .Values.kubeApiServer.serviceMonitor.relabelings | nindent 6) . }}
++    {{- end }}
++
+     tlsConfig:
+       caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+       serverName: {{ .Values.kubeApiServer.tlsConfig.serverName }}
+@@ -48,4 +66,4 @@
+     - default
+   selector:
+ {{ toYaml .Values.kubeApiServer.serviceMonitor.selector | indent 4 }}
+-{{- end}}
++{{- end}}
+\ No newline at end of file

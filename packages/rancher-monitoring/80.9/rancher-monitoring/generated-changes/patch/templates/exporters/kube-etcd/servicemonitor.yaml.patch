@@ -1,26 +1,40 @@
 --- charts-original/templates/exporters/kube-etcd/servicemonitor.yaml
 +++ charts/templates/exporters/kube-etcd/servicemonitor.yaml
-@@ -58,10 +58,20 @@
+@@ -58,12 +58,29 @@
        {{- end}}
        insecureSkipVerify: {{ .Values.kubeEtcd.serviceMonitor.insecureSkipVerify }}
      {{- end }}
 -{{- if .Values.kubeEtcd.serviceMonitor.metricRelabelings }}
++
++    {{- /* Logic Fix: Wrap metricRelabelings to ensure valid YAML structure */ -}}
++    {{- $mrl := .Values.kubeEtcd.serviceMonitor.metricRelabelings -}}
++    {{- $hasCattle := or .Values.global.cattle.clusterId .Values.global.cattle.clusterName -}}
++    {{- if or $mrl $hasCattle }}
      metricRelabelings:
 -{{ tpl (toYaml .Values.kubeEtcd.serviceMonitor.metricRelabelings | indent 4) . }}
 -{{- end }}
-+    {{- if .Values.kubeEtcd.serviceMonitor.metricRelabelings }}
-+    {{ tpl (toYaml .Values.kubeEtcd.serviceMonitor.metricRelabelings | indent 4) . }}
-+    {{- end }}
-+    {{ if .Values.global.cattle.clusterId }}
+-{{- if .Values.kubeEtcd.serviceMonitor.relabelings }}
++      {{- if $mrl }}
++      {{- tpl (toYaml $mrl | nindent 6) . }}
++      {{- end }}
++      {{- if .Values.global.cattle.clusterId }}
 +      - sourceLabels: [__address__]
 +        targetLabel: cluster_id
-+        replacement: {{ .Values.global.cattle.clusterId }}
-+    {{- end }}
-+    {{ if .Values.global.cattle.clusterName}}
++        replacement: {{ .Values.global.cattle.clusterId | quote }}
++      {{- end }}
++      {{- if .Values.global.cattle.clusterName }}
 +      - sourceLabels: [__address__]
 +        targetLabel: cluster_name
-+        replacement: {{ .Values.global.cattle.clusterName }}
++        replacement: {{ .Values.global.cattle.clusterName | quote }}
++      {{- end }}
 +    {{- end }}
- {{- if .Values.kubeEtcd.serviceMonitor.relabelings }}
++
++    {{- if .Values.kubeEtcd.serviceMonitor.relabelings }}
      relabelings:
- {{ tpl (toYaml .Values.kubeEtcd.serviceMonitor.relabelings | indent 4) . }}
+-{{ tpl (toYaml .Values.kubeEtcd.serviceMonitor.relabelings | indent 4) . }}
+-{{- end }}
+-{{- end }}
++      {{- tpl (toYaml .Values.kubeEtcd.serviceMonitor.relabelings | nindent 6) . }}
++    {{- end }}
++{{- end }}
+\ No newline at end of file

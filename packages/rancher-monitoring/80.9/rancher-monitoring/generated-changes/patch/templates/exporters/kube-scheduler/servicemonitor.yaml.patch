@@ -1,26 +1,40 @@
 --- charts-original/templates/exporters/kube-scheduler/servicemonitor.yaml
 +++ charts/templates/exporters/kube-scheduler/servicemonitor.yaml
-@@ -52,10 +52,20 @@
+@@ -52,12 +52,29 @@
        serverName: {{ .Values.kubeScheduler.serviceMonitor.serverName }}
        {{- end}}
      {{- end}}
 -{{- if .Values.kubeScheduler.serviceMonitor.metricRelabelings }}
++
++    {{- /* Logic Fix: Wrap metricRelabelings in a single conditional block */ -}}
++    {{- $mrl := .Values.kubeScheduler.serviceMonitor.metricRelabelings -}}
++    {{- $hasCattle := or .Values.global.cattle.clusterId .Values.global.cattle.clusterName -}}
++    {{- if or $mrl $hasCattle }}
      metricRelabelings:
 -{{ tpl (toYaml .Values.kubeScheduler.serviceMonitor.metricRelabelings | indent 4) . }}
 -{{- end }}
-+    {{- if .Values.kubeScheduler.serviceMonitor.metricRelabelings }}
-+    {{ tpl (toYaml .Values.kubeScheduler.serviceMonitor.metricRelabelings | indent 4) . }}
-+    {{- end }}
-+    {{ if .Values.global.cattle.clusterId }}
+-{{- if .Values.kubeScheduler.serviceMonitor.relabelings }}
++      {{- if $mrl }}
++      {{- tpl (toYaml $mrl | nindent 6) . }}
++      {{- end }}
++      {{- if .Values.global.cattle.clusterId }}
 +      - sourceLabels: [__address__]
 +        targetLabel: cluster_id
-+        replacement: {{ .Values.global.cattle.clusterId }}
-+    {{- end }}
-+    {{ if .Values.global.cattle.clusterName}}
++        replacement: {{ .Values.global.cattle.clusterId | quote }}
++      {{- end }}
++      {{- if .Values.global.cattle.clusterName }}
 +      - sourceLabels: [__address__]
 +        targetLabel: cluster_name
-+        replacement: {{ .Values.global.cattle.clusterName }}
++        replacement: {{ .Values.global.cattle.clusterName | quote }}
++      {{- end }}
 +    {{- end }}
- {{- if .Values.kubeScheduler.serviceMonitor.relabelings }}
++
++    {{- if .Values.kubeScheduler.serviceMonitor.relabelings }}
      relabelings:
- {{ tpl (toYaml .Values.kubeScheduler.serviceMonitor.relabelings | indent 4) . }}
+-{{ tpl (toYaml .Values.kubeScheduler.serviceMonitor.relabelings | indent 4) . }}
+-{{- end }}
+-{{- end }}
++      {{- tpl (toYaml .Values.kubeScheduler.serviceMonitor.relabelings | nindent 6) . }}
++    {{- end }}
++{{- end }}
+\ No newline at end of file
