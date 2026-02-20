@@ -1,26 +1,56 @@
 --- charts-original/templates/prometheus-operator/servicemonitor.yaml
 +++ charts/templates/prometheus-operator/servicemonitor.yaml
-@@ -29,10 +29,20 @@
+@@ -7,7 +7,7 @@
+   labels:
+     {{- include "kube-prometheus-stack.prometheus-operator.labels" . | nindent 4 }}
+ {{- with .Values.prometheusOperator.serviceMonitor.additionalLabels }}
+-{{ toYaml . | indent 4 }}
++{{ toYaml . | nindent 4 }}
+ {{- end }}
+ spec:
+   {{- include "servicemonitor.scrapeLimits" .Values.prometheusOperator.serviceMonitor | nindent 2 }}
+@@ -29,14 +29,31 @@
      {{- if .Values.prometheusOperator.serviceMonitor.interval }}
      interval: {{ .Values.prometheusOperator.serviceMonitor.interval }}
      {{- end }}
 -{{- if .Values.prometheusOperator.serviceMonitor.metricRelabelings }}
++
++    {{- /* Logic Fix: Wrap metricRelabelings to ensure valid YAML structure */ -}}
++    {{- $mrl := .Values.prometheusOperator.serviceMonitor.metricRelabelings -}}
++    {{- $hasCattle := or .Values.global.cattle.clusterId .Values.global.cattle.clusterName -}}
++    {{- if or $mrl $hasCattle }}
      metricRelabelings:
 -{{ tpl (toYaml .Values.prometheusOperator.serviceMonitor.metricRelabelings | indent 6) . }}
 -{{- end }}
-+    {{- if .Values.prometheusOperator.serviceMonitor.metricRelabelings }}
-+    {{ tpl (toYaml .Values.prometheusOperator.serviceMonitor.metricRelabelings | indent 6) . }}
-+    {{- end }}
-+    {{ if .Values.global.cattle.clusterId }}
+-{{- if .Values.prometheusOperator.serviceMonitor.relabelings }}
++      {{- if $mrl }}
++      {{- tpl (toYaml $mrl | nindent 6) . }}
++      {{- end }}
++      {{- if .Values.global.cattle.clusterId }}
 +      - sourceLabels: [__address__]
 +        targetLabel: cluster_id
-+        replacement: {{ .Values.global.cattle.clusterId }}
-+    {{- end }}
-+    {{ if .Values.global.cattle.clusterName}}
++        replacement: {{ .Values.global.cattle.clusterId | quote }}
++      {{- end }}
++      {{- if .Values.global.cattle.clusterName }}
 +      - sourceLabels: [__address__]
 +        targetLabel: cluster_name
-+        replacement: {{ .Values.global.cattle.clusterName }}
++        replacement: {{ .Values.global.cattle.clusterName | quote }}
++      {{- end }}
 +    {{- end }}
- {{- if .Values.prometheusOperator.serviceMonitor.relabelings }}
++
++    {{- if .Values.prometheusOperator.serviceMonitor.relabelings }}
      relabelings:
- {{ toYaml .Values.prometheusOperator.serviceMonitor.relabelings | indent 6 }}
+-{{ toYaml .Values.prometheusOperator.serviceMonitor.relabelings | indent 6 }}
+-{{- end }}
++      {{- toYaml .Values.prometheusOperator.serviceMonitor.relabelings | nindent 6 }}
++    {{- end }}
+   selector:
+     matchLabels:
+       app: {{ template "kube-prometheus-stack.name" . }}-operator
+@@ -44,4 +61,4 @@
+   namespaceSelector:
+     matchNames:
+       - {{ printf "%s" (include "kube-prometheus-stack.namespace" .) | quote }}
+-{{- end }}
++{{- end }}
+\ No newline at end of file
