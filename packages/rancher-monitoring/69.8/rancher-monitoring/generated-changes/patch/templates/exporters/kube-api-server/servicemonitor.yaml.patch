@@ -6,10 +6,9 @@
      scheme: https
 -{{- if .Values.kubeApiServer.serviceMonitor.metricRelabelings }}
      metricRelabelings:
-+    {{- if .Values.kubeApiServer.serviceMonitor.metricRelabelings }}
++{{- if .Values.kubeApiServer.serviceMonitor.metricRelabelings }}
  {{ tpl (toYaml .Values.kubeApiServer.serviceMonitor.metricRelabelings | indent 6) . }}
--{{- end }}
-+    {{- end }}
+ {{- end }}
 +    {{ if .Values.global.cattle.clusterId }}
 +      - sourceLabels: [__address__]
 +        targetLabel: cluster_id
