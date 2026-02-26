@@ -107,7 +107,7 @@
        # -- storage class for event tailer pvc
        accessModes:
          - ReadWriteOnce
-@@ -309,14 +308,164 @@
+@@ -309,14 +308,166 @@
    image: fluent/fluent-bit
    pullPolicy: IfNotPresent
    port: 8080
@@ -216,6 +216,8 @@
 +  rke2:
 +    enabled: false
 +    stripUnderscores: false
++    kubeletLog:
++      path: "/var/lib/rancher/rke2/agent/logs/kubelet.log"
 +  k3s:
 +    enabled: false
 +    container_engine: "systemd"
@@ -280,7 +282,7 @@
  
  # -- Extra manifests to deploy as an array
  extraManifests: []
-@@ -327,3 +476,12 @@
+@@ -327,3 +478,12 @@
    #     name: extra-manifest
    #   data:
    #     extra-data: "value"
