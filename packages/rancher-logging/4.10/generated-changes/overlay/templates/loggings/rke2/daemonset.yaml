@@ -47,9 +47,7 @@ spec:
       {{- with .Values.dnsConfig }}
       dnsConfig:  {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.tolerations }}
-      tolerations: {{- toYaml . | nindent 8 }}
-      {{- end }}
+      tolerations: {{ include "customTolerations" . | nindent 8 }}
       {{- with .Values.nodeSelector }}
       nodeSelector: {{- toYaml . | nindent 8 }}
       {{- end }}
