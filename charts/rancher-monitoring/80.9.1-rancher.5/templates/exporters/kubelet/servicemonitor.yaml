@@ -1,0 +1,223 @@
+{{- if (and (not .Values.kubelet.enabled) .Values.hardenedKubelet.enabled) }}
+{{ required "Cannot set .Values.hardenedKubelet.enabled=true when .Values.kubelet.enabled=false" "" }}
+{{- end }}
+{{- if (and .Values.kubelet.enabled .Values.kubelet.serviceMonitor.enabled .Values.kubernetesServiceMonitors.enabled (not .Values.hardenedKubelet.enabled) (not .Values.k3sServer.enabled)) }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "kube-prometheus-stack.fullname" . }}-kubelet
+  {{- if .Values.prometheus.prometheusSpec.ignoreNamespaceSelectors }}
+  namespace: {{ .Values.kubelet.namespace }}
+  {{- else }}
+  namespace: {{ template "kube-prometheus-stack.namespace" . }}
+  {{- end }}
+  labels:
+    app: {{ template "kube-prometheus-stack.name" . }}-kubelet
+  {{- with .Values.kubelet.serviceMonitor.additionalLabels }}
+{{- tpl (toYaml .) $ | nindent 4 }}
+  {{- end }}
+{{- include "kube-prometheus-stack.labels" . | indent 4 }}
+spec:
+  {{- include "servicemonitor.scrapeLimits" .Values.kubelet.serviceMonitor | nindent 2 }}
+  {{- with .Values.kubelet.serviceMonitor.attachMetadata }}
+  attachMetadata:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  jobLabel: k8s-app
+  {{- with .Values.kubelet.serviceMonitor.targetLabels }}
+  targetLabels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  namespaceSelector:
+    matchNames:
+    - {{ .Values.kubelet.namespace }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kubelet
+      k8s-app: kubelet
+
+  {{- /* Global Check for Rancher Cluster Labels */ -}}
+  {{- $hasExtra := or .Values.global.cattle.clusterId .Values.global.cattle.clusterName -}}
+
+  endpoints:
+{{- if .Values.kubelet.serviceMonitor.kubelet }}
+  - port: {{ template "kube-prometheus-stack.kubelet.scheme" . }}-metrics
+    scheme: {{ template "kube-prometheus-stack.kubelet.scheme" . }}
+    {{- if .Values.kubelet.serviceMonitor.interval }}
+    interval: {{ .Values.kubelet.serviceMonitor.interval }}
+    {{- end }}
+    {{- if .Values.kubelet.serviceMonitor.proxyUrl }}
+    proxyUrl: {{ .Values.kubelet.serviceMonitor.proxyUrl }}
+    {{- end }}
+    {{- if .Values.kubelet.serviceMonitor.scrapeTimeout }}
+    scrapeTimeout: {{ .Values.kubelet.serviceMonitor.scrapeTimeout }}
+    {{- end }}
+    {{- include "kube-prometheus-stack.kubelet.authConfig" . | indent 4 }}
+    honorLabels: {{ .Values.kubelet.serviceMonitor.honorLabels }}
+    honorTimestamps: {{ .Values.kubelet.serviceMonitor.honorTimestamps }}
+    
+    {{- /* Endpoint 1: Kubelet Core Metrics */ -}}
+    {{- $userMRk := (.Values.kubelet.serviceMonitor.metricRelabelings | default (list)) -}}
+    {{- $hasUserMRk := gt (len $userMRk) 0 -}}
+    {{- if or $hasUserMRk $hasExtra }}
+    metricRelabelings:
+      {{- if $hasUserMRk }}
+{{- tpl (toYaml $userMRk) $ | nindent 6 }}
+      {{- end }}
+      {{- if .Values.global.cattle.clusterId }}
+      - sourceLabels: [__address__]
+        targetLabel: cluster_id
+        replacement: {{ .Values.global.cattle.clusterId | quote }}
+      {{- end }}
+      {{- if .Values.global.cattle.clusterName }}
+      - sourceLabels: [__address__]
+        targetLabel: cluster_name
+        replacement: {{ .Values.global.cattle.clusterName | quote }}
+      {{- end }}
+    {{- end }}
+    {{- with .Values.kubelet.serviceMonitor.relabelings }}
+    relabelings:
+{{- tpl (toYaml .) $ | nindent 6 }}
+    {{- end }}
+{{- end }}
+
+{{- if .Values.kubelet.serviceMonitor.cAdvisor }}
+  - port: {{ template "kube-prometheus-stack.kubelet.scheme" . }}-metrics
+    scheme: {{ template "kube-prometheus-stack.kubelet.scheme" . }}
+    path: /metrics/cadvisor
+    {{- if .Values.kubelet.serviceMonitor.interval }}
+    interval: {{ .Values.kubelet.serviceMonitor.interval }}
+    {{- else }}
+    interval: {{ .Values.kubelet.serviceMonitor.cAdvisorInterval }}
+    {{- end }}
+    {{- if .Values.kubelet.serviceMonitor.proxyUrl }}
+    proxyUrl: {{ .Values.kubelet.serviceMonitor.proxyUrl }}
+    {{- end }}
+    {{- if .Values.kubelet.serviceMonitor.scrapeTimeout }}
+    scrapeTimeout: {{ .Values.kubelet.serviceMonitor.scrapeTimeout }}
+    {{- end }}
+    honorLabels: {{ .Values.kubelet.serviceMonitor.honorLabels }}
+    {{- if .Values.kubelet.serviceMonitor.trackTimestampsStaleness }}
+    honorTimestamps: true
+    {{- else }}
+    honorTimestamps: {{ .Values.kubelet.serviceMonitor.honorTimestamps }}
+    {{- end }}
+    trackTimestampsStaleness: {{ .Values.kubelet.serviceMonitor.trackTimestampsStaleness }}
+    {{- include "kube-prometheus-stack.kubelet.authConfig" . | indent 4 }}
+
+    {{- /* Endpoint 2: cAdvisor Metrics */ -}}
+    {{- $userMRc := (.Values.kubelet.serviceMonitor.cAdvisorMetricRelabelings | default (list)) -}}
+    {{- $hasUserMRc := gt (len $userMRc) 0 -}}
+    {{- if or $hasUserMRc $hasExtra }}
+    metricRelabelings:
+      {{- if $hasUserMRc }}
+{{- tpl (toYaml $userMRc) $ | nindent 6 }}
+      {{- end }}
+      {{- if .Values.global.cattle.clusterId }}
+      - sourceLabels: [__address__]
+        targetLabel: cluster_id
+        replacement: {{ .Values.global.cattle.clusterId | quote }}
+      {{- end }}
+      {{- if .Values.global.cattle.clusterName }}
+      - sourceLabels: [__address__]
+        targetLabel: cluster_name
+        replacement: {{ .Values.global.cattle.clusterName | quote }}
+      {{- end }}
+    {{- end }}
+    {{- with .Values.kubelet.serviceMonitor.cAdvisorRelabelings }}
+    relabelings:
+{{- tpl (toYaml .) $ | nindent 6 }}
+    {{- end }}
+{{- end }}
+
+{{- if .Values.kubelet.serviceMonitor.probes }}
+  - port: {{ template "kube-prometheus-stack.kubelet.scheme" . }}-metrics
+    scheme: {{ template "kube-prometheus-stack.kubelet.scheme" . }}
+    path: /metrics/probes
+    {{- if .Values.kubelet.serviceMonitor.interval }}
+    interval: {{ .Values.kubelet.serviceMonitor.interval }}
+    {{- end }}
+    {{- if .Values.kubelet.serviceMonitor.proxyUrl }}
+    proxyUrl: {{ .Values.kubelet.serviceMonitor.proxyUrl }}
+    {{- end }}
+    {{- if .Values.kubelet.serviceMonitor.scrapeTimeout }}
+    scrapeTimeout: {{ .Values.kubelet.serviceMonitor.scrapeTimeout }}
+    {{- end }}
+    honorLabels: {{ .Values.kubelet.serviceMonitor.honorLabels }}
+    honorTimestamps: {{ .Values.kubelet.serviceMonitor.honorTimestamps }}
+    {{- include "kube-prometheus-stack.kubelet.authConfig" . | indent 4 }}
+
+    {{- /* Endpoint 3: Probes Metrics */ -}}
+    {{- $userMRp := (.Values.kubelet.serviceMonitor.probesMetricRelabelings | default (list)) -}}
+    {{- $hasUserMRp := gt (len $userMRp) 0 -}}
+    {{- if or $hasUserMRp $hasExtra }}
+    metricRelabelings:
+      {{- if $hasUserMRp }}
+{{- tpl (toYaml $userMRp) $ | nindent 6 }}
+      {{- end }}
+      {{- if .Values.global.cattle.clusterId }}
+      - sourceLabels: [__address__]
+        targetLabel: cluster_id
+        replacement: {{ .Values.global.cattle.clusterId | quote }}
+      {{- end }}
+      {{- if .Values.global.cattle.clusterName }}
+      - sourceLabels: [__address__]
+        targetLabel: cluster_name
+        replacement: {{ .Values.global.cattle.clusterName | quote }}
+      {{- end }}
+    {{- end }}
+    {{- with .Values.kubelet.serviceMonitor.probesRelabelings }}
+    relabelings:
+{{- tpl (toYaml .) $ | nindent 6 }}
+    {{- end }}
+{{- end }}
+
+{{- if .Values.kubelet.serviceMonitor.resource }}
+  - port: {{ template "kube-prometheus-stack.kubelet.scheme" . }}-metrics
+    scheme: {{ template "kube-prometheus-stack.kubelet.scheme" . }}
+    path: {{ .Values.kubelet.serviceMonitor.resourcePath }}
+    {{- if .Values.kubelet.serviceMonitor.interval }}
+    interval: {{ .Values.kubelet.serviceMonitor.interval }}
+    {{- else }}
+    interval: {{ .Values.kubelet.serviceMonitor.resourceInterval }}
+    {{- end }}
+    {{- if .Values.kubelet.serviceMonitor.proxyUrl }}
+    proxyUrl: {{ .Values.kubelet.serviceMonitor.proxyUrl }}
+    {{- end }}
+    {{- if .Values.kubelet.serviceMonitor.scrapeTimeout }}
+    scrapeTimeout: {{ .Values.kubelet.serviceMonitor.scrapeTimeout }}
+    {{- end }}
+    honorLabels: {{ .Values.kubelet.serviceMonitor.honorLabels }}
+    {{- if .Values.kubelet.serviceMonitor.trackTimestampsStaleness }}
+    honorTimestamps: true
+    {{- else }}
+    honorTimestamps: {{ .Values.kubelet.serviceMonitor.honorTimestamps }}
+    {{- end }}
+    trackTimestampsStaleness: {{ .Values.kubelet.serviceMonitor.trackTimestampsStaleness }}
+    {{- include "kube-prometheus-stack.kubelet.authConfig" .  | indent 4 }}
+
+    {{- /* Endpoint 4: Resource Metrics */ -}}
+    {{- $userMRr := (.Values.kubelet.serviceMonitor.resourceMetricRelabelings | default (list)) -}}
+    {{- $hasUserMRr := gt (len $userMRr) 0 -}}
+    {{- if or $hasUserMRr $hasExtra }}
+    metricRelabelings:
+      {{- if $hasUserMRr }}
+{{- tpl (toYaml $userMRr) $ | nindent 6 }}
+      {{- end }}
+      {{- if .Values.global.cattle.clusterId }}
+      - sourceLabels: [__address__]
+        targetLabel: cluster_id
+        replacement: {{ .Values.global.cattle.clusterId | quote }}
+      {{- end }}
+      {{- if .Values.global.cattle.clusterName }}
+      - sourceLabels: [__address__]
+        targetLabel: cluster_name
+        replacement: {{ .Values.global.cattle.clusterName | quote }}
+      {{- end }}
+    {{- end }}
+    {{- with .Values.kubelet.serviceMonitor.resourceRelabelings }}
+    relabelings:
+{{- tpl (toYaml .) $ | nindent 6 }}
+    {{- end }}
+{{- end }}
+{{- end }}

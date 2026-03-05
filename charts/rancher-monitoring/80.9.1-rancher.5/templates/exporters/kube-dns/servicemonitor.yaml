@@ -1,0 +1,102 @@
+{{- if and .Values.kubeDns.enabled .Values.kubernetesServiceMonitors.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "kube-prometheus-stack.fullname" . }}-kube-dns
+  {{- if .Values.prometheus.prometheusSpec.ignoreNamespaceSelectors }}
+  namespace: kube-system
+  {{- else }}
+  namespace: {{ template "kube-prometheus-stack.namespace" . }}
+  {{- end }}
+  labels:
+    app: {{ template "kube-prometheus-stack.name" . }}-kube-dns
+  {{- with .Values.kubeDns.serviceMonitor.additionalLabels }}
+    {{- tpl (toYaml .) $ | nindent 4 }}
+  {{- end }}
+{{ include "kube-prometheus-stack.labels" . | indent 4 }}
+spec:
+  jobLabel: {{ .Values.kubeDns.serviceMonitor.jobLabel }}
+  {{- with .Values.kubeDns.serviceMonitor.targetLabels }}
+  targetLabels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- include "servicemonitor.scrapeLimits" .Values.kubeDns.serviceMonitor | nindent 2 }}
+  selector:
+    {{- if .Values.kubeDns.serviceMonitor.selector }}
+{{- tpl (toYaml .Values.kubeDns.serviceMonitor.selector) $ | nindent 4 }}
+    {{- else }}
+    matchLabels:
+      app: {{ template "kube-prometheus-stack.name" . }}-kube-dns
+      release: {{ $.Release.Name | quote }}
+    {{- end }}
+  namespaceSelector:
+    matchNames:
+      - "kube-system"
+
+  {{- /* Global Check for Rancher Cluster Labels */ -}}
+  {{- $hasExtra := or .Values.global.cattle.clusterId .Values.global.cattle.clusterName -}}
+
+  endpoints:
+  - port: http-metrics-dnsmasq
+    {{- if .Values.kubeDns.serviceMonitor.interval }}
+    interval: {{ .Values.kubeDns.serviceMonitor.interval }}
+    {{- end }}
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    {{- if .Values.kubeDns.serviceMonitor.proxyUrl }}
+    proxyUrl: {{ .Values.kubeDns.serviceMonitor.proxyUrl}}
+    {{- end }}
+    
+    {{- /* Endpoint 1: Dnsmasq Metrics */ -}}
+    {{- $userMRDnsmasq := (.Values.kubeDns.serviceMonitor.dnsmasqMetricRelabelings | default (list)) -}}
+    {{- $hasUserMRDnsmasq := gt (len $userMRDnsmasq) 0 -}}
+    {{- if or $hasUserMRDnsmasq $hasExtra }}
+    metricRelabelings:
+      {{- if $hasUserMRDnsmasq }}
+{{- tpl (toYaml $userMRDnsmasq) $ | nindent 6 }}
+      {{- end }}
+      {{- if .Values.global.cattle.clusterId }}
+      - sourceLabels: [__address__]
+        targetLabel: cluster_id
+        replacement: {{ .Values.global.cattle.clusterId | quote }}
+      {{- end }}
+      {{- if .Values.global.cattle.clusterName }}
+      - sourceLabels: [__address__]
+        targetLabel: cluster_name
+        replacement: {{ .Values.global.cattle.clusterName | quote }}
+      {{- end }}
+    {{- end }}
+    {{- with .Values.kubeDns.serviceMonitor.dnsmasqRelabelings }}
+    relabelings:
+{{- tpl (toYaml .) $ | nindent 6 }}
+    {{- end }}
+
+  - port: http-metrics-skydns
+    {{- if .Values.kubeDns.serviceMonitor.interval }}
+    interval: {{ .Values.kubeDns.serviceMonitor.interval }}
+    {{- end }}
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    
+    {{- /* Endpoint 2: Skydns Metrics */ -}}
+    {{- $userMRSkydns := (.Values.kubeDns.serviceMonitor.metricRelabelings | default (list)) -}}
+    {{- $hasUserMRSkydns := gt (len $userMRSkydns) 0 -}}
+    {{- if or $hasUserMRSkydns $hasExtra }}
+    metricRelabelings:
+      {{- if $hasUserMRSkydns }}
+{{- tpl (toYaml $userMRSkydns) $ | nindent 6 }}
+      {{- end }}
+      {{- if .Values.global.cattle.clusterId }}
+      - sourceLabels: [__address__]
+        targetLabel: cluster_id
+        replacement: {{ .Values.global.cattle.clusterId | quote }}
+      {{- end }}
+      {{- if .Values.global.cattle.clusterName }}
+      - sourceLabels: [__address__]
+        targetLabel: cluster_name
+        replacement: {{ .Values.global.cattle.clusterName | quote }}
+      {{- end }}
+    {{- end }}
+    {{- with .Values.kubeDns.serviceMonitor.relabelings }}
+    relabelings:
+{{- tpl (toYaml .) $ | nindent 6 }}
+    {{- end }}
+{{- end }}

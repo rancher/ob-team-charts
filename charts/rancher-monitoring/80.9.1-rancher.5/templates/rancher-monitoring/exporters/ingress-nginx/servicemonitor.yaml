@@ -1,0 +1,65 @@
+{{- if and (not .Values.ingressNginx.enabled) (.Values.rkeIngressNginx.enabled) }}
+{{- fail "Cannot set .Values.rkeIngressNginx.enabled=true when .Values.ingressNginx.enabled=false" }}
+{{- end }}
+{{- if and .Values.ingressNginx.enabled (not .Values.rkeIngressNginx.enabled) }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "kube-prometheus-stack.fullname" . }}-ingress-nginx
+  namespace: {{ .Values.ingressNginx.namespace }}
+  labels:
+    app: {{ template "kube-prometheus-stack.name" . }}-ingress-nginx
+{{ include "kube-prometheus-stack.labels" . | indent 4 }}
+  {{- with .Values.ingressNginx.serviceMonitor.additionalLabels }}
+{{- tpl (toYaml .) $ | nindent 4 }}
+  {{- end }}
+spec:
+  jobLabel: jobLabel
+  {{- include "servicemonitor.scrapeLimits" .Values.ingressNginx.serviceMonitor | nindent 2 }}
+  selector:
+    matchLabels:
+      app: {{ template "kube-prometheus-stack.name" . }}-ingress-nginx
+      release: {{ $.Release.Name | quote }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Values.ingressNginx.namespace }}
+  
+  {{- /* Global Check for Rancher Cluster Labels */ -}}
+  {{- $hasExtra := or .Values.global.cattle.clusterId .Values.global.cattle.clusterName -}}
+
+  endpoints:
+  - port: http-metrics
+    {{- if .Values.ingressNginx.serviceMonitor.interval}}
+    interval: {{ .Values.ingressNginx.serviceMonitor.interval }}
+    {{- end }}
+    {{- if .Values.ingressNginx.serviceMonitor.proxyUrl }}
+    proxyUrl: {{ .Values.ingressNginx.serviceMonitor.proxyUrl}}
+    {{- end }}
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+
+    {{- /* Standard Defensive Pattern for MetricRelabelings */ -}}
+    {{- $userMR := (.Values.ingressNginx.serviceMonitor.metricRelabelings | default (list)) -}}
+    {{- $hasUserMR := gt (len $userMR) 0 -}}
+    {{- if or $hasUserMR $hasExtra }}
+    metricRelabelings:
+      {{- if $hasUserMR }}
+{{- tpl (toYaml $userMR) $ | nindent 6 }}
+      {{- end }}
+      {{- if .Values.global.cattle.clusterId }}
+      - sourceLabels: [__address__]
+        targetLabel: cluster_id
+        replacement: {{ .Values.global.cattle.clusterId | quote }}
+      {{- end }}
+      {{- if .Values.global.cattle.clusterName }}
+      - sourceLabels: [__address__]
+        targetLabel: cluster_name
+        replacement: {{ .Values.global.cattle.clusterName | quote }}
+      {{- end }}
+    {{- end }}
+
+    {{- /* Hardened Relabelings with with/tpl/nindent 6 */ -}}
+    {{- with .Values.ingressNginx.serviceMonitor.relabelings }}
+    relabelings:
+{{- tpl (toYaml .) $ | nindent 6 }}
+    {{- end }}
+{{- end }}
