@@ -191,7 +191,7 @@ jobs:
             # --- 1.5. Clean and prepare chart dependencies ---
             echo "- 🧹 Cleaning and preparing chart dependencies..." >> $GITHUB_STEP_SUMMARY
             while IFS=, read -r chart_full_version PACKAGE_PATH; do
-              rm -rf "packages/$PACKAGE_PATH/charts"
+              rm -rf "packages/$PACKAGE_PATH/generated-changes/dependencies"
               make prepare PACKAGE="$PACKAGE_PATH"
               make clean
               echo "  - Prepared dependencies for \`$PACKAGE_PATH\`" >> $GITHUB_STEP_SUMMARY
