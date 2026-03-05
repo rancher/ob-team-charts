@@ -1,53 +1,92 @@
+{{- $hasExtra := or .Values.global.cattle.clusterId .Values.global.cattle.clusterName -}}
 {{- if and .Values.rancherMonitoring.enabled (eq .Values.global.cattle.clusterId "local") -}}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  labels: {{ include "kube-prometheus-stack.labels" . | nindent 4 }}
   name: monitoring-fleet-controller
   namespace: cattle-fleet-system
+  labels:
+    {{- include "kube-prometheus-stack.labels" . | nindent 4 }}
+  {{- with .Values.fleet.serviceMonitor.additionalLabels }}
+{{- tpl (toYaml .) $ | nindent 4 }}
+  {{- end }}
 spec:
-  endpoints:
-  - port: metrics
-    metricRelabelings:
-    {{ if .Values.global.cattle.clusterId }}
-      - sourceLabels: [__address__]
-        targetLabel: cluster_id
-        replacement: {{ .Values.global.cattle.clusterId }}
-    {{- end }}
-    {{ if .Values.global.cattle.clusterName}}
-      - sourceLabels: [__address__]
-        targetLabel: cluster_name
-        replacement: {{ .Values.global.cattle.clusterName }}
-    {{- end }}
   jobLabel: fleet
+  {{- include "servicemonitor.scrapeLimits" .Values.fleet.serviceMonitor | nindent 2 }}
+  namespaceSelector:
+    matchNames:
+      - cattle-fleet-system
   selector:
     matchLabels:
       app: fleet-controller
-{{- end }}
+  endpoints:
+  - port: metrics
+    {{- /* Defensive Pattern for Fleet Metrics */ -}}
+    {{- $userMR := (.Values.fleet.serviceMonitor.metricRelabelings | default (list)) -}}
+    {{- $hasUserMR := gt (len $userMR) 0 -}}
+    {{- if or $hasUserMR $hasExtra }}
+    metricRelabelings:
+      {{- if $hasUserMR }}
+{{- tpl (toYaml $userMR) $ | nindent 6 }}
+      {{- end }}
+      {{- if .Values.global.cattle.clusterId }}
+      - sourceLabels: [__address__]
+        targetLabel: cluster_id
+        replacement: {{ .Values.global.cattle.clusterId | quote }}
+      {{- end }}
+      {{- if .Values.global.cattle.clusterName }}
+      - sourceLabels: [__address__]
+        targetLabel: cluster_name
+        replacement: {{ .Values.global.cattle.clusterName | quote }}
+      {{- end }}
+    {{- end }}
+    {{- with .Values.fleet.serviceMonitor.relabelings }}
+    relabelings:
+{{- tpl (toYaml .) $ | nindent 6 }}
+    {{- end }}
 ---
-{{- if and .Values.rancherMonitoring.enabled (eq .Values.global.cattle.clusterId "local") -}}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  labels: {{ include "kube-prometheus-stack.labels" . | nindent 4 }}
   name: monitoring-gitops-controller
   namespace: cattle-fleet-system
+  labels:
+    {{- include "kube-prometheus-stack.labels" . | nindent 4 }}
+  {{- with .Values.gitops.serviceMonitor.additionalLabels }}
+{{- tpl (toYaml .) $ | nindent 4 }}
+  {{- end }}
 spec:
-  endpoints:
-  - port: metrics
-    metricRelabelings:
-    {{ if .Values.global.cattle.clusterId }}
-      - sourceLabels: [__address__]
-        targetLabel: cluster_id
-        replacement: {{ .Values.global.cattle.clusterId }}
-    {{- end }}
-    {{ if .Values.global.cattle.clusterName}}
-      - sourceLabels: [__address__]
-        targetLabel: cluster_name
-        replacement: {{ .Values.global.cattle.clusterName }}
-    {{- end }}
   jobLabel: gitops
+  {{- include "servicemonitor.scrapeLimits" .Values.gitops.serviceMonitor | nindent 2 }}
+  namespaceSelector:
+    matchNames:
+      - cattle-fleet-system
   selector:
     matchLabels:
       app: gitjob
+  endpoints:
+  - port: metrics
+    {{- /* Defensive Pattern for GitOps Metrics */ -}}
+    {{- $userMRg := (.Values.gitops.serviceMonitor.metricRelabelings | default (list)) -}}
+    {{- $hasUserMRg := gt (len $userMRg) 0 -}}
+    {{- if or $hasUserMRg $hasExtra }}
+    metricRelabelings:
+      {{- if $hasUserMRg }}
+{{- tpl (toYaml $userMRg) $ | nindent 6 }}
+      {{- end }}
+      {{- if .Values.global.cattle.clusterId }}
+      - sourceLabels: [__address__]
+        targetLabel: cluster_id
+        replacement: {{ .Values.global.cattle.clusterId | quote }}
+      {{- end }}
+      {{- if .Values.global.cattle.clusterName }}
+      - sourceLabels: [__address__]
+        targetLabel: cluster_name
+        replacement: {{ .Values.global.cattle.clusterName | quote }}
+      {{- end }}
+    {{- end }}
+    {{- with .Values.gitops.serviceMonitor.relabelings }}
+    relabelings:
+{{- tpl (toYaml .) $ | nindent 6 }}
+    {{- end }}
 {{- end }}

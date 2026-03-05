@@ -1,35 +1,71 @@
+{{- $hasExtra := or .Values.global.cattle.clusterId .Values.global.cattle.clusterName -}}
 {{- $selector := (include "rancher.serviceMonitor.selector" .) -}}
 {{- if and .Values.rancherMonitoring.enabled $selector }}
+{{- /* Initialize safe ServiceMonitor scope */ -}}
+{{- $sm := .Values.rancherMonitoring.serviceMonitor | default dict -}}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  labels: {{ include "kube-prometheus-stack.labels" . | nindent 4 }}
   name: rancher
   namespace: cattle-system
+  labels:
+    {{- include "kube-prometheus-stack.labels" . | nindent 4 }}
+  {{- with $sm.additionalLabels }}
+{{- tpl (toYaml .) $ | nindent 4 }}
+  {{- end }}
 spec:
+  jobLabel: rancher
+  
+  {{- /* Direct, safe access via initialized $sm */ -}}
+  {{- include "servicemonitor.scrapeLimits" $sm | nindent 2 }}
+  
+  {{- if .Values.rancherMonitoring.namespaceSelector }}
+  namespaceSelector:
+{{- toYaml .Values.rancherMonitoring.namespaceSelector | nindent 4 }}
+  {{- end }}
+
+  selector:
+{{- $selector | nindent 4 }}
+
   endpoints:
-  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
-    port: http
+  - port: http
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    {{- if $sm.interval }}
+    interval: {{ $sm.interval }}
+    {{- end }}
+    {{- if $sm.proxyUrl }}
+    proxyUrl: {{ $sm.proxyUrl }}
+    {{- end }}
     tlsConfig:
       caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
       insecureSkipVerify: true
       serverName: rancher
+
+    {{- /* Standard Defensive Pattern for Rancher Metrics */ -}}
+    {{- $userMR := ($sm.metricRelabelings | default (list)) -}}
+    {{- $hasUserMR := gt (len $userMR) 0 -}}
+    {{- if or $hasUserMR $hasExtra }}
     metricRelabelings:
-    {{ if .Values.global.cattle.clusterId }}
+      {{- if $hasUserMR }}
+{{- tpl (toYaml $userMR) $ | nindent 6 }}
+      {{- end }}
+      {{- if .Values.global.cattle.clusterId }}
       - sourceLabels: [__address__]
         targetLabel: cluster_id
-        replacement: {{ .Values.global.cattle.clusterId }}
-    {{- end }}
-    {{ if .Values.global.cattle.clusterName}}
+        replacement: {{ .Values.global.cattle.clusterId | quote }}
+      {{- end }}
+      {{- if .Values.global.cattle.clusterName }}
       - sourceLabels: [__address__]
         targetLabel: cluster_name
-        replacement: {{ .Values.global.cattle.clusterName }}
+        replacement: {{ .Values.global.cattle.clusterName | quote }}
+      {{- end }}
     {{- end }}
-  jobLabel: rancher
-{{- if .Values.rancherMonitoring.namespaceSelector }}
-  namespaceSelector: {{ .Values.rancherMonitoring.namespaceSelector | toYaml | nindent 4 }}
-{{- end }}
-  selector: {{ include "rancher.serviceMonitor.selector" . | nindent 4 }}
+
+    {{- /* Hardened Relabelings Block */ -}}
+    {{- with $sm.relabelings }}
+    relabelings:
+{{- tpl (toYaml .) $ | nindent 6 }}
+    {{- end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
