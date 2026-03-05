@@ -207,12 +207,43 @@ jobs:
               make charts PACKAGE="$PACKAGE_PATH"
               echo "  - Generated assets for \`$PACKAGE_PATH\`" >> $GITHUB_STEP_SUMMARY
             done < "$branch_file"
+
+            # --- 3. Update kuberlr-kubectl version ---
+            echo "- 🔧 Updating kuberlr-kubectl version..." >> $GITHUB_STEP_SUMMARY
+            KUBERLR_BRANCH=$(yq e ".\"kuberlr-kubectl\".\"${TARGET_BRANCH}\"" "${GITHUB_WORKSPACE}/charts-config.yaml")
+            if [ "$KUBERLR_BRANCH" != "null" ] && [ -n "$KUBERLR_BRANCH" ]; then
+              KUBERLR_TAG=$(gh api "repos/rancher/kuberlr-kubectl/releases?per_page=100" --jq "[.[] | select(.target_commitish == \"${KUBERLR_BRANCH}\")] | sort_by(.created_at) | last | .tag_name" 2>/dev/null || echo "")
+              if [ -n "$KUBERLR_TAG" ] && [ "$KUBERLR_TAG" != "null" ]; then
+                echo "  - Found latest kuberlr-kubectl tag for \`$KUBERLR_BRANCH\`: \`$KUBERLR_TAG\`" >> $GITHUB_STEP_SUMMARY
+                while IFS=, read -r chart_full_version PACKAGE_PATH; do
+                  find "packages/$PACKAGE_PATH/charts" -name "values.yaml" | while read -r yaml_file; do
+                    if grep -q "rancher/kuberlr-kubectl" "$yaml_file"; then
+                      yq e -i '(.. | select(type == "!!map" and .repository == "rancher/kuberlr-kubectl") | .tag) = "'"${KUBERLR_TAG}"'"' "$yaml_file"
+                      echo "  - Updated kuberlr-kubectl tag in \`$yaml_file\`" >> $GITHUB_STEP_SUMMARY
+                    fi
+                  done
+                  make patch PACKAGE="$PACKAGE_PATH"
+                  echo "  - Regenerated patches for \`$PACKAGE_PATH\`" >> $GITHUB_STEP_SUMMARY
+                done < "$branch_file"
+              else
+                echo "  - ⚠️ No release found for kuberlr-kubectl branch \`$KUBERLR_BRANCH\`. Skipping." >> $GITHUB_STEP_SUMMARY
+              fi
+            else
+              echo "  - ⚠️ No kuberlr-kubectl branch configured for \`$TARGET_BRANCH\`. Skipping." >> $GITHUB_STEP_SUMMARY
+            fi
             if ! git diff --quiet --exit-code; then
-              git add . && git commit -m "feat(charts): Generate new chart assets"
-              echo "  - ✅ Committed chart assets" >> $GITHUB_STEP_SUMMARY
+              git add . && git commit -m "feat(charts): Update chart patches"
+              echo "  - ✅ Committed updated chart patches" >> $GITHUB_STEP_SUMMARY
             fi
 
-            # --- 3. Update release.yaml ---
+            # --- 3.5. Generate chart assets ---
+            echo "- 🔨 Generating chart assets..." >> $GITHUB_STEP_SUMMARY
+            while IFS=, read -r chart_full_version PACKAGE_PATH; do
+              make charts PACKAGE="$PACKAGE_PATH"
+              echo "  - Generated assets for \`$PACKAGE_PATH\`" >> $GITHUB_STEP_SUMMARY
+            done < "$branch_file"
+
+            # --- 4. Update release.yaml ---
             echo "- 📋 Updating release.yaml..." >> $GITHUB_STEP_SUMMARY
             while IFS=, read -r chart_full_version PACKAGE_PATH; do
               CHART_NAME=$(echo $chart_full_version | cut -d'/' -f1)
