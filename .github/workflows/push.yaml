@@ -153,6 +153,7 @@ jobs:
             git checkout -B "$TARGET_BRANCH" "origin/$TARGET_BRANCH"
             BRANCH_NAME="bot/update-charts-for-$TARGET_BRANCH-$(date +%s)"
             git checkout -b "$BRANCH_NAME"
+            CHART_NAMES=$(cut -d',' -f1 "$branch_file" | cut -d'/' -f1 | sort -u | tr '\n' ',' | sed 's/,$//' | sed 's/,/, /g')
 
             # --- 1. Update package.yaml files ---
             echo "- 📝 Updating package.yaml files..." >> $GITHUB_STEP_SUMMARY
@@ -181,14 +182,14 @@ jobs:
               fi
             done < "$branch_file"
             if ! git diff --quiet --exit-code; then
-              git add . && git commit -m "chore(charts): Update package.yaml"
+              git add . && git commit -m "chore(charts): Update \`${CHART_NAMES}\` package.yaml"
               echo "  - ✅ Committed package.yaml changes" >> $GITHUB_STEP_SUMMARY
             else
               echo "  - ⚠️ No package.yaml changes for $TARGET_BRANCH." >> $GITHUB_STEP_SUMMARY
               continue
             fi
 
-            # --- 1.5. Clean and prepare chart dependencies ---
+            # --- 2. Clean and prepare chart dependencies ---
             echo "- 🧹 Cleaning and preparing chart dependencies..." >> $GITHUB_STEP_SUMMARY
             while IFS=, read -r chart_full_version PACKAGE_PATH; do
               rm -rf "packages/$PACKAGE_PATH/generated-changes/dependencies"
@@ -201,18 +202,31 @@ jobs:
               echo "  - ✅ Committed refreshed dependencies" >> $GITHUB_STEP_SUMMARY
             fi
 
-            # --- 2. Generate chart assets ---
+            # --- 2.5. Update chart patches w/o changes ---
+            echo "- 🩹 Updating chart patches..." >> $GITHUB_STEP_SUMMARY
+            while IFS=, read -r chart_full_version PACKAGE_PATH; do
+              make prepare PACKAGE="$PACKAGE_PATH"
+              make patch PACKAGE="$PACKAGE_PATH"
+              make clean
+              echo "  - Prepared patches for \`$PACKAGE_PATH\`" >> $GITHUB_STEP_SUMMARY
+            done < "$branch_file"
+            if ! git diff --quiet --exit-code; then
+              git add . && git commit -m "chore(charts): Refresh chart patches"
+              echo "  - ✅ Committed refreshed chart patches" >> $GITHUB_STEP_SUMMARY
+            fi
+
+            # --- 3. Generate chart assets ---
             echo "- 🔨 Generating chart assets..." >> $GITHUB_STEP_SUMMARY
             while IFS=, read -r chart_full_version PACKAGE_PATH; do
               make charts PACKAGE="$PACKAGE_PATH"
               echo "  - Generated assets for \`$PACKAGE_PATH\`" >> $GITHUB_STEP_SUMMARY
             done < "$branch_file"
             if ! git diff --quiet --exit-code; then
-              git add . && git commit -m "chore(charts): Initial chart assets build"
+              git add . && git commit -m "chore(charts): Initial \`${CHART_NAMES}\` chart assets build"
               echo "  - ✅ Committed initial chart assets build" >> $GITHUB_STEP_SUMMARY
             fi
 
-            # --- 3. Update kuberlr-kubectl version ---
+            # --- 4. Update kuberlr-kubectl version ---
             echo "- 🔧 Updating kuberlr-kubectl version..." >> $GITHUB_STEP_SUMMARY
             KUBERLR_BRANCH=$(yq e ".\"kuberlr-kubectl\".\"${TARGET_BRANCH}\"" "${GITHUB_WORKSPACE}/charts-config.yaml")
             if [ "$KUBERLR_BRANCH" != "null" ] && [ -n "$KUBERLR_BRANCH" ]; then
@@ -221,13 +235,23 @@ jobs:
                 echo "  - Found latest kuberlr-kubectl tag for \`$KUBERLR_BRANCH\`: \`$KUBERLR_TAG\`" >> $GITHUB_STEP_SUMMARY
                 while IFS=, read -r chart_full_version PACKAGE_PATH; do
                   make prepare PACKAGE="$PACKAGE_PATH"
+                  # Update kuberlr-kubectl tag in values.yaml for charts
                   find "packages/$PACKAGE_PATH/charts" -name "values.yaml" | while read -r yaml_file; do
                     if grep -q "rancher/kuberlr-kubectl" "$yaml_file"; then
-                      yq e -i '(.. | select(type == "!!map" and .repository == "rancher/kuberlr-kubectl") | .tag) = "'"${KUBERLR_TAG}"'"' "$yaml_file"
-                      echo "  - Updated kuberlr-kubectl tag in \`$yaml_file\`" >> $GITHUB_STEP_SUMMARY
+                      yq -i '(.. | select(has("tag") and .repository == "rancher/kuberlr-kubectl")).tag = "'"${KUBERLR_TAG}"'"' "$yaml_file"
+                      echo "  - Updated kuberlr-kubectl tag to \`${KUBERLR_TAG}\` in \`$yaml_file\`" >> "$GITHUB_STEP_SUMMARY"
                     fi
                   done
+                  # Update kuberlr-kubectl tag in values.yaml for charts-crd
+                  find "packages/$PACKAGE_PATH/charts-crd" -name "values.yaml" | while read -r yaml_file; do
+                    if grep -q "rancher/kuberlr-kubectl" "$yaml_file"; then
+                      yq -i '(.. | select(has("tag") and .repository == "rancher/kuberlr-kubectl")).tag = "'"${KUBERLR_TAG}"'"' "$yaml_file"
+                      echo "  - Updated kuberlr-kubectl tag to \`${KUBERLR_TAG}\` in \`$yaml_file\`" >> "$GITHUB_STEP_SUMMARY"
+                    fi
+                  done
+                  echo "  - Regenerating patches for \`$PACKAGE_PATH\`" >> $GITHUB_STEP_SUMMARY
                   make patch PACKAGE="$PACKAGE_PATH"
+                  make clean
                   echo "  - Regenerated patches for \`$PACKAGE_PATH\`" >> $GITHUB_STEP_SUMMARY
                 done < "$branch_file"
               else
@@ -236,24 +260,23 @@ jobs:
             else
               echo "  - ⚠️ No kuberlr-kubectl branch configured for \`$TARGET_BRANCH\`. Skipping." >> $GITHUB_STEP_SUMMARY
             fi
-            make clean
             if ! git diff --quiet --exit-code; then
               git add . && git commit -m "feat(charts): Update patches for `kubrelr-kubectl` tags"
               echo "  - ✅ Committed updated chart patches" >> $GITHUB_STEP_SUMMARY
             fi
 
-            # --- 3.5. Generate chart assets ---
+            # --- 4.5. Generate chart assets ---
             echo "- 🔨 Generating chart assets..." >> $GITHUB_STEP_SUMMARY
             while IFS=, read -r chart_full_version PACKAGE_PATH; do
               make charts PACKAGE="$PACKAGE_PATH"
               echo "  - Generated assets for \`$PACKAGE_PATH\`" >> $GITHUB_STEP_SUMMARY
             done < "$branch_file"
             if ! git diff --quiet --exit-code; then
-              git add . && git commit -m "chore(charts): Initial chart assets build"
+              git add . && git commit -m "chore(charts): Final \`${CHART_NAMES}\` chart assets build"
               echo "  - ✅ Committed final chart assets" >> $GITHUB_STEP_SUMMARY
             fi
 
-            # --- 4. Update release.yaml ---
+            # --- 5. Update release.yaml ---
             echo "- 📋 Updating release.yaml..." >> $GITHUB_STEP_SUMMARY
             while IFS=, read -r chart_full_version PACKAGE_PATH; do
               CHART_NAME=$(echo $chart_full_version | cut -d'/' -f1)
@@ -276,7 +299,7 @@ jobs:
             # --- Push and create PR ---
             echo "- 🚀 Pushing changes and creating PR..." >> $GITHUB_STEP_SUMMARY
             git push origin "$BRANCH_NAME"
-            PR_TITLE="chore(charts): Update from upstream for $TARGET_BRANCH"
+            PR_TITLE="chore(charts): Update \`${CHART_NAMES}\` from upstream for $TARGET_BRANCH"
             PR_BODY="Automated PR to update charts from ${{ github.repository }} commit ${{ github.sha }}"
             PR_URL=$(gh pr create --title "$PR_TITLE" --body "$PR_BODY" --base "$TARGET_BRANCH" --head "$BRANCH_NAME" --repo rancher/charts)
             echo "  - ✅ Created PR: $PR_URL" >> $GITHUB_STEP_SUMMARY
