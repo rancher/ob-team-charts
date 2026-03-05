@@ -210,9 +210,11 @@ jobs:
               make clean
               echo "  - Prepared patches for \`$PACKAGE_PATH\`" >> $GITHUB_STEP_SUMMARY
             done < "$branch_file"
-            if ! git diff --quiet --exit-code; then
+            if [ -n "$(git status --porcelain)" ]; then
               git add . && git commit -m "chore(charts): Refresh chart patches"
               echo "  - ✅ Committed refreshed chart patches" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "  - ⚠️ No changes to existing patches." >> $GITHUB_STEP_SUMMARY
             fi
 
             # --- 3. Generate chart assets ---
@@ -252,6 +254,7 @@ jobs:
                   echo "  - Regenerating patches for \`$PACKAGE_PATH\`" >> $GITHUB_STEP_SUMMARY
                   make patch PACKAGE="$PACKAGE_PATH"
                   make clean
+                  git add .
                   echo "  - Regenerated patches for \`$PACKAGE_PATH\`" >> $GITHUB_STEP_SUMMARY
                 done < "$branch_file"
               else
@@ -260,9 +263,11 @@ jobs:
             else
               echo "  - ⚠️ No kuberlr-kubectl branch configured for \`$TARGET_BRANCH\`. Skipping." >> $GITHUB_STEP_SUMMARY
             fi
-            if ! git diff --quiet --exit-code; then
+            if [ -n "$(git status --porcelain)" ]; then
               git add . && git commit -m "feat(charts): Update patches for `kubrelr-kubectl` tags"
               echo "  - ✅ Committed updated chart patches" >> $GITHUB_STEP_SUMMARY
+           else
+              echo "  - ⚠️ No changes related to `kubrelr-kubectl` tag bumps." >> $GITHUB_STEP_SUMMARY
             fi
 
             # --- 4.5. Generate chart assets ---
