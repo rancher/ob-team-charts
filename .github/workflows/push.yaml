@@ -216,6 +216,7 @@ jobs:
               if [ -n "$KUBERLR_TAG" ] && [ "$KUBERLR_TAG" != "null" ]; then
                 echo "  - Found latest kuberlr-kubectl tag for \`$KUBERLR_BRANCH\`: \`$KUBERLR_TAG\`" >> $GITHUB_STEP_SUMMARY
                 while IFS=, read -r chart_full_version PACKAGE_PATH; do
+                  make prepare PACKAGE="$PACKAGE_PATH"
                   find "packages/$PACKAGE_PATH/charts" -name "values.yaml" | while read -r yaml_file; do
                     if grep -q "rancher/kuberlr-kubectl" "$yaml_file"; then
                       yq e -i '(.. | select(type == "!!map" and .repository == "rancher/kuberlr-kubectl") | .tag) = "'"${KUBERLR_TAG}"'"' "$yaml_file"
