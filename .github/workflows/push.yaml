@@ -207,6 +207,10 @@ jobs:
               make charts PACKAGE="$PACKAGE_PATH"
               echo "  - Generated assets for \`$PACKAGE_PATH\`" >> $GITHUB_STEP_SUMMARY
             done < "$branch_file"
+            if ! git diff --quiet --exit-code; then
+              git add . && git commit -m "chore(charts): Initial chart assets build"
+              echo "  - ✅ Committed initial chart assets build" >> $GITHUB_STEP_SUMMARY
+            fi
 
             # --- 3. Update kuberlr-kubectl version ---
             echo "- 🔧 Updating kuberlr-kubectl version..." >> $GITHUB_STEP_SUMMARY
@@ -232,8 +236,9 @@ jobs:
             else
               echo "  - ⚠️ No kuberlr-kubectl branch configured for \`$TARGET_BRANCH\`. Skipping." >> $GITHUB_STEP_SUMMARY
             fi
+            make clean
             if ! git diff --quiet --exit-code; then
-              git add . && git commit -m "feat(charts): Update chart patches"
+              git add . && git commit -m "feat(charts): Update patches for `kubrelr-kubectl` tags"
               echo "  - ✅ Committed updated chart patches" >> $GITHUB_STEP_SUMMARY
             fi
 
@@ -243,6 +248,10 @@ jobs:
               make charts PACKAGE="$PACKAGE_PATH"
               echo "  - Generated assets for \`$PACKAGE_PATH\`" >> $GITHUB_STEP_SUMMARY
             done < "$branch_file"
+            if ! git diff --quiet --exit-code; then
+              git add . && git commit -m "chore(charts): Initial chart assets build"
+              echo "  - ✅ Committed final chart assets" >> $GITHUB_STEP_SUMMARY
+            fi
 
             # --- 4. Update release.yaml ---
             echo "- 📋 Updating release.yaml..." >> $GITHUB_STEP_SUMMARY
