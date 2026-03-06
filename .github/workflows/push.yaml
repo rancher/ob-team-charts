@@ -90,4 +90,4 @@ jobs:
           SOURCE_REPO: ${{ github.repository }}
           OB_DIR: ${{ github.workspace }}
           CHARTS_DIR: ${{ github.workspace }}/charts-repo
-        run: bash "${{ github.workspace }}/.github/workflows/push/run-gha.sh"
+        run: ./.github/workflows/push/run-gha.sh
