@@ -7,10 +7,9 @@
 -{{- if .Values.kubeScheduler.serviceMonitor.metricRelabelings }}
      metricRelabelings:
 -{{ tpl (toYaml .Values.kubeScheduler.serviceMonitor.metricRelabelings | indent 4) . }}
--{{- end }}
-+    {{- if .Values.kubeScheduler.serviceMonitor.metricRelabelings }}
-+    {{ tpl (toYaml .Values.kubeScheduler.serviceMonitor.metricRelabelings | indent 4) . }}
-+    {{- end }}
++{{- if .Values.kubeScheduler.serviceMonitor.metricRelabelings }}
++{{ tpl (toYaml .Values.kubeScheduler.serviceMonitor.metricRelabelings | indent 6) . }}
+ {{- end }}
 +    {{ if .Values.global.cattle.clusterId }}
 +      - sourceLabels: [__address__]
 +        targetLabel: cluster_id
