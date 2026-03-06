@@ -27,3 +27,10 @@ packages:
       branches:
         - branch: "dev-v2.13"
           package: rancher-monitoring/rancher-monitoring
+
+kuberlr-kubectl:
+  dev-v2.10: release/v3.x
+  dev-v2.11: release/v4.x
+  dev-v2.12: release/v5.x
+  dev-v2.13: release/v6.x
+  dev-v2.14: main

@@ -32,6 +32,13 @@ jobs:
       - name: Mark git directory as safe
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
+      - name: Install yq and gh
+        run: |
+          ARCH=$(uname -m)
+          if [ "$ARCH" = "x86_64" ]; then SYSTEM_ARCH="amd64"; elif [ "$ARCH" = "aarch64" ]; then SYSTEM_ARCH="arm64"; else echo "Unsupported architecture: $ARCH"; exit 1; fi
+          curl -L "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${SYSTEM_ARCH}" -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
+          curl -L "https://github.com/cli/cli/releases/download/v2.82.0/gh_2.82.0_linux_${SYSTEM_ARCH}.tar.gz" -o gh.tar.gz && tar -zxvf gh.tar.gz && mv "gh_2.82.0_linux_${SYSTEM_ARCH}/bin/gh" /usr/local/bin/gh && rm -rf gh.tar.gz "gh_2.82.0_linux_${SYSTEM_ARCH}"
+
       - name: Detect new chart version
         id: detect_new_charts
         run: |
@@ -80,153 +87,7 @@ jobs:
           NEW_CHARTS: ${{ steps.detect_new_charts.outputs.new_charts }}
           GH_TOKEN: ${{ steps.generate_token.outputs.token }}
           COMMIT_SHA: ${{ github.sha }}
-        run: |
-          set -eux
-
-          if [ -z "$NEW_CHARTS" ]; then
-            echo "No new charts detected. Exiting."
-            exit 0
-          fi
-
-          # --- Dependency Installation ---
-          ARCH=$(uname -m)
-          if [ "$ARCH" = "x86_64" ]; then SYSTEM_ARCH="amd64"; elif [ "$ARCH" = "aarch64" ]; then SYSTEM_ARCH="arm64"; else echo "Unsupported architecture: $ARCH"; exit 1; fi
-          curl -L "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${SYSTEM_ARCH}" -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
-          curl -L "https://github.com/cli/cli/releases/download/v2.82.0/gh_2.82.0_linux_${SYSTEM_ARCH}.tar.gz" -o gh.tar.gz && tar -zxvf gh.tar.gz && mv "gh_2.82.0_linux_${SYSTEM_ARCH}/bin/gh" /usr/local/bin/gh && rm -rf gh.tar.gz "gh_2.82.0_linux_${SYSTEM_ARCH}"
-
-          # --- Download Freeze Manifest ---
-          curl -L "https://raw.githubusercontent.com/rancher/org/refs/heads/main/manifests/resources/RepositoryRuleset/rancher/code-freeze.yaml?token=${GH_TOKEN}" -o /tmp/code-freeze.yaml
-
-          # --- Group charts by target branch ---
-          rm -rf /tmp/branch_data && mkdir /tmp/branch_data
-          VALID_CHARTS_FOUND=false
-
-          for chart_full_version in $NEW_CHARTS; do
-            CHART_NAME=$(echo $chart_full_version | cut -d'/' -f1)
-            CHART_VERSION=$(echo $chart_full_version | cut -d'/' -f2)
-            UPSTREAM_VERSION=$(echo $CHART_VERSION | cut -d'.' -f1,2)
-
-            # Check if configuration exists for this chart
-            CONFIG_EXISTS=$(yq e ".packages.$CHART_NAME.\"$UPSTREAM_VERSION\".branches" "charts-config.yaml")
-            if [ "$CONFIG_EXISTS" = "null" ] || [ -z "$CONFIG_EXISTS" ]; then
-              echo "⚠️ No configuration found for $CHART_NAME version $UPSTREAM_VERSION in charts-config.yaml. Skipping." >> $GITHUB_STEP_SUMMARY
-              continue
-            fi
-
-            VALID_CHARTS_FOUND=true
-            yq e ".packages.$CHART_NAME.\"$UPSTREAM_VERSION\".branches" -o=json "charts-config.yaml" | jq -c '.[]' | while read -r branch_config; do
-              TARGET_BRANCH=$(echo "$branch_config" | jq -r '.branch')
-              PACKAGE_PATH=$(echo "$branch_config" | jq -r '.package')
-              echo "${chart_full_version},${PACKAGE_PATH}" >> "/tmp/branch_data/${TARGET_BRANCH}"
-            done
-          done
-
-          # Exit early if no valid charts were found
-          if [ "$VALID_CHARTS_FOUND" = "false" ]; then
-            echo "No charts with valid configuration found. Exiting." >> $GITHUB_STEP_SUMMARY
-            exit 0
-          fi
-
-          # --- Checkout downstream repo ---
-          git clone https://oauth2:${GH_TOKEN}@github.com/rancher/charts.git charts-repo
-          cd charts-repo
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          # --- Process each target branch ---
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "## Branch Processing" >> $GITHUB_STEP_SUMMARY
-          for branch_file in /tmp/branch_data/*; do
-            TARGET_BRANCH=$(basename "$branch_file")
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "### Processing branch: \`$TARGET_BRANCH\`" >> $GITHUB_STEP_SUMMARY
-
-            # --- Check if branch is frozen ---
-            MANIFEST_BRANCH_NAME=$(echo "$TARGET_BRANCH" | sed 's|dev-v|release/v|')
-            MANIFEST_REF="refs/heads/$MANIFEST_BRANCH_NAME"
-            IS_FROZEN=$(yq e ".spec.forProvider.conditions[].refName[].include[] | select(. == \"$MANIFEST_REF\")" /tmp/code-freeze.yaml)
-            if [ -n "$IS_FROZEN" ]; then
-              echo "- ⚠️ Branch \`$MANIFEST_BRANCH_NAME\` is frozen. Skipping." >> $GITHUB_STEP_SUMMARY
-              continue
-            fi
-
-            git checkout -B "$TARGET_BRANCH" "origin/$TARGET_BRANCH"
-            BRANCH_NAME="bot/update-charts-for-$TARGET_BRANCH-$(date +%s)"
-            git checkout -b "$BRANCH_NAME"
-
-            # --- 1. Update package.yaml files ---
-            echo "- 📝 Updating package.yaml files..." >> $GITHUB_STEP_SUMMARY
-            declare -A new_package_versions
-            while IFS=, read -r chart_full_version PACKAGE_PATH; do
-              CHART_NAME=$(echo $chart_full_version | cut -d'/' -f1)
-              CHART_VERSION=$(echo $chart_full_version | cut -d'/' -f2)
-              PACKAGE_YAML_PATH="packages/$PACKAGE_PATH/package.yaml"
-              if [ ! -f "$PACKAGE_YAML_PATH" ]; then echo "package.yaml not found at $PACKAGE_YAML_PATH"; continue; fi
-
-              yq e -i ".subdirectory = \"charts/$CHART_NAME/$CHART_VERSION\"" "$PACKAGE_YAML_PATH"
-              yq e -i ".commit = \"$COMMIT_SHA\"" "$PACKAGE_YAML_PATH"
-              CURRENT_VERSION=$(yq e '.version' "$PACKAGE_YAML_PATH")
-              if [[ "$CURRENT_VERSION" == *"-rc."* ]]; then
-                NEW_VERSION=$(echo $CURRENT_VERSION | awk -F- '{split($2, a, "."); print $1"-rc."a[2]+1}')
-              else
-                NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print $1"."$2"."$3+1"-rc.1"}')
-              fi
-              yq e -i ".version = \"$NEW_VERSION\"" "$PACKAGE_YAML_PATH"
-              new_package_versions[$chart_full_version]=$NEW_VERSION
-              echo "  - Updated \`$PACKAGE_PATH\` to version \`$NEW_VERSION\`" >> $GITHUB_STEP_SUMMARY
-              if yq e '.additionalCharts | has(0)' "$PACKAGE_YAML_PATH" &> /dev/null; then
-                  CRD_CHART_NAME="${CHART_NAME}-crd"
-                  yq e -i '.additionalCharts[0].upstreamOptions.subdirectory = "charts/'"$CRD_CHART_NAME"'/'"$CHART_VERSION"'"' "$PACKAGE_YAML_PATH"
-                  yq e -i '.additionalCharts[0].upstreamOptions.commit = "'"$COMMIT_SHA"'"' "$PACKAGE_YAML_PATH"
-              fi
-            done < "$branch_file"
-            if ! git diff --quiet --exit-code; then
-              git add . && git commit -m "chore(charts): Update package.yaml"
-              echo "  - ✅ Committed package.yaml changes" >> $GITHUB_STEP_SUMMARY
-            else
-              echo "  - ⚠️ No package.yaml changes for $TARGET_BRANCH." >> $GITHUB_STEP_SUMMARY
-              continue
-            fi
-
-            # --- 2. Generate chart assets ---
-            echo "- 🔨 Generating chart assets..." >> $GITHUB_STEP_SUMMARY
-            while IFS=, read -r chart_full_version PACKAGE_PATH; do
-              make charts PACKAGE="$PACKAGE_PATH"
-              echo "  - Generated assets for \`$PACKAGE_PATH\`" >> $GITHUB_STEP_SUMMARY
-            done < "$branch_file"
-            if ! git diff --quiet --exit-code; then
-              git add . && git commit -m "feat(charts): Generate new chart assets"
-              echo "  - ✅ Committed chart assets" >> $GITHUB_STEP_SUMMARY
-            fi
-
-            # --- 3. Update release.yaml ---
-            echo "- 📋 Updating release.yaml..." >> $GITHUB_STEP_SUMMARY
-            while IFS=, read -r chart_full_version PACKAGE_PATH; do
-              CHART_NAME=$(echo $chart_full_version | cut -d'/' -f1)
-              CHART_VERSION=$(echo $chart_full_version | cut -d'/' -f2)
-              NEW_PACKAGE_VERSION=${new_package_versions[$chart_full_version]}
-              FULL_VERSION="${NEW_PACKAGE_VERSION}+up${CHART_VERSION}"
-              yq e -i ".${CHART_NAME} |= [\"${FULL_VERSION}\"] + ." "release.yaml"
-              echo "  - Added \`$CHART_NAME\`: \`$FULL_VERSION\`" >> $GITHUB_STEP_SUMMARY
-              CRD_CHART_NAME="${CHART_NAME}-crd"
-              if yq e ".${CRD_CHART_NAME}" "release.yaml" &> /dev/null; then
-                yq e -i ".${CRD_CHART_NAME} |= [\"${FULL_VERSION}\"] + ." "release.yaml"
-                echo "  - Added \`$CRD_CHART_NAME\`: \`$FULL_VERSION\`" >> $GITHUB_STEP_SUMMARY
-              fi
-            done < "$branch_file"
-            if ! git diff --quiet --exit-code; then
-              git add release.yaml && git commit -m "chore(charts): Update release.yaml"
-              echo "  - ✅ Committed release.yaml changes" >> $GITHUB_STEP_SUMMARY
-            fi
-
-            # --- Push and create PR ---
-            echo "- 🚀 Pushing changes and creating PR..." >> $GITHUB_STEP_SUMMARY
-            git push origin "$BRANCH_NAME"
-            PR_TITLE="chore(charts): Update from upstream for $TARGET_BRANCH"
-            PR_BODY="Automated PR to update charts from ${{ github.repository }} commit ${{ github.sha }}"
-            PR_URL=$(gh pr create --title "$PR_TITLE" --body "$PR_BODY" --base "$TARGET_BRANCH" --head "$BRANCH_NAME" --repo rancher/charts)
-            echo "  - ✅ Created PR: $PR_URL" >> $GITHUB_STEP_SUMMARY
-          done
-
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "## ✨ Workflow Complete" >> $GITHUB_STEP_SUMMARY
+          SOURCE_REPO: ${{ github.repository }}
+          OB_DIR: ${{ github.workspace }}
+          CHARTS_DIR: ${{ github.workspace }}/charts-repo
+        run: ./.github/workflows/push/run-gha.sh
