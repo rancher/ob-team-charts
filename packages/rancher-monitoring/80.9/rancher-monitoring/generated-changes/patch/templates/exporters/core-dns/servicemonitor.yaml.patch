@@ -1,26 +1,41 @@
 --- charts-original/templates/exporters/core-dns/servicemonitor.yaml
 +++ charts/templates/exporters/core-dns/servicemonitor.yaml
-@@ -41,10 +41,20 @@
+@@ -41,12 +41,30 @@
      proxyUrl: {{ .Values.coreDns.serviceMonitor.proxyUrl}}
      {{- end }}
      bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
 -{{- if .Values.coreDns.serviceMonitor.metricRelabelings }}
++    
++    {{- /* Standard Defensive Pattern for MetricRelabelings */ -}}
++    {{- $userMR := (.Values.coreDns.serviceMonitor.metricRelabelings | default (list)) -}}
++    {{- $hasUserMR := gt (len $userMR) 0 -}}
++    {{- $hasExtra := or .Values.global.cattle.clusterId .Values.global.cattle.clusterName -}}
++    {{- if or $hasUserMR $hasExtra }}
      metricRelabelings:
 -{{ tpl (toYaml .Values.coreDns.serviceMonitor.metricRelabelings | indent 4) . }}
 -{{- end }}
-+    {{- if .Values.coreDns.serviceMonitor.metricRelabelings }}
-+    {{ tpl (toYaml .Values.coreDns.serviceMonitor.metricRelabelings | indent 4) . }}
+-{{- if .Values.coreDns.serviceMonitor.relabelings }}
++      {{- if $hasUserMR }}
++      {{- tpl (toYaml $userMR) $ | nindent 6 }}
++      {{- end }}
++      {{- if .Values.global.cattle.clusterId }}
++      - sourceLabels: [__address__]
++        targetLabel: cluster_id
++        replacement: {{ .Values.global.cattle.clusterId | quote }}
++      {{- end }}
++      {{- if .Values.global.cattle.clusterName }}
++      - sourceLabels: [__address__]
++        targetLabel: cluster_name
++        replacement: {{ .Values.global.cattle.clusterName | quote }}
++      {{- end }}
 +    {{- end }}
-+    {{ if .Values.global.cattle.clusterId }}
-+    - sourceLabels: [__address__]
-+      targetLabel: cluster_id
-+      replacement: {{ .Values.global.cattle.clusterId }}
-+    {{- end }}
-+    {{ if .Values.global.cattle.clusterName }}
-+    - sourceLabels: [__address__]
-+      targetLabel: cluster_name
-+      replacement: {{ .Values.global.cattle.clusterName }}
-+    {{- end }}
- {{- if .Values.coreDns.serviceMonitor.relabelings }}
++
++    {{- if .Values.coreDns.serviceMonitor.relabelings }}
      relabelings:
- {{ tpl (toYaml .Values.coreDns.serviceMonitor.relabelings | indent 4) . }}
+-{{ tpl (toYaml .Values.coreDns.serviceMonitor.relabelings | indent 4) . }}
+-{{- end }}
+-{{- end }}
++      {{- tpl (toYaml .Values.coreDns.serviceMonitor.relabelings) . | nindent 6 }}
++    {{- end }}
++{{- end }}
+\ No newline at end of file

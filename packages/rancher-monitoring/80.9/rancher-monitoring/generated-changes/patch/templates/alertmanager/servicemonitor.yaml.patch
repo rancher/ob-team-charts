@@ -1,14 +1,12 @@
 --- charts-original/templates/alertmanager/servicemonitor.yaml
 +++ charts/templates/alertmanager/servicemonitor.yaml
-@@ -39,28 +39,19 @@
+@@ -39,32 +39,32 @@
      tlsConfig: {{- toYaml .Values.alertmanager.serviceMonitor.tlsConfig | nindent 6 }}
      {{- end }}
      path: "{{ trimSuffix "/" .Values.alertmanager.alertmanagerSpec.routePrefix }}/metrics"
-+    metricRelabelings:
-     {{- if .Values.alertmanager.serviceMonitor.metricRelabelings }}
+-    {{- if .Values.alertmanager.serviceMonitor.metricRelabelings }}
 -    metricRelabelings: {{- tpl (toYaml .Values.alertmanager.serviceMonitor.metricRelabelings | nindent 6) . }}
-+    {{- tpl (toYaml .Values.alertmanager.serviceMonitor.metricRelabelings | nindent 6) . }}
-     {{- end }}
+-    {{- end }}
 -    {{- if .Values.alertmanager.serviceMonitor.relabelings }}
 -    relabelings: {{- toYaml .Values.alertmanager.serviceMonitor.relabelings | nindent 6 }}
 -    {{- end }}
@@ -28,15 +26,66 @@
 -    path: "/metrics"
 -    {{- if .Values.alertmanager.serviceMonitor.metricRelabelings }}
 -    metricRelabelings: {{- tpl (toYaml .Values.alertmanager.serviceMonitor.metricRelabelings | nindent 6) . }}
-+    {{ if .Values.global.cattle.clusterId }}
-+    - sourceLabels: [__address__]
-+      targetLabel: cluster_id
-+      replacement: {{ .Values.global.cattle.clusterId }}
-+    {{- end }}
-+    {{ if .Values.global.cattle.clusterName }}
-+    - sourceLabels: [__address__]
-+      targetLabel: cluster_name
-+      replacement: {{ .Values.global.cattle.clusterName }}
++
++    {{- /* Render metricRelabelings only when non-empty (Standard Pattern) */ -}}
++    {{- $userMR := (.Values.alertmanager.serviceMonitor.metricRelabelings | default (list)) -}}
++    {{- $hasUserMR := gt (len $userMR) 0 -}}
++    {{- $hasExtra := or .Values.global.cattle.clusterId .Values.global.cattle.clusterName -}}
++    {{- if or $hasUserMR $hasExtra }}
++    metricRelabelings:
++      {{- if $hasUserMR }}
++      {{- tpl (toYaml $userMR) $ | nindent 6 }}
++      {{- end }}
++      {{- if .Values.global.cattle.clusterId }}
++      - sourceLabels: [__address__]
++        targetLabel: cluster_id
++        replacement: {{ .Values.global.cattle.clusterId | quote }}
++      {{- end }}
++      {{- if .Values.global.cattle.clusterName }}
++      - sourceLabels: [__address__]
++        targetLabel: cluster_name
++        replacement: {{ .Values.global.cattle.clusterName | quote }}
++      {{- end }}
      {{- end }}
++
      {{- if .Values.alertmanager.serviceMonitor.relabelings }}
      relabelings: {{- toYaml .Values.alertmanager.serviceMonitor.relabelings | nindent 6 }}
+     {{- end }}
++
+   {{- range .Values.alertmanager.serviceMonitor.additionalEndpoints }}
+   - port: {{ .port }}
+     {{- if or $.Values.alertmanager.serviceMonitor.interval .interval }}
+@@ -83,11 +83,29 @@
+     tlsConfig: {{- default $.Values.alertmanager.serviceMonitor.tlsConfig .tlsConfig | toYaml | nindent 6 }}
+     {{- end }}
+     path: {{ .path }}
+-    {{- if or $.Values.alertmanager.serviceMonitor.metricRelabelings .metricRelabelings }}
+-    metricRelabelings: {{- tpl (default $.Values.alertmanager.serviceMonitor.metricRelabelings .metricRelabelings | toYaml | nindent 6) . }}
++
++    {{- /* Standard Pattern applied to additional endpoints */ -}}
++    {{- $loopMR := (.metricRelabelings | default (list)) -}}
++    {{- $hasLoopMR := gt (len $loopMR) 0 -}}
++    {{- if or $hasLoopMR $hasExtra }}
++    metricRelabelings:
++      {{- if $hasLoopMR }}
++      {{- tpl (toYaml $loopMR) $ | nindent 6 }}
++      {{- end }}
++      {{- if $.Values.global.cattle.clusterId }}
++      - sourceLabels: [__address__]
++        targetLabel: cluster_id
++        replacement: {{ $.Values.global.cattle.clusterId | quote }}
++      {{- end }}
++      {{- if $.Values.global.cattle.clusterName }}
++      - sourceLabels: [__address__]
++        targetLabel: cluster_name
++        replacement: {{ $.Values.global.cattle.clusterName | quote }}
++      {{- end }}
+     {{- end }}
++
+     {{- if or $.Values.alertmanager.serviceMonitor.relabelings .relabelings }}
+     relabelings: {{- default $.Values.alertmanager.serviceMonitor.relabelings .relabelings | toYaml | nindent 6 }}
+     {{- end }}
+   {{- end }}
+-{{- end }}
++{{- end }}
+\ No newline at end of file

@@ -1,0 +1,150 @@
+{{- if and .Values.prometheus.enabled .Values.prometheus.serviceMonitor.selfMonitor }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "kube-prometheus-stack.fullname" . }}-prometheus
+  namespace: {{ template "kube-prometheus-stack.namespace" . }}
+  labels:
+    app: {{ template "kube-prometheus-stack.name" . }}-prometheus
+{{ include "kube-prometheus-stack.labels" . | indent 4 }}
+{{- with .Values.prometheus.serviceMonitor.additionalLabels }}
+{{- tpl (toYaml .) $ | nindent 4 }}
+{{- end }}
+spec:
+  {{- include "servicemonitor.scrapeLimits" .Values.prometheus.serviceMonitor | nindent 2 }}
+  selector:
+    matchLabels:
+      app: {{ template "kube-prometheus-stack.name" . }}-prometheus
+      release: {{ $.Release.Name | quote }}
+      self-monitor: "true"
+  namespaceSelector:
+    matchNames:
+      - {{ printf "%s" (include "kube-prometheus-stack.namespace" .) | quote }}
+  
+  {{- /* Global Check for Rancher Cluster Labels */ -}}
+  {{- $hasExtra := or .Values.global.cattle.clusterId .Values.global.cattle.clusterName -}}
+
+  endpoints:
+  - port: {{ .Values.prometheus.prometheusSpec.portName }}
+    {{- if .Values.prometheus.serviceMonitor.interval }}
+    interval: {{ .Values.prometheus.serviceMonitor.interval }}
+    {{- end }}
+    {{- if .Values.prometheus.serviceMonitor.scheme }}
+    scheme: {{ .Values.prometheus.serviceMonitor.scheme }}
+    {{- end }}
+    {{- with .Values.prometheus.serviceMonitor.tlsConfig }}
+    tlsConfig:
+{{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- if .Values.prometheus.serviceMonitor.bearerTokenFile }}
+    bearerTokenFile: {{ .Values.prometheus.serviceMonitor.bearerTokenFile }}
+    {{- end }}
+    path: "{{ trimSuffix "/" .Values.prometheus.prometheusSpec.routePrefix }}/metrics"
+    
+    {{- /* Endpoint 1: Prometheus Metrics */ -}}
+    {{- $userMR := (.Values.prometheus.serviceMonitor.metricRelabelings | default (list)) -}}
+    {{- $hasUserMR := gt (len $userMR) 0 -}}
+    {{- if or $hasUserMR $hasExtra }}
+    metricRelabelings:
+      {{- if $hasUserMR }}
+{{- tpl (toYaml $userMR) $ | nindent 6 }}
+      {{- end }}
+      {{- if .Values.global.cattle.clusterId }}
+      - sourceLabels: [__address__]
+        targetLabel: cluster_id
+        replacement: {{ .Values.global.cattle.clusterId | quote }}
+      {{- end }}
+      {{- if .Values.global.cattle.clusterName }}
+      - sourceLabels: [__address__]
+        targetLabel: cluster_name
+        replacement: {{ .Values.global.cattle.clusterName | quote }}
+      {{- end }}
+    {{- end }}
+    {{- with .Values.prometheus.serviceMonitor.relabelings }}
+    relabelings:
+{{- tpl (toYaml .) $ | nindent 6 }}
+    {{- end }}
+
+  - port: reloader-web
+    {{- if .Values.prometheus.serviceMonitor.interval }}
+    interval: {{ .Values.prometheus.serviceMonitor.interval }}
+    {{- end }}
+    {{- if .Values.prometheus.serviceMonitor.scheme }}
+    scheme: {{ .Values.prometheus.serviceMonitor.scheme }}
+    {{- end }}
+    {{- with .Values.prometheus.serviceMonitor.tlsConfig }}
+    tlsConfig:
+{{- toYaml . | nindent 6 }}
+    {{- end }}
+    path: "/metrics"
+    
+    {{- /* Endpoint 2: Reloader Metrics (Explicit Variable Scope) */ -}}
+    {{- $userMRReloader := (.Values.prometheus.serviceMonitor.metricRelabelings | default (list)) -}}
+    {{- $hasMRReloader := gt (len $userMRReloader) 0 -}}
+    {{- if or $hasMRReloader $hasExtra }}
+    metricRelabelings:
+      {{- if $hasMRReloader }}
+{{- tpl (toYaml $userMRReloader) $ | nindent 6 }}
+      {{- end }}
+      {{- if .Values.global.cattle.clusterId }}
+      - sourceLabels: [__address__]
+        targetLabel: cluster_id
+        replacement: {{ .Values.global.cattle.clusterId | quote }}
+      {{- end }}
+      {{- if .Values.global.cattle.clusterName }}
+      - sourceLabels: [__address__]
+        targetLabel: cluster_name
+        replacement: {{ .Values.global.cattle.clusterName | quote }}
+      {{- end }}
+    {{- end }}
+    {{- with .Values.prometheus.serviceMonitor.relabelings }}
+    relabelings:
+{{- tpl (toYaml .) $ | nindent 6 }}
+    {{- end }}
+
+  {{- range .Values.prometheus.serviceMonitor.additionalEndpoints }}
+  - port: {{ .port }}
+    {{- if or $.Values.prometheus.serviceMonitor.interval .interval }}
+    interval: {{ default $.Values.prometheus.serviceMonitor.interval .interval }}
+    {{- end }}
+    {{- if or $.Values.prometheus.serviceMonitor.proxyUrl .proxyUrl }}
+    proxyUrl: {{ default $.Values.prometheus.serviceMonitor.proxyUrl .proxyUrl }}
+    {{- end }}
+    {{- if or $.Values.prometheus.serviceMonitor.scheme .scheme }}
+    scheme: {{ default $.Values.prometheus.serviceMonitor.scheme .scheme }}
+    {{- end }}
+    {{- if or $.Values.prometheus.serviceMonitor.bearerTokenFile .bearerTokenFile }}
+    bearerTokenFile: {{ default $.Values.prometheus.serviceMonitor.bearerTokenFile .bearerTokenFile }}
+    {{- end }}
+    {{- $tls := default $.Values.prometheus.serviceMonitor.tlsConfig .tlsConfig }}
+    {{- if $tls }}
+    tlsConfig:
+{{- toYaml $tls | nindent 6 }}
+    {{- end }}
+    path: {{ .path }}
+    
+    {{- /* Endpoint 3+: Additional Endpoints (Hardened Type-Safety) */ -}}
+    {{- $loopMR := (.metricRelabelings | default (list)) -}}
+    {{- $hasLoopMR := gt (len $loopMR) 0 -}}
+    {{- if or $hasLoopMR $hasExtra }}
+    metricRelabelings:
+      {{- if $hasLoopMR }}
+{{- tpl (toYaml $loopMR) $ | nindent 6 }}
+      {{- end }}
+      {{- if $.Values.global.cattle.clusterId }}
+      - sourceLabels: [__address__]
+        targetLabel: cluster_id
+        replacement: {{ $.Values.global.cattle.clusterId | quote }}
+      {{- end }}
+      {{- if $.Values.global.cattle.clusterName }}
+      - sourceLabels: [__address__]
+        targetLabel: cluster_name
+        replacement: {{ $.Values.global.cattle.clusterName | quote }}
+      {{- end }}
+    {{- end }}
+    {{- with .relabelings }}
+    relabelings:
+{{- tpl (toYaml .) $ | nindent 6 }}
+    {{- end }}
+  {{- end }}
+{{- end }}
