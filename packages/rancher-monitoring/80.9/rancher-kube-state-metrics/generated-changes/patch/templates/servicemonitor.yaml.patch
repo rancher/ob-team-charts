@@ -1,23 +1,79 @@
 --- charts-original/templates/servicemonitor.yaml
 +++ charts/templates/servicemonitor.yaml
-@@ -57,8 +57,20 @@
+@@ -55,10 +55,28 @@
+     {{- if or .Values.prometheus.monitor.http.honorLabels .Values.prometheus.monitor.honorLabels }}
+       honorLabels: true
      {{- end }}
-     {{- if or .Values.prometheus.monitor.http.metricRelabelings .Values.prometheus.monitor.metricRelabelings }}
+-    {{- if or .Values.prometheus.monitor.http.metricRelabelings .Values.prometheus.monitor.metricRelabelings }}
++
++    {{- /* Only render metricRelabelings if there will be at least one item, to prevent SSA null issue */ -}}
++    {{- $userMR := (.Values.prometheus.monitor.http.metricRelabelings | default .Values.prometheus.monitor.metricRelabelings | default (list)) -}}
++    {{- $hasUserMR := gt (len $userMR) 0 -}}
++    {{- $hasExtra := or .Values.global.cattle.clusterId .Values.global.cattle.clusterName -}}
++    {{- if or $hasUserMR $hasExtra }}
        metricRelabelings:
-+    {{- if or .Values.prometheus.monitor.http.metricRelabelings .Values.prometheus.monitor.metricRelabelings }}
-         {{- toYaml (.Values.prometheus.monitor.http.metricRelabelings | default .Values.prometheus.monitor.metricRelabelings) | nindent 8 }}
+-        {{- toYaml (.Values.prometheus.monitor.http.metricRelabelings | default .Values.prometheus.monitor.metricRelabelings) | nindent 8 }}
++      {{- if $hasUserMR }}
++{{- tpl (toYaml $userMR) $ | nindent 8 }}
++      {{- end }}
++      {{- if .Values.global.cattle.clusterId }}
++      - sourceLabels: [__address__]
++        targetLabel: cluster_id
++        replacement: {{ .Values.global.cattle.clusterId | quote }}
++      {{- end }}
++      {{- if .Values.global.cattle.clusterName }}
++      - sourceLabels: [__address__]
++        targetLabel: cluster_name
++        replacement: {{ .Values.global.cattle.clusterName | quote }}
++      {{- end }}
      {{- end }}
-+    {{ if .Values.global.cattle.clusterId }}
-+        - sourceLabels: [__address__]
-+          targetLabel: cluster_id
-+          replacement: {{ .Values.global.cattle.clusterId }}
-+    {{- end }}
-+    {{ if .Values.global.cattle.clusterName }}
-+        - sourceLabels: [__address__]
-+          targetLabel: cluster_name
-+          replacement: {{ .Values.global.cattle.clusterName }}
-+    {{- end }}
-+    {{- end }}
++
      {{- if or .Values.prometheus.monitor.http.relabelings .Values.prometheus.monitor.relabelings }}
        relabelings:
          {{- toYaml (.Values.prometheus.monitor.http.relabelings | default .Values.prometheus.monitor.relabelings) | nindent 8 }}
+@@ -77,6 +95,7 @@
+       bearerTokenSecret:
+         {{- toYaml . | nindent 8 }}
+     {{- end }}
++
+   {{- if .Values.selfMonitor.enabled }}
+     - port: metrics
+     {{- if or .Values.prometheus.monitor.metrics.interval .Values.prometheus.monitor.interval }}
+@@ -94,10 +113,28 @@
+     {{- if or .Values.prometheus.monitor.metrics.honorLabels .Values.prometheus.monitor.honorLabels }}
+       honorLabels: true
+     {{- end }}
+-    {{- if or .Values.prometheus.monitor.metrics.metricRelabelings .Values.prometheus.monitor.metricRelabelings }}
++
++    {{- /* Only render metricRelabelings if there will be at least one item, to prevent SSA null issue */ -}}
++    {{- $userMRm := (.Values.prometheus.monitor.metrics.metricRelabelings | default .Values.prometheus.monitor.metricRelabelings | default (list)) -}}
++    {{- $hasUserMRm := gt (len $userMRm) 0 -}}
++    {{- $hasExtram := or .Values.global.cattle.clusterId .Values.global.cattle.clusterName -}}
++    {{- if or $hasUserMRm $hasExtram }}
+       metricRelabelings:
+-        {{- toYaml (.Values.prometheus.monitor.metrics.metricRelabelings | default .Values.prometheus.monitor.metricRelabelings) | nindent 8 }}
++      {{- if $hasUserMRm }}
++{{- tpl (toYaml $userMRm) $ | nindent 8 }}
++      {{- end }}
++      {{- if .Values.global.cattle.clusterId }}
++      - sourceLabels: [__address__]
++        targetLabel: cluster_id
++        replacement: {{ .Values.global.cattle.clusterId | quote }}
++      {{- end }}
++      {{- if .Values.global.cattle.clusterName }}
++      - sourceLabels: [__address__]
++        targetLabel: cluster_name
++        replacement: {{ .Values.global.cattle.clusterName | quote }}
++      {{- end }}
+     {{- end }}
++
+     {{- if or .Values.prometheus.monitor.metrics.relabelings .Values.prometheus.monitor.relabelings }}
+       relabelings:
+         {{- toYaml (.Values.prometheus.monitor.metrics.relabelings | default .Values.prometheus.monitor.relabelings) | nindent 8 }}
+@@ -117,4 +154,4 @@
+         {{- toYaml . | nindent 8 }}
+     {{- end }}
+   {{- end }}
+-{{- end }}
++{{- end }}
+\ No newline at end of file

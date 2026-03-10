@@ -1,26 +1,104 @@
 --- charts-original/templates/exporters/kube-dns/servicemonitor.yaml
 +++ charts/templates/exporters/kube-dns/servicemonitor.yaml
-@@ -41,10 +41,20 @@
+@@ -11,7 +11,7 @@
+   labels:
+     app: {{ template "kube-prometheus-stack.name" . }}-kube-dns
+   {{- with .Values.kubeDns.serviceMonitor.additionalLabels }}
+-    {{- toYaml . | nindent 4 }}
++    {{- tpl (toYaml .) $ | nindent 4 }}
+   {{- end }}
+ {{ include "kube-prometheus-stack.labels" . | indent 4 }}
+ spec:
+@@ -23,7 +23,7 @@
+   {{- include "servicemonitor.scrapeLimits" .Values.kubeDns.serviceMonitor | nindent 2 }}
+   selector:
+     {{- if .Values.kubeDns.serviceMonitor.selector }}
+-    {{ tpl (toYaml .Values.kubeDns.serviceMonitor.selector | nindent 4) . }}
++{{- tpl (toYaml .Values.kubeDns.serviceMonitor.selector) $ | nindent 4 }}
+     {{- else }}
+     matchLabels:
+       app: {{ template "kube-prometheus-stack.name" . }}-kube-dns
+@@ -32,6 +32,10 @@
+   namespaceSelector:
+     matchNames:
+       - "kube-system"
++
++  {{- /* Global Check for Rancher Cluster Labels */ -}}
++  {{- $hasExtra := or .Values.global.cattle.clusterId .Values.global.cattle.clusterName -}}
++
+   endpoints:
+   - port: http-metrics-dnsmasq
+     {{- if .Values.kubeDns.serviceMonitor.interval }}
+@@ -41,25 +45,58 @@
      {{- if .Values.kubeDns.serviceMonitor.proxyUrl }}
      proxyUrl: {{ .Values.kubeDns.serviceMonitor.proxyUrl}}
      {{- end }}
 -{{- if .Values.kubeDns.serviceMonitor.dnsmasqMetricRelabelings }}
++    
++    {{- /* Endpoint 1: Dnsmasq Metrics */ -}}
++    {{- $userMRDnsmasq := (.Values.kubeDns.serviceMonitor.dnsmasqMetricRelabelings | default (list)) -}}
++    {{- $hasUserMRDnsmasq := gt (len $userMRDnsmasq) 0 -}}
++    {{- if or $hasUserMRDnsmasq $hasExtra }}
      metricRelabelings:
 -{{ tpl (toYaml .Values.kubeDns.serviceMonitor.dnsmasqMetricRelabelings | indent 4) . }}
 -{{- end }}
-+    {{- if .Values.kubeDns.serviceMonitor.dnsmasqMetricRelabelings }}
-+    {{ tpl (toYaml .Values.kubeDns.serviceMonitor.dnsmasqMetricRelabelings | indent 4) . }}
-+    {{- end }}
-+    {{ if .Values.global.cattle.clusterId }}
+-{{- if .Values.kubeDns.serviceMonitor.dnsmasqRelabelings }}
++      {{- if $hasUserMRDnsmasq }}
++{{- tpl (toYaml $userMRDnsmasq) $ | nindent 6 }}
++      {{- end }}
++      {{- if .Values.global.cattle.clusterId }}
 +      - sourceLabels: [__address__]
 +        targetLabel: cluster_id
-+        replacement: {{ .Values.global.cattle.clusterId }}
-+    {{- end }}
-+    {{ if .Values.global.cattle.clusterName}}
++        replacement: {{ .Values.global.cattle.clusterId | quote }}
++      {{- end }}
++      {{- if .Values.global.cattle.clusterName }}
 +      - sourceLabels: [__address__]
 +        targetLabel: cluster_name
-+        replacement: {{ .Values.global.cattle.clusterName }}
++        replacement: {{ .Values.global.cattle.clusterName | quote }}
++      {{- end }}
 +    {{- end }}
- {{- if .Values.kubeDns.serviceMonitor.dnsmasqRelabelings }}
++    {{- with .Values.kubeDns.serviceMonitor.dnsmasqRelabelings }}
      relabelings:
- {{ toYaml .Values.kubeDns.serviceMonitor.dnsmasqRelabelings | indent 4 }}
+-{{ toYaml .Values.kubeDns.serviceMonitor.dnsmasqRelabelings | indent 4 }}
+-{{- end }}
++{{- tpl (toYaml .) $ | nindent 6 }}
++    {{- end }}
++
+   - port: http-metrics-skydns
+     {{- if .Values.kubeDns.serviceMonitor.interval }}
+     interval: {{ .Values.kubeDns.serviceMonitor.interval }}
+     {{- end }}
+     bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+-{{- if .Values.kubeDns.serviceMonitor.metricRelabelings }}
++    
++    {{- /* Endpoint 2: Skydns Metrics */ -}}
++    {{- $userMRSkydns := (.Values.kubeDns.serviceMonitor.metricRelabelings | default (list)) -}}
++    {{- $hasUserMRSkydns := gt (len $userMRSkydns) 0 -}}
++    {{- if or $hasUserMRSkydns $hasExtra }}
+     metricRelabelings:
+-{{ tpl (toYaml .Values.kubeDns.serviceMonitor.metricRelabelings | indent 4) . }}
+-{{- end }}
+-{{- if .Values.kubeDns.serviceMonitor.relabelings }}
++      {{- if $hasUserMRSkydns }}
++{{- tpl (toYaml $userMRSkydns) $ | nindent 6 }}
++      {{- end }}
++      {{- if .Values.global.cattle.clusterId }}
++      - sourceLabels: [__address__]
++        targetLabel: cluster_id
++        replacement: {{ .Values.global.cattle.clusterId | quote }}
++      {{- end }}
++      {{- if .Values.global.cattle.clusterName }}
++      - sourceLabels: [__address__]
++        targetLabel: cluster_name
++        replacement: {{ .Values.global.cattle.clusterName | quote }}
++      {{- end }}
++    {{- end }}
++    {{- with .Values.kubeDns.serviceMonitor.relabelings }}
+     relabelings:
+-{{ tpl (toYaml .Values.kubeDns.serviceMonitor.relabelings | indent 4) . }}
+-{{- end }}
+-{{- end }}
++{{- tpl (toYaml .) $ | nindent 6 }}
++    {{- end }}
++{{- end }}
+\ No newline at end of file

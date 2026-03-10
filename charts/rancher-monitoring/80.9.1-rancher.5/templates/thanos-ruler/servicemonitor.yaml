@@ -1,0 +1,124 @@
+{{- /* 1. Absolute Head: Define scope before any logic to prevent nil-pointers */ -}}
+{{- $thanos := .Values.thanosRuler | default dict -}}
+{{- $sm := $thanos.serviceMonitor | default dict -}}
+
+{{- /* 2. Safe Condition: No direct dereferencing of .Values here */ -}}
+{{- if and $thanos.enabled $sm.selfMonitor }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "kube-prometheus-stack.thanosRuler.name" . }}
+  namespace: {{ template "kube-prometheus-stack.namespace" . }}
+  labels:
+    app: {{ template "kube-prometheus-stack.thanosRuler.name" . }}
+{{ include "kube-prometheus-stack.labels" . | indent 4 }}
+  {{- with $sm.additionalLabels }}
+{{- tpl (toYaml .) $ | nindent 4 }}
+  {{- end }}
+spec:
+  {{- include "servicemonitor.scrapeLimits" $sm | nindent 2 }}
+  selector:
+    matchLabels:
+      app: {{ template "kube-prometheus-stack.thanosRuler.name" . }}
+      release: {{ $.Release.Name | quote }}
+      {{- /* Maintains parity with original selection logic, safely */ -}}
+      self-monitor: {{ $sm.selfMonitor | quote }}
+  namespaceSelector:
+    matchNames:
+      - {{ printf "%s" (include "kube-prometheus-stack.namespace" .) | quote }}
+  
+  {{- /* Global Check for Rancher Cluster Labels */ -}}
+  {{- $hasExtra := or .Values.global.cattle.clusterId .Values.global.cattle.clusterName -}}
+
+  endpoints:
+  - port: {{ .Values.thanosRuler.thanosRulerSpec.portName }}
+    {{- if $sm.interval }}
+    interval: {{ $sm.interval }}
+    {{- end }}
+    {{- if $sm.proxyUrl }}
+    proxyUrl: {{ $sm.proxyUrl }}
+    {{- end }}
+    {{- if $sm.scheme }}
+    scheme: {{ $sm.scheme }}
+    {{- end }}
+    {{- if $sm.bearerTokenFile }}
+    bearerTokenFile: {{ $sm.bearerTokenFile }}
+    {{- end }}
+    {{- with $sm.tlsConfig }}
+    tlsConfig:
+{{- toYaml . | nindent 6 }}
+    {{- end }}
+    path: "{{ trimSuffix "/" .Values.thanosRuler.thanosRulerSpec.routePrefix }}/metrics"
+    
+    {{- /* Endpoint 1: Thanos Ruler Metrics */ -}}
+    {{- $userMR := ($sm.metricRelabelings | default (list)) -}}
+    {{- $hasUserMR := gt (len $userMR) 0 -}}
+    {{- if or $hasUserMR $hasExtra }}
+    metricRelabelings:
+      {{- if $hasUserMR }}
+{{- tpl (toYaml $userMR) $ | nindent 6 }}
+      {{- end }}
+      {{- if .Values.global.cattle.clusterId }}
+      - sourceLabels: [__address__]
+        targetLabel: cluster_id
+        replacement: {{ .Values.global.cattle.clusterId | quote }}
+      {{- end }}
+      {{- if .Values.global.cattle.clusterName }}
+      - sourceLabels: [__address__]
+        targetLabel: cluster_name
+        replacement: {{ .Values.global.cattle.clusterName | quote }}
+      {{- end }}
+    {{- end }}
+    {{- with $sm.relabelings }}
+    relabelings:
+{{- tpl (toYaml .) $ | nindent 6 }}
+    {{- end }}
+
+  {{- /* 3. Safe range over additionalEndpoints */ -}}
+  {{- $ae := ($sm.additionalEndpoints | default (list)) -}}
+  {{- range $ae }}
+  - port: {{ .port }}
+    {{- if or $sm.interval .interval }}
+    interval: {{ default $sm.interval .interval }}
+    {{- end }}
+    {{- if or $sm.proxyUrl .proxyUrl }}
+    proxyUrl: {{ default $sm.proxyUrl .proxyUrl }}
+    {{- end }}
+    {{- if or $sm.scheme .scheme }}
+    scheme: {{ default $sm.scheme .scheme }}
+    {{- end }}
+    {{- if or $sm.bearerTokenFile .bearerTokenFile }}
+    bearerTokenFile: {{ default $sm.bearerTokenFile .bearerTokenFile }}
+    {{- end }}
+    {{- $tls := default $sm.tlsConfig .tlsConfig }}
+    {{- if $tls }}
+    tlsConfig:
+{{- toYaml $tls | nindent 6 }}
+    {{- end }}
+    path: {{ .path }}
+    
+    {{- /* Additional Endpoints: Endpoint Override Only pattern */ -}}
+    {{- $loopMR := (.metricRelabelings | default (list)) -}}
+    {{- $hasLoopMR := gt (len $loopMR) 0 -}}
+    {{- if or $hasLoopMR $hasExtra }}
+    metricRelabelings:
+      {{- if $hasLoopMR }}
+{{- tpl (toYaml $loopMR) $ | nindent 6 }}
+      {{- end }}
+      {{- if $.Values.global.cattle.clusterId }}
+      - sourceLabels: [__address__]
+        targetLabel: cluster_id
+        replacement: {{ $.Values.global.cattle.clusterId | quote }}
+      {{- end }}
+      {{- if $.Values.global.cattle.clusterName }}
+      - sourceLabels: [__address__]
+        targetLabel: cluster_name
+        replacement: {{ $.Values.global.cattle.clusterName | quote }}
+      {{- end }}
+    {{- end }}
+    {{- with .relabelings }}
+    relabelings:
+{{- tpl (toYaml .) $ | nindent 6 }}
+    {{- end }}
+  {{- end }}
+{{- end }}

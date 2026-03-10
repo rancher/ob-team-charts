@@ -1,19 +1,167 @@
 --- charts-original/templates/thanos-ruler/servicemonitor.yaml
 +++ charts/templates/thanos-ruler/servicemonitor.yaml
-@@ -41,6 +41,16 @@
-     {{- if .Values.thanosRuler.serviceMonitor.metricRelabelings }}
-     metricRelabelings: {{- tpl (toYaml .Values.thanosRuler.serviceMonitor.metricRelabelings | nindent 6) . }}
+@@ -1,4 +1,9 @@
+-{{- if and .Values.thanosRuler.enabled .Values.thanosRuler.serviceMonitor.selfMonitor }}
++{{- /* 1. Absolute Head: Define scope before any logic to prevent nil-pointers */ -}}
++{{- $thanos := .Values.thanosRuler | default dict -}}
++{{- $sm := $thanos.serviceMonitor | default dict -}}
++
++{{- /* 2. Safe Condition: No direct dereferencing of .Values here */ -}}
++{{- if and $thanos.enabled $sm.selfMonitor }}
+ apiVersion: monitoring.coreos.com/v1
+ kind: ServiceMonitor
+ metadata:
+@@ -7,66 +12,113 @@
+   labels:
+     app: {{ template "kube-prometheus-stack.thanosRuler.name" . }}
+ {{ include "kube-prometheus-stack.labels" . | indent 4 }}
+-{{- with .Values.thanosRuler.serviceMonitor.additionalLabels }}
+-{{- toYaml . | nindent 4 }}
+-{{- end }}
++  {{- with $sm.additionalLabels }}
++{{- tpl (toYaml .) $ | nindent 4 }}
++  {{- end }}
+ spec:
+-  {{- include "servicemonitor.scrapeLimits" .Values.thanosRuler.serviceMonitor | nindent 2 }}
++  {{- include "servicemonitor.scrapeLimits" $sm | nindent 2 }}
+   selector:
+     matchLabels:
+       app: {{ template "kube-prometheus-stack.thanosRuler.name" . }}
+       release: {{ $.Release.Name | quote }}
+-      self-monitor: {{ .Values.thanosRuler.serviceMonitor.selfMonitor | quote }}
++      {{- /* Maintains parity with original selection logic, safely */ -}}
++      self-monitor: {{ $sm.selfMonitor | quote }}
+   namespaceSelector:
+     matchNames:
+       - {{ printf "%s" (include "kube-prometheus-stack.namespace" .) | quote }}
++  
++  {{- /* Global Check for Rancher Cluster Labels */ -}}
++  {{- $hasExtra := or .Values.global.cattle.clusterId .Values.global.cattle.clusterName -}}
++
+   endpoints:
+   - port: {{ .Values.thanosRuler.thanosRulerSpec.portName }}
+-    {{- if .Values.thanosRuler.serviceMonitor.interval }}
+-    interval: {{ .Values.thanosRuler.serviceMonitor.interval }}
++    {{- if $sm.interval }}
++    interval: {{ $sm.interval }}
      {{- end }}
-+    {{ if .Values.global.cattle.clusterId }}
+-    {{- if .Values.thanosRuler.serviceMonitor.proxyUrl }}
+-    proxyUrl: {{ .Values.thanosRuler.serviceMonitor.proxyUrl}}
++    {{- if $sm.proxyUrl }}
++    proxyUrl: {{ $sm.proxyUrl }}
+     {{- end }}
+-    {{- if .Values.thanosRuler.serviceMonitor.scheme }}
+-    scheme: {{ .Values.thanosRuler.serviceMonitor.scheme }}
++    {{- if $sm.scheme }}
++    scheme: {{ $sm.scheme }}
+     {{- end }}
+-    {{- if .Values.thanosRuler.serviceMonitor.bearerTokenFile }}
+-    bearerTokenFile: {{ .Values.thanosRuler.serviceMonitor.bearerTokenFile }}
++    {{- if $sm.bearerTokenFile }}
++    bearerTokenFile: {{ $sm.bearerTokenFile }}
+     {{- end }}
+-    {{- if .Values.thanosRuler.serviceMonitor.tlsConfig }}
+-    tlsConfig: {{- toYaml .Values.thanosRuler.serviceMonitor.tlsConfig | nindent 6 }}
++    {{- with $sm.tlsConfig }}
++    tlsConfig:
++{{- toYaml . | nindent 6 }}
+     {{- end }}
+     path: "{{ trimSuffix "/" .Values.thanosRuler.thanosRulerSpec.routePrefix }}/metrics"
+-    {{- if .Values.thanosRuler.serviceMonitor.metricRelabelings }}
+-    metricRelabelings: {{- tpl (toYaml .Values.thanosRuler.serviceMonitor.metricRelabelings | nindent 6) . }}
+-    {{- end }}
+-    {{- if .Values.thanosRuler.serviceMonitor.relabelings }}
+-    relabelings: {{- toYaml .Values.thanosRuler.serviceMonitor.relabelings | nindent 6 }}
+-    {{- end }}
+-  {{- range .Values.thanosRuler.serviceMonitor.additionalEndpoints }}
++    
++    {{- /* Endpoint 1: Thanos Ruler Metrics */ -}}
++    {{- $userMR := ($sm.metricRelabelings | default (list)) -}}
++    {{- $hasUserMR := gt (len $userMR) 0 -}}
++    {{- if or $hasUserMR $hasExtra }}
++    metricRelabelings:
++      {{- if $hasUserMR }}
++{{- tpl (toYaml $userMR) $ | nindent 6 }}
++      {{- end }}
++      {{- if .Values.global.cattle.clusterId }}
 +      - sourceLabels: [__address__]
 +        targetLabel: cluster_id
-+        replacement: {{ .Values.global.cattle.clusterId }}
-+    {{- end }}
-+    {{ if .Values.global.cattle.clusterName}}
++        replacement: {{ .Values.global.cattle.clusterId | quote }}
++      {{- end }}
++      {{- if .Values.global.cattle.clusterName }}
 +      - sourceLabels: [__address__]
 +        targetLabel: cluster_name
-+        replacement: {{ .Values.global.cattle.clusterName }}
++        replacement: {{ .Values.global.cattle.clusterName | quote }}
++      {{- end }}
 +    {{- end }}
-     {{- if .Values.thanosRuler.serviceMonitor.relabelings }}
-     relabelings: {{- toYaml .Values.thanosRuler.serviceMonitor.relabelings | nindent 6 }}
++    {{- with $sm.relabelings }}
++    relabelings:
++{{- tpl (toYaml .) $ | nindent 6 }}
++    {{- end }}
++
++  {{- /* 3. Safe range over additionalEndpoints */ -}}
++  {{- $ae := ($sm.additionalEndpoints | default (list)) -}}
++  {{- range $ae }}
+   - port: {{ .port }}
+-    {{- if or $.Values.thanosRuler.serviceMonitor.interval .interval }}
+-    interval: {{ default $.Values.thanosRuler.serviceMonitor.interval .interval }}
++    {{- if or $sm.interval .interval }}
++    interval: {{ default $sm.interval .interval }}
      {{- end }}
+-    {{- if or $.Values.thanosRuler.serviceMonitor.proxyUrl .proxyUrl }}
+-    proxyUrl: {{ default $.Values.thanosRuler.serviceMonitor.proxyUrl .proxyUrl }}
++    {{- if or $sm.proxyUrl .proxyUrl }}
++    proxyUrl: {{ default $sm.proxyUrl .proxyUrl }}
+     {{- end }}
+-    {{- if or $.Values.thanosRuler.serviceMonitor.scheme .scheme }}
+-    scheme: {{ default $.Values.thanosRuler.serviceMonitor.scheme .scheme }}
++    {{- if or $sm.scheme .scheme }}
++    scheme: {{ default $sm.scheme .scheme }}
+     {{- end }}
+-    {{- if or $.Values.thanosRuler.serviceMonitor.bearerTokenFile .bearerTokenFile }}
+-    bearerTokenFile: {{ default $.Values.thanosRuler.serviceMonitor.bearerTokenFile .bearerTokenFile }}
+-    {{- end }}
+-    {{- if or $.Values.thanosRuler.serviceMonitor.tlsConfig .tlsConfig }}
+-    tlsConfig: {{- default $.Values.thanosRuler.serviceMonitor.tlsConfig .tlsConfig | toYaml | nindent 6 }}
++    {{- if or $sm.bearerTokenFile .bearerTokenFile }}
++    bearerTokenFile: {{ default $sm.bearerTokenFile .bearerTokenFile }}
++    {{- end }}
++    {{- $tls := default $sm.tlsConfig .tlsConfig }}
++    {{- if $tls }}
++    tlsConfig:
++{{- toYaml $tls | nindent 6 }}
+     {{- end }}
+     path: {{ .path }}
+-    {{- if or $.Values.thanosRuler.serviceMonitor.metricRelabelings .metricRelabelings }}
+-    metricRelabelings: {{- tpl (default $.Values.thanosRuler.serviceMonitor.metricRelabelings .metricRelabelings | toYaml | nindent 6) . }}
+-    {{- end }}
+-    {{- if or $.Values.thanosRuler.serviceMonitor.relabelings .relabelings }}
+-    relabelings: {{- default $.Values.thanosRuler.serviceMonitor.relabelings .relabelings | toYaml | nindent 6 }}
++    
++    {{- /* Additional Endpoints: Endpoint Override Only pattern */ -}}
++    {{- $loopMR := (.metricRelabelings | default (list)) -}}
++    {{- $hasLoopMR := gt (len $loopMR) 0 -}}
++    {{- if or $hasLoopMR $hasExtra }}
++    metricRelabelings:
++      {{- if $hasLoopMR }}
++{{- tpl (toYaml $loopMR) $ | nindent 6 }}
++      {{- end }}
++      {{- if $.Values.global.cattle.clusterId }}
++      - sourceLabels: [__address__]
++        targetLabel: cluster_id
++        replacement: {{ $.Values.global.cattle.clusterId | quote }}
++      {{- end }}
++      {{- if $.Values.global.cattle.clusterName }}
++      - sourceLabels: [__address__]
++        targetLabel: cluster_name
++        replacement: {{ $.Values.global.cattle.clusterName | quote }}
++      {{- end }}
++    {{- end }}
++    {{- with .relabelings }}
++    relabelings:
++{{- tpl (toYaml .) $ | nindent 6 }}
+     {{- end }}
+   {{- end }}
+-{{- end }}
++{{- end }}
+\ No newline at end of file

@@ -1,26 +1,76 @@
 --- charts-original/templates/exporters/kube-etcd/servicemonitor.yaml
 +++ charts/templates/exporters/kube-etcd/servicemonitor.yaml
-@@ -58,10 +58,20 @@
+@@ -11,7 +11,7 @@
+   labels:
+     app: {{ template "kube-prometheus-stack.name" . }}-kube-etcd
+   {{- with .Values.kubeEtcd.serviceMonitor.additionalLabels }}
+-    {{- toYaml . | nindent 4 }}
++{{- tpl (toYaml .) $ | nindent 4 }}
+   {{- end }}
+ {{ include "kube-prometheus-stack.labels" . | indent 4 }}
+ spec:
+@@ -21,17 +21,24 @@
+     {{- toYaml . | nindent 4 }}
+   {{- end }}
+   {{- include "servicemonitor.scrapeLimits" .Values.kubeEtcd.serviceMonitor | nindent 2 }}
++  
++  {{- /* Standardized Selector with Zero-Margin */ -}}
+   selector:
+     {{- if .Values.kubeEtcd.serviceMonitor.selector }}
+-    {{ tpl (toYaml .Values.kubeEtcd.serviceMonitor.selector | nindent 4) . }}
++{{- tpl (toYaml .Values.kubeEtcd.serviceMonitor.selector) $ | nindent 4 }}
+     {{- else }}
+     matchLabels:
+       app: {{ template "kube-prometheus-stack.name" . }}-kube-etcd
+       release: {{ $.Release.Name | quote }}
+     {{- end }}
++    
+   namespaceSelector:
+     matchNames:
+       - "kube-system"
++
++  {{- /* Define cluster extras once at the spec level */ -}}
++  {{- $hasExtra := or .Values.global.cattle.clusterId .Values.global.cattle.clusterName -}}
++
+   endpoints:
+   - port: {{ .Values.kubeEtcd.serviceMonitor.port }}
+     {{- if .Values.kubeEtcd.serviceMonitor.interval }}
+@@ -58,12 +65,30 @@
        {{- end}}
        insecureSkipVerify: {{ .Values.kubeEtcd.serviceMonitor.insecureSkipVerify }}
      {{- end }}
 -{{- if .Values.kubeEtcd.serviceMonitor.metricRelabelings }}
++
++    {{- /* Standard Defensive Pattern for MetricRelabelings */ -}}
++    {{- $userMR := (.Values.kubeEtcd.serviceMonitor.metricRelabelings | default (list)) -}}
++    {{- $hasUserMR := gt (len $userMR) 0 -}}
++    {{- if or $hasUserMR $hasExtra }}
      metricRelabelings:
 -{{ tpl (toYaml .Values.kubeEtcd.serviceMonitor.metricRelabelings | indent 4) . }}
 -{{- end }}
-+    {{- if .Values.kubeEtcd.serviceMonitor.metricRelabelings }}
-+    {{ tpl (toYaml .Values.kubeEtcd.serviceMonitor.metricRelabelings | indent 4) . }}
-+    {{- end }}
-+    {{ if .Values.global.cattle.clusterId }}
+-{{- if .Values.kubeEtcd.serviceMonitor.relabelings }}
++      {{- if $hasUserMR }}
++{{- tpl (toYaml $userMR) $ | nindent 6 }}
++      {{- end }}
++      {{- if .Values.global.cattle.clusterId }}
 +      - sourceLabels: [__address__]
 +        targetLabel: cluster_id
-+        replacement: {{ .Values.global.cattle.clusterId }}
-+    {{- end }}
-+    {{ if .Values.global.cattle.clusterName}}
++        replacement: {{ .Values.global.cattle.clusterId | quote }}
++      {{- end }}
++      {{- if .Values.global.cattle.clusterName }}
 +      - sourceLabels: [__address__]
 +        targetLabel: cluster_name
-+        replacement: {{ .Values.global.cattle.clusterName }}
++        replacement: {{ .Values.global.cattle.clusterName | quote }}
++      {{- end }}
 +    {{- end }}
- {{- if .Values.kubeEtcd.serviceMonitor.relabelings }}
++
++    {{- /* Optimized Relabelings block */ -}}
++    {{- with .Values.kubeEtcd.serviceMonitor.relabelings }}
      relabelings:
- {{ tpl (toYaml .Values.kubeEtcd.serviceMonitor.relabelings | indent 4) . }}
+-{{ tpl (toYaml .Values.kubeEtcd.serviceMonitor.relabelings | indent 4) . }}
+-{{- end }}
+-{{- end }}
++{{- tpl (toYaml .) $ | nindent 6 }}
++    {{- end }}
++{{- end }}
+\ No newline at end of file

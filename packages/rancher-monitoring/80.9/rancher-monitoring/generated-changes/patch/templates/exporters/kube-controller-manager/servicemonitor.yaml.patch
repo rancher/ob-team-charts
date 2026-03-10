@@ -1,26 +1,51 @@
 --- charts-original/templates/exporters/kube-controller-manager/servicemonitor.yaml
 +++ charts/templates/exporters/kube-controller-manager/servicemonitor.yaml
-@@ -52,10 +52,20 @@
+@@ -23,7 +23,7 @@
+   {{- include "servicemonitor.scrapeLimits" .Values.kubeControllerManager.serviceMonitor | nindent 2 }}
+   selector:
+     {{- if .Values.kubeControllerManager.serviceMonitor.selector }}
+-    {{ tpl (toYaml .Values.kubeControllerManager.serviceMonitor.selector | nindent 4) . }}
++{{- tpl (toYaml .Values.kubeControllerManager.serviceMonitor.selector) $ | nindent 4 }}
+     {{- else }}
+     matchLabels:
+       app: {{ template "kube-prometheus-stack.name" . }}-kube-controller-manager
+@@ -52,12 +52,31 @@
        serverName: {{ .Values.kubeControllerManager.serviceMonitor.serverName }}
        {{- end }}
      {{- end }}
 -{{- if .Values.kubeControllerManager.serviceMonitor.metricRelabelings }}
++
++    {{- /* Standard Defensive Pattern for MetricRelabelings */ -}}
++    {{- $userMR := (.Values.kubeControllerManager.serviceMonitor.metricRelabelings | default (list)) -}}
++    {{- $hasUserMR := gt (len $userMR) 0 -}}
++    {{- $hasExtra := or .Values.global.cattle.clusterId .Values.global.cattle.clusterName -}}
++    {{- if or $hasUserMR $hasExtra }}
      metricRelabelings:
 -{{ tpl (toYaml .Values.kubeControllerManager.serviceMonitor.metricRelabelings | indent 4) . }}
 -{{- end }}
-+    {{- if.Values.kubeControllerManager.serviceMonitor.metricRelabelings }}
-+    {{ tpl (toYaml .Values.kubeControllerManager.serviceMonitor.metricRelabelings | indent 4) . }}
-+    {{- end }}
-+    {{ if .Values.global.cattle.clusterId }}
+-{{- if .Values.kubeControllerManager.serviceMonitor.relabelings }}
++      {{- if $hasUserMR }}
++{{- tpl (toYaml $userMR) $ | nindent 6 }}
++      {{- end }}
++      {{- if .Values.global.cattle.clusterId }}
 +      - sourceLabels: [__address__]
 +        targetLabel: cluster_id
-+        replacement: {{ .Values.global.cattle.clusterId }}
-+    {{- end }}
-+    {{ if .Values.global.cattle.clusterName}}
++        replacement: {{ .Values.global.cattle.clusterId | quote }}
++      {{- end }}
++      {{- if .Values.global.cattle.clusterName }}
 +      - sourceLabels: [__address__]
 +        targetLabel: cluster_name
-+        replacement: {{ .Values.global.cattle.clusterName }}
++        replacement: {{ .Values.global.cattle.clusterName | quote }}
++      {{- end }}
 +    {{- end }}
- {{- if .Values.kubeControllerManager.serviceMonitor.relabelings }}
++
++    {{- /* Optimized: Using $ for global scope safety */ -}}
++    {{- if .Values.kubeControllerManager.serviceMonitor.relabelings }}
      relabelings:
- {{ tpl (toYaml .Values.kubeControllerManager.serviceMonitor.relabelings | indent 4) . }}
+-{{ tpl (toYaml .Values.kubeControllerManager.serviceMonitor.relabelings | indent 4) . }}
+-{{- end }}
+-{{- end }}
++{{- tpl (toYaml .Values.kubeControllerManager.serviceMonitor.relabelings) $ | nindent 6 }}
++    {{- end }}
++{{- end }}
+\ No newline at end of file
