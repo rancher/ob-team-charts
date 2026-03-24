@@ -25,7 +25,7 @@ jobs:
         run: zypper --non-interactive in curl tar gzip git make jq go awk patch
 
       - name: Checkout current repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
         with:
           fetch-depth: 0
 
@@ -63,7 +63,7 @@ jobs:
 
       - name: Read App Credentials from Vault
         if: steps.detect_new_charts.outputs.new_charts != ''
-        uses: rancher-eio/read-vault-secrets@main
+        uses: rancher-eio/read-vault-secrets@0da85151ad1f19ed7986c41587e45aac1ace74b6 # v3
         with:
           secrets: |
             secret/data/github/repo/${{ github.repository }}/github/app-credentials appId | APPID;
@@ -72,7 +72,7 @@ jobs:
       - name: Generate GitHub App Token
         if: steps.detect_new_charts.outputs.new_charts != ''
         id: generate_token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
         with:
           app-id: ${{ env.APPID }}
           private-key: ${{ env.PRIVATEKEY }}
