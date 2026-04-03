@@ -96,15 +96,44 @@ else
     BINARY_NAME="ob-charts-tool_${OS}_${ARCH}"
 fi
 
-# Download the binary from the charts-build-scripts repository
-curl -s -L "${OB_TEAM_SCRIPTS_REPO%.git}/releases/download/${OB_TEAM_SCRIPT_VERSION}/${BINARY_NAME}" --output bin/ob-charts-tool
-
-# If fetching binary did not work, fail
-if ! [[ -f bin/ob-charts-tool ]] || [[ $(cat bin/ob-charts-tool) == "Not Found" ]]; then
-    echo "Failed to find ob-charts-tool binary"
-    rm bin/ob-charts-tool;
+# Download the binary from the ob-charts-tool repository
+BASE_URL="${OB_TEAM_SCRIPTS_REPO%.git}/releases/download/${OB_TEAM_SCRIPT_VERSION}"
+echo "Downloading ${BASE_URL}/${BINARY_NAME}"
+HTTP_CODE=$(curl -s -L -w "%{http_code}" -o bin/ob-charts-tool "${BASE_URL}/${BINARY_NAME}")
+if [[ ! "$HTTP_CODE" =~ ^[0-9]+$ ]] || [[ "$HTTP_CODE" -ne 200 ]]; then
+    echo "Error downloading ${BINARY_NAME}, HTTP code: $HTTP_CODE"
+    rm -f bin/ob-charts-tool
     exit 1
 fi
+
+# Download and verify checksums
+# The checksums filename embeds the version number without the leading 'v' (e.g. ob-charts-tool_0.3.1_checksums.txt)
+CHECKSUMS_NAME="ob-charts-tool_${OB_TEAM_SCRIPT_VERSION#v}_checksums.txt"
+echo "Downloading ${CHECKSUMS_NAME} for verification"
+HTTP_CODE=$(curl -s -L -w "%{http_code}" -o bin/ob-charts-tool.checksums.txt "${BASE_URL}/${CHECKSUMS_NAME}")
+if [[ ! "$HTTP_CODE" =~ ^[0-9]+$ ]] || [[ "$HTTP_CODE" -ne 200 ]]; then
+    echo "Error downloading ${CHECKSUMS_NAME}, HTTP code: $HTTP_CODE"
+    rm -f bin/ob-charts-tool bin/ob-charts-tool.checksums.txt
+    exit 1
+fi
+
+echo "Verifying checksum"
+EXPECTED_CHECKSUM=$(grep "  ${BINARY_NAME}$" bin/ob-charts-tool.checksums.txt | awk '{print $1}')
+if [[ -z "$EXPECTED_CHECKSUM" ]]; then
+    echo "Error: no checksum entry found for ${BINARY_NAME} in ${CHECKSUMS_NAME}"
+    rm -f bin/ob-charts-tool bin/ob-charts-tool.checksums.txt
+    exit 1
+fi
+ACTUAL_CHECKSUM=$(sha256sum bin/ob-charts-tool | awk '{print $1}')
+if [[ "$ACTUAL_CHECKSUM" != "$EXPECTED_CHECKSUM" ]]; then
+    echo "Error: checksum mismatch for ${BINARY_NAME}"
+    echo "  Expected: ${EXPECTED_CHECKSUM}"
+    echo "  Actual:   ${ACTUAL_CHECKSUM}"
+    rm -f bin/ob-charts-tool bin/ob-charts-tool.checksums.txt
+    exit 1
+fi
+echo "Checksum verified: ${ACTUAL_CHECKSUM}"
+rm -f bin/ob-charts-tool.checksums.txt
 
 echo "${BINARY_NAME} => ./bin/ob-charts-tool"
 
