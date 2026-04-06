@@ -25,6 +25,9 @@ git clone "https://oauth2:${GH_TOKEN}@github.com/rancher/charts.git" "$CHARTS_DI
 git -C "$CHARTS_DIR" config user.name "github-actions[bot]"
 git -C "$CHARTS_DIR" config user.email "github-actions[bot]@users.noreply.github.com"
 
+# --- Download charts-build-scripts binary ---
+make -C "$CHARTS_DIR" pull-scripts
+
 # --- Download code-freeze manifest ---
 FREEZE_MANIFEST="/tmp/ob-push/code-freeze.yaml"
 mkdir -p "$(dirname "$FREEZE_MANIFEST")"
