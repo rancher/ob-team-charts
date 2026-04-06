@@ -103,19 +103,46 @@ fi
 echo "BINARY_NAME: $BINARY_NAME"
 
 # Download the binary from the charts-build-scripts repository
-echo "Downloading ${CHARTS_BUILD_SCRIPTS_REPO%.git}/releases/download/${CHARTS_BUILD_SCRIPT_VERSION}/${BINARY_NAME}"
-curl_output=$(curl -s -L -w "%{http_code}" ${CHARTS_BUILD_SCRIPTS_REPO%.git}/releases/download/${CHARTS_BUILD_SCRIPT_VERSION}/${BINARY_NAME} --output bin/charts-build-scripts)
-HTTP_CODE=$(echo "$curl_output" | tail -n 1) # Extract the HTTP code from the last line
-if [[ "$HTTP_CODE" -ne 200 ]]; then
+BASE_URL="${CHARTS_BUILD_SCRIPTS_REPO%.git}/releases/download/${CHARTS_BUILD_SCRIPT_VERSION}"
+echo "Downloading ${BASE_URL}/${BINARY_NAME}"
+HTTP_CODE=$(curl -s -L -w "%{http_code}" -o bin/charts-build-scripts "${BASE_URL}/${BINARY_NAME}")
+if [[ ! "$HTTP_CODE" =~ ^[0-9]+$ ]] || [[ "$HTTP_CODE" -ne 200 ]]; then
     echo "Error downloading ${BINARY_NAME}, HTTP code: $HTTP_CODE"
+    rm -f bin/charts-build-scripts
     exit 1
 fi
 echo "Downloaded ${BINARY_NAME} to ./bin/charts-build-scripts"
 
+# Download and verify checksums
+echo "Downloading checksums.txt for verification"
+HTTP_CODE=$(curl -s -L -w "%{http_code}" -o bin/charts-build-scripts.checksums.txt "${BASE_URL}/checksums.txt")
+if [[ ! "$HTTP_CODE" =~ ^[0-9]+$ ]] || [[ "$HTTP_CODE" -ne 200 ]]; then
+    echo "Error downloading checksums.txt, HTTP code: $HTTP_CODE"
+    rm -f bin/charts-build-scripts bin/charts-build-scripts.checksums.txt
+    exit 1
+fi
+
+echo "Verifying checksum"
+EXPECTED_CHECKSUM=$(grep "  ${BINARY_NAME}$" bin/charts-build-scripts.checksums.txt | awk '{print $1}')
+if [[ -z "$EXPECTED_CHECKSUM" ]]; then
+    echo "Error: no checksum entry found for ${BINARY_NAME} in checksums.txt"
+    rm -f bin/charts-build-scripts bin/charts-build-scripts.checksums.txt
+    exit 1
+fi
+ACTUAL_CHECKSUM=$(sha256sum bin/charts-build-scripts | awk '{print $1}')
+if [[ "$ACTUAL_CHECKSUM" != "$EXPECTED_CHECKSUM" ]]; then
+    echo "Error: checksum mismatch for ${BINARY_NAME}"
+    echo "  Expected: ${EXPECTED_CHECKSUM}"
+    echo "  Actual:   ${ACTUAL_CHECKSUM}"
+    rm -f bin/charts-build-scripts bin/charts-build-scripts.checksums.txt
+    exit 1
+fi
+echo "Checksum verified: ${ACTUAL_CHECKSUM}"
+rm -f bin/charts-build-scripts.checksums.txt
+
 echo "Checking downloaded binary file"
 file bin/charts-build-scripts
 
-file bin/charts-build-scripts #check the file type.
 echo "${BINARY_NAME} => ./bin/charts-build-scripts"
 
 chmod +x ./bin/charts-build-scripts

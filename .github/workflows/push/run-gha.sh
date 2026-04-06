@@ -31,9 +31,9 @@ make -C "$CHARTS_DIR" pull-scripts
 # --- Download code-freeze manifest ---
 FREEZE_MANIFEST="/tmp/ob-push/code-freeze.yaml"
 mkdir -p "$(dirname "$FREEZE_MANIFEST")"
-curl -sf -H "Authorization: token $GH_TOKEN" \
-  "https://raw.githubusercontent.com/rancher/org/refs/heads/main/manifests/resources/RepositoryRuleset/rancher/code-freeze.yaml" \
-  -o "$FREEZE_MANIFEST" || echo "WARNING: Could not fetch code-freeze manifest, freeze checks will be skipped" >&2
+gh api repos/rancher/org/contents/manifests/resources/RepositoryRuleset/rancher/code-freeze.yaml?ref=main \
+  -H "Accept: application/vnd.github.raw+json" \
+  > "$FREEZE_MANIFEST" || echo "WARNING: Could not fetch code-freeze manifest, freeze checks will be skipped" >&2
 
 # --- Group charts by target branch ---
 export NEW_CHARTS
