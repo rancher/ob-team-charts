@@ -1,0 +1,29 @@
+tools:
+  - name: charts-build-scripts
+    version: latest
+    source: rancher/charts-build-scripts
+    mode: release-checksums
+
+  - name: ob-charts-tool
+    # renovate: datasource=github-releases depName=rancher/ob-charts-tool
+    version: latest
+    source: rancher/ob-charts-tool
+    mode: release-checksums
+    # Optional overrides for release artifact naming conventions:
+    release:
+      binary_template: "ob-charts-tool_{os}_{arch}"
+      checksum_template: "ob-charts-tool_{version|trimprefix:v}_checksums.txt"
+
+  - name: golangci-lint
+    mode: pinned
+    source: golangci/golangci-lint
+    # renovate: datasource=github-releases depName=golangci/golangci-lint
+    version: v2.11.4
+    checksums:
+      linux/amd64:  "200c5b7503f67b59a6743ccf32133026c174e272b930ee79aa2aa6f37aca7ef1"  # renovate-local: golangci-lint=v2.11.4
+      linux/arm64:  "3bcfa2e6f3d32b2bf5cd75eaa876447507025e0303698633f722a05331988db4"  # renovate-local: golangci-lint=v2.11.4
+      darwin/amd64: "c900d4048db75d1edfd550fd11cf6a9b3008e7caa8e119fcddbc700412d63e60"  # renovate-local: golangci-lint=v2.11.4
+      darwin/arm64: "02db2a2dae8b26812e53b0688a6f617e3ef1f489790e829ea22862cf76945675"  # renovate-local: golangci-lint=v2.11.4
+    release:
+      binary_template: "golangci-lint-{version|trimprefix:v}-{os}-{arch}.tar.gz"
+      extract: "golangci-lint-{version|trimprefix:v}-{os}-{arch}/golangci-lint"

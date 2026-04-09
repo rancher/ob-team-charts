@@ -20,3 +20,4 @@ debug.yaml
 .charts-build-scripts/.cache
 .charts-build-scripts/.cache/**
 rebase.yaml
+.dep-fetch
