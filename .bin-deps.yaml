@@ -14,6 +14,34 @@ tools:
       binary_template: "ob-charts-tool_{os}_{arch}"
       checksum_template: "ob-charts-tool_{version|trimprefix:v}_checksums.txt"
 
+  - name: yq
+    mode: pinned
+    source: mikefarah/yq
+    # renovate: datasource=github-releases depName=mikefarah/yq
+    version: v4.52.5
+    checksums:
+      linux/amd64:  "c529c33e6b545d95e39445c37f673e31ca110c3ca9310b47ccea78f9190b061e"  # renovate-local: yq=v4.52.5
+      linux/arm64:  "33cf72426fc5f5e7d9b99801a58d34c6fa7e4426dad594569fb972dde5891109"  # renovate-local: yq=v4.52.5
+      darwin/amd64: "672029a24f3038f29fe5fb5a15d600c00ab6affbd5a92e880d3319d629fdee9e"  # renovate-local: yq=v4.52.5
+      darwin/arm64: "4613600ee3416000a223f28b5323d3f003ee5bb4c18c5fa916450d31d686aecb"  # renovate-local: yq=v4.52.5
+    release:
+      binary_template: "yq_{os}_{arch}.tar.gz"
+      extract: "yq_{os}_{arch}"
+
+  - name: gh
+    mode: pinned
+    source: cli/cli
+    # renovate: datasource=github-releases depName=cli/cli
+    version: v2.89.0
+    checksums:
+      linux/amd64:  "4613600ee3416000a223f28b5323d3f003ee5bb4c18c5fa916450d31d686aecb"  # renovate-local: gh=v2.89.0
+      linux/arm64:  "4613600ee3416000a223f28b5323d3f003ee5bb4c18c5fa916450d31d686aecb"  # renovate-local: gh=v2.89.0
+      darwin/amd64: "4613600ee3416000a223f28b5323d3f003ee5bb4c18c5fa916450d31d686aecb"  # renovate-local: gh=v2.89.0
+      darwin/arm64: "4613600ee3416000a223f28b5323d3f003ee5bb4c18c5fa916450d31d686aecb"  # renovate-local: gh=v2.89.0
+    release:
+      binary_template: "gh_{version|trimprefix:v}_{os|replace}_{arch}.tar.gz"
+      extract: "bin/gh"
+
   - name: golangci-lint
     mode: pinned
     source: golangci/golangci-lint
