@@ -1,4 +1,4 @@
-name: push
+name: push - Create PR for new charts
 
 on:
   workflow_dispatch:
@@ -32,9 +32,9 @@ jobs:
       - name: Mark git directory as safe
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
-      - uses: mallardduck/dep-fetch/actions/sync-deps@v0.0.6
+      - uses: rancherlabs/dep-fetch/actions/sync-deps@v0.1.1
         with:
-          version: v0.0.6
+          version: v0.1.1
 
       - name: Detect new chart version
         id: detect_new_charts

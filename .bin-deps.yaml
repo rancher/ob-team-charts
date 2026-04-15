@@ -11,7 +11,7 @@ tools:
     mode: release-checksums
     # Optional overrides for release artifact naming conventions:
     release:
-      binary_template: "ob-charts-tool_{os}_{arch}"
+      download_template: "ob-charts-tool_{os}_{arch}"
       checksum_template: "ob-charts-tool_{version|trimprefix:v}_checksums.txt"
 
   - name: yq
@@ -25,8 +25,9 @@ tools:
       darwin/amd64: "672029a24f3038f29fe5fb5a15d600c00ab6affbd5a92e880d3319d629fdee9e"  # renovate-local: yq=v4.52.5
       darwin/arm64: "4613600ee3416000a223f28b5323d3f003ee5bb4c18c5fa916450d31d686aecb"  # renovate-local: yq=v4.52.5
     release:
-      binary_template: "yq_{os}_{arch}.tar.gz"
+      download_template: "yq_{os}_{arch}.tar.gz"
       extract: "yq_{os}_{arch}"
+      checksum_template: "checksums"
 
   - name: gh
     mode: pinned
@@ -34,13 +35,17 @@ tools:
     # renovate: datasource=github-releases depName=cli/cli
     version: v2.89.0
     checksums:
-      linux/amd64:  "4613600ee3416000a223f28b5323d3f003ee5bb4c18c5fa916450d31d686aecb"  # renovate-local: gh=v2.89.0
-      linux/arm64:  "4613600ee3416000a223f28b5323d3f003ee5bb4c18c5fa916450d31d686aecb"  # renovate-local: gh=v2.89.0
-      darwin/amd64: "4613600ee3416000a223f28b5323d3f003ee5bb4c18c5fa916450d31d686aecb"  # renovate-local: gh=v2.89.0
-      darwin/arm64: "4613600ee3416000a223f28b5323d3f003ee5bb4c18c5fa916450d31d686aecb"  # renovate-local: gh=v2.89.0
+      linux/amd64:  "d0422caade520530e76c1c558da47daebaa8e1203d6b7ff10ad7d6faba3490d8"  # renovate-local: gh=v2.89.0
+      linux/arm64:  "9e64a623dfc242990aa5d9b3f507111149c4282f66b68eaad1dc79eeb13b9ce5"  # renovate-local: gh=v2.89.0
+      darwin/amd64: "862e21cac6a71f81e7cd6e5127e3cd344f8537441ad2db94cd208319dd17b6e9"  # renovate-local: gh=v2.89.0
+      darwin/arm64: "2423d02ec0a2094898c378703a1b28a5846c08700f87461363857cb8cb3fda94"  # renovate-local: gh=v2.89.0
     release:
-      binary_template: "gh_{version|trimprefix:v}_{os|replace}_{arch}.tar.gz"
-      extract: "bin/gh"
+      extensions:
+        default: "zip"
+        linux: "tar.gz"
+      download_template: "gh_{version|trimprefix:v}_{os|replace:darwin=macOS}_{arch}.{ext}"
+      extract: "gh_{version|trimprefix:v}_{os|replace:darwin=macOS}_{arch}/bin/gh"
+      checksum_template: "gh_{version|trimprefix:v}_checksums.txt"
 
   - name: golangci-lint
     mode: pinned
@@ -53,5 +58,6 @@ tools:
       darwin/amd64: "c900d4048db75d1edfd550fd11cf6a9b3008e7caa8e119fcddbc700412d63e60"  # renovate-local: golangci-lint=v2.11.4
       darwin/arm64: "02db2a2dae8b26812e53b0688a6f617e3ef1f489790e829ea22862cf76945675"  # renovate-local: golangci-lint=v2.11.4
     release:
-      binary_template: "golangci-lint-{version|trimprefix:v}-{os}-{arch}.tar.gz"
+      download_template: "golangci-lint-{version|trimprefix:v}-{os}-{arch}.tar.gz"
       extract: "golangci-lint-{version|trimprefix:v}-{os}-{arch}/golangci-lint"
+      checksum_template: "golangci-lint-{version|trimprefix:v}-checksums.txt"
