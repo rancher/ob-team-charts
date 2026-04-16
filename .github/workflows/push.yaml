@@ -1,4 +1,4 @@
-name: push
+name: push - Create PR for new charts
 
 on:
   workflow_dispatch:
@@ -32,12 +32,9 @@ jobs:
       - name: Mark git directory as safe
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
-      - name: Install yq and gh
-        run: |
-          ARCH=$(uname -m)
-          if [ "$ARCH" = "x86_64" ]; then SYSTEM_ARCH="amd64"; elif [ "$ARCH" = "aarch64" ]; then SYSTEM_ARCH="arm64"; else echo "Unsupported architecture: $ARCH"; exit 1; fi
-          curl -L "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${SYSTEM_ARCH}" -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
-          curl -L "https://github.com/cli/cli/releases/download/v2.82.0/gh_2.82.0_linux_${SYSTEM_ARCH}.tar.gz" -o gh.tar.gz && tar -zxvf gh.tar.gz && mv "gh_2.82.0_linux_${SYSTEM_ARCH}/bin/gh" /usr/local/bin/gh && rm -rf gh.tar.gz "gh_2.82.0_linux_${SYSTEM_ARCH}"
+      - uses: rancherlabs/dep-fetch/actions/sync-deps@v0.1.1
+        with:
+          version: v0.1.1
 
       - name: Detect new chart version
         id: detect_new_charts

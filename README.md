@@ -1,6 +1,10 @@
 # ob-team-charts
 A repo for Rancher Observability &amp; Backups team's charts - a canonical dev spot just before rancher/charts.
 
+## Prerequisites
+
+The Makefile and scripts in this repo require [`dep-fetch`](https://github.com/rancherlabs/dep-fetch) to be installed and available on your `PATH`. It is used to pull down binary dependencies (e.g. `charts-build-scripts`, `yq`, `gh`) before running chart operations.
+
 ## What ORBS projects use this repo?
 
 This covers the following ORBS team charts:

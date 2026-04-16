@@ -1,4 +1,4 @@
-TARGETS := $(shell ls scripts|grep -ve "^util-\|^pull-scripts")
+TARGETS := $(shell ls scripts|grep -ve "^util-")
 
 # Default behavior for targets
 $(TARGETS):
@@ -8,7 +8,7 @@ $(TARGETS):
 
 # Charts Build Scripts
 pull-scripts:
-	./scripts/pull-scripts
+	dep-fetch sync
 
 remove:
 	./scripts/remove-asset

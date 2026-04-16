@@ -37,8 +37,9 @@ jobs:
       - run: |
           git switch -c "${{ github.head_ref }}"
 
-      - name: Fetch ob-charts-tool
-        run: ./dev-scripts/pull-scripts
+      - uses: rancherlabs/dep-fetch/actions/sync-deps@v0.1.1
+        with:
+          version: v0.1.1
 
       - name: Run branch verification
         run: |
