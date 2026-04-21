@@ -29,7 +29,7 @@ dependencies:
 - condition: grafana.enabled
   name: grafana
   repository: file://./charts/grafana
-  version: 10.4.1
+  version: 10.4.3
 - condition: hardenedKubelet.enabled
   name: hardenedKubelet
   repository: file://./charts/hardenedKubelet
@@ -113,7 +113,7 @@ dependencies:
 - condition: windowsExporter.enabled
   name: windowsExporter
   repository: file://./charts/windowsExporter
-  version: 0.12.2
+  version: 0.12.6
 description: kube-prometheus-stack collects Kubernetes manifests, Grafana dashboards,
   and Prometheus rules combined with documentation and scripts to provide easy to
   operate end-to-end Kubernetes cluster monitoring with Prometheus using the Prometheus

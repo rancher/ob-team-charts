@@ -1644,12 +1644,12 @@ entries:
       catalog.cattle.io/upstream-version: 80.9.1
     apiVersion: v2
     appVersion: v0.87.1
-    created: "2026-04-21T15:26:03.618173-04:00"
+    created: "2026-04-21T15:41:00.718393-04:00"
     dependencies:
     - condition: grafana.enabled
       name: grafana
       repository: file://./charts/grafana
-      version: 10.4.1
+      version: 10.4.3
     - condition: hardenedKubelet.enabled
       name: hardenedKubelet
       repository: file://./charts/hardenedKubelet
@@ -1733,12 +1733,12 @@ entries:
     - condition: windowsExporter.enabled
       name: windowsExporter
       repository: file://./charts/windowsExporter
-      version: 0.12.2
+      version: 0.12.6
     description: kube-prometheus-stack collects Kubernetes manifests, Grafana dashboards,
       and Prometheus rules combined with documentation and scripts to provide easy
       to operate end-to-end Kubernetes cluster monitoring with Prometheus using the
       Prometheus Operator.
-    digest: 5d3cb703129b9e4ea620434ad5f0b740e58c937a917983de9f0a81f4ff4a3eff
+    digest: 0529e449b7f07e4d1032603e1d2073a2dd25fd19114e8217badb43d74d692114
     home: https://github.com/prometheus-operator/kube-prometheus
     icon: file://assets/logos/rancher-monitoring.png
     keywords:
