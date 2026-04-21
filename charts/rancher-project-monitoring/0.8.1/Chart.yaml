@@ -29,4 +29,4 @@ maintainers:
   name: Dan
 name: rancher-project-monitoring
 type: application
-version: 0.8.0
+version: 0.8.1
