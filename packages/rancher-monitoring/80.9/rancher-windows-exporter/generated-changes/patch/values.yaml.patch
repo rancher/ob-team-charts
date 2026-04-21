@@ -11,7 +11,7 @@
 +  os: "windows"
    # Overrides the image tag whose default is {{ printf "v%s" .Chart.AppVersion }}
 -  tag: ""
-+  tag: "0.31.3"
++  tag: "0.31.6"
    pullPolicy: IfNotPresent
    digest: ""
  
