@@ -177,8 +177,8 @@ extraLabels: {}
 # priorityClassName:
 
 downloadDashboardsImage:
-  repository: rancher/mirrored-curlimages-curl
-  tag: 8.9.1
+  repository: rancher/appco-curl
+  tag: 8.14.1-6.1
   sha: ""
   pullPolicy: IfNotPresent
 
