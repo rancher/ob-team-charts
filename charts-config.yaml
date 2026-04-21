@@ -15,8 +15,6 @@ packages:
       branches:
         - branch: "dev-v2.10"
           package: rancher-monitoring/rancher-monitoring
-        - branch: "dev-v2.11"
-          package: rancher-monitoring/66.7/rancher-monitoring
     "69.8":
       branches:
         - branch: "dev-v2.11"
