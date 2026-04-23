@@ -26,25 +26,28 @@ jobs:
   verify-branch:
     name: Verify Branch State
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/rancher/ci-image/charts
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.sha }} # Use the head SHA of the PR for checkout
           fetch-depth: 0
 
-      - run: |
-          git switch -c "${{ github.head_ref }}"
+      - name: Mark git directory as safe
+        shell: bash
+        run: git config --global --add safe.directory "$(pwd)"
 
-      - uses: rancherlabs/dep-fetch/actions/sync-deps@v0.1.1
-        with:
-          version: v0.1.1
+      - name: Re-attach to Branch
+        run: |
+          git switch -c "${{ github.head_ref }}"
 
       - name: Run branch verification
         run: |
           echo "Running branch verification on PR branch: ${{ github.head_ref }}"
-          ./bin/ob-charts-tool branchVerifyCheck
+          ob-charts-tool branchVerifyCheck
 
       # The verification will automatically:
       # - Exit with code 0 if all critical checks pass (warnings are OK)
