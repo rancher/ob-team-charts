@@ -36,6 +36,10 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }} # Use the head SHA of the PR for checkout
           fetch-depth: 0
 
+      - name: Mark git directory as safe
+        shell: bash
+        run: git config --global --add safe.directory "$(pwd)"
+
       - name: Re-attach to Branch
         run: |
           git switch -c "${{ github.head_ref }}"

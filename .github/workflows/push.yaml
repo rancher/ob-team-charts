@@ -30,7 +30,8 @@ jobs:
           fetch-depth: 0
 
       - name: Mark git directory as safe
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+        shell: bash
+        run: git config --global --add safe.directory "$(pwd)"
 
       - uses: rancherlabs/dep-fetch/actions/sync-deps@v0.1.1
         with:
