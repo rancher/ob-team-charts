@@ -16,7 +16,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: registry.suse.com/bci/bci-base:latest
+      image: ghcr.io/rancher/ci-image/charts
     permissions:
       contents: read
       id-token: write
