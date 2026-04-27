@@ -6,6 +6,106 @@
 {{- end -}}
 {{- end -}}
 
+{{ define "pushProxy.proxy.imageRepo" -}}
+{{- $default := .Values.proxy.image.repository -}}
+{{- $override1 := "" -}}
+{{- if and (hasKey .Values "global") (hasKey .Values.global "pushProx") (hasKey .Values.global.pushProx "proxyImage") (hasKey .Values.global.pushProx.proxyImage "repository") -}}
+{{- $override1 = .Values.global.pushProx.proxyImage.repository -}}
+{{- end -}}
+
+{{- $override2 := "" -}}
+{{- if and (hasKey .Values "global") (hasKey .Values.global "pushProx") (hasKey .Values.global.pushProx "image") (hasKey .Values.global.pushProx.image "repository") -}}
+{{- $override2 = .Values.global.pushProx.image.repository -}}
+{{- end -}}
+
+{{- if ne $override1 "" -}}
+    {{- $override1 -}}
+{{- else if ne $override2 "" -}}
+    {{- $override2 -}}
+{{- else -}}
+    {{- $default -}}
+{{- end -}}
+{{- end -}}
+
+{{ define "pushProxy.proxy.imageTag" -}}
+{{- $default := .Values.proxy.image.tag -}}
+{{- $override1 := "" -}}
+{{- if and (hasKey .Values "global") (hasKey .Values.global "pushProx") (hasKey .Values.global.pushProx "proxyImage") (hasKey .Values.global.pushProx.proxyImage "tag") -}}
+{{- $override1 = .Values.global.pushProx.proxyImage.tag -}}
+{{- end -}}
+
+{{- $override2 := "" -}}
+{{- if and (hasKey .Values "global") (hasKey .Values.global "pushProx") (hasKey .Values.global.pushProx "image") (hasKey .Values.global.pushProx.image "tag") -}}
+{{- $override2 = .Values.global.pushProx.image.tag -}}
+{{- end -}}
+
+{{- if ne $override1 "" -}}
+    {{- $override1 -}}
+{{- else if ne $override2 "" -}}
+    {{- $override2 -}}
+{{- else -}}
+    {{- $default -}}
+{{- end -}}
+{{- end -}}
+
+{{ define "pushProxy.proxy.container" -}}
+{{/*
+  This template constructs the full image name for the proxy,
+  including the registry, repository, and tag.
+*/}}
+{{- template "system_default_registry" . -}}{{ template "pushProxy.proxy.imageRepo" . -}}:{{ template "pushProxy.proxy.imageTag" . -}}
+{{- end -}}
+
+{{ define "pushProxy.clients.imageRepo" -}}
+{{- $default := .Values.clients.image.repository -}}
+{{- $override1 := "" -}}
+{{- if and (hasKey .Values "global") (hasKey .Values.global "pushProx") (hasKey .Values.global.pushProx "clientsImage") (hasKey .Values.global.pushProx.clientsImage "repository") -}}
+{{- $override1 = .Values.global.pushProx.clientsImage.repository -}}
+{{- end -}}
+
+{{- $override2 := "" -}}
+{{- if and (hasKey .Values "global") (hasKey .Values.global "pushProx") (hasKey .Values.global.pushProx "image") (hasKey .Values.global.pushProx.image "repository") -}}
+{{- $override2 = .Values.global.pushProx.image.repository -}}
+{{- end -}}
+
+{{- if ne $override1 "" -}}
+    {{- $override1 -}}
+{{- else if ne $override2 "" -}}
+    {{- $override2 -}}
+{{- else -}}
+    {{- $default -}}
+{{- end -}}
+{{- end -}}
+
+{{ define "pushProxy.clients.imageTag" -}}
+{{- $default := .Values.clients.image.tag -}}
+{{- $override1 := "" -}}
+{{- if and (hasKey .Values "global") (hasKey .Values.global "pushProx") (hasKey .Values.global.pushProx "clientsImage") (hasKey .Values.global.pushProx.clientsImage "tag") -}}
+{{- $override1 = .Values.global.pushProx.clientsImage.tag -}}
+{{- end -}}
+
+{{- $override2 := "" -}}
+{{- if and (hasKey .Values "global") (hasKey .Values.global "pushProx") (hasKey .Values.global.pushProx "image") (hasKey .Values.global.pushProx.image "tag") -}}
+{{- $override2 = .Values.global.pushProx.image.tag -}}
+{{- end -}}
+
+{{- if ne $override1 "" -}}
+    {{- $override1 -}}
+{{- else if ne $override2 "" -}}
+    {{- $override2 -}}
+{{- else -}}
+    {{- $default -}}
+{{- end -}}
+{{- end -}}
+
+{{ define "pushProxy.clients.container" -}}
+{{/*
+  This template constructs the full image name for the clients,
+  including the registry, repository, and tag.
+*/}}
+{{- template "system_default_registry" . -}}{{ template "pushProxy.clients.imageRepo" . -}}:{{ template "pushProxy.clients.imageTag" . -}}
+{{- end -}}
+
 # Windows Support
 
 {{/*

@@ -1,5 +1,5 @@
 {{- template "applyKubeVersionOverrides" . -}}
-{{- if and .Values.proxy }}{{ if .Values.proxy.enabled }}
+{{- if and .Values.proxy .Values.proxy.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -26,13 +26,18 @@ spec:
 {{ toYaml .Values.proxy.tolerations | indent 8 }}
 {{- end }}
       serviceAccountName: {{ template "pushProxy.proxy.name" . }}
-      {{- if .Values.global.imagePullSecretName }}
+      {{- if .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+      {{- range .Values.global.imagePullSecrets }}
+      - name: {{ . }}
+      {{- end }}
+      {{- else if .Values.global.imagePullSecretName }}
       imagePullSecrets:
       - name: {{ .Values.global.imagePullSecretName }}
       {{- end }}
       containers:
       - name: pushprox-proxy
-        image: {{ template "system_default_registry" . }}{{ .Values.proxy.image.repository }}:{{ .Values.proxy.image.tag }}
+        image: {{ template "pushProxy.proxy.container" . }}
         command:
         {{- range .Values.proxy.command }}
           - {{ . | quote }}
@@ -54,4 +59,4 @@ spec:
     protocol: TCP
     targetPort: {{ .Values.proxy.port }}
   selector: {{ include "pushProxy.proxy.labels" . | nindent 4 }}
-{{- end }}{{- end }}
+{{- end }}
