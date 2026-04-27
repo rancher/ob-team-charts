@@ -1,3 +1,5 @@
+export PATH := $(CURDIR)/bin:$(PATH)
+
 TARGETS := $(shell ls scripts|grep -ve "^util-")
 
 # Default behavior for targets
@@ -17,24 +19,24 @@ rebase:
 	./scripts/charts-build-scripts/rebase
 
 dev-prepare: pull-scripts
-	@./bin/charts-build-scripts prepare --soft-errors --debug
+	@charts-build-scripts prepare --soft-errors --debug
 
 dev-prepare-cached: pull-scripts
-	@./bin/charts-build-scripts prepare --soft-errors --debug --useCache
+	@charts-build-scripts prepare --soft-errors --debug --useCache
 
 prepare-cached: pull-scripts
-	@./bin/charts-build-scripts prepare --useCache
+	@charts-build-scripts prepare --useCache
 
 patch-cached: pull-scripts
-	@./bin/charts-build-scripts patch --useCache
+	@charts-build-scripts patch --useCache
 
 charts-cached: pull-scripts
-	@./bin/charts-build-scripts charts --useCache
+	@charts-build-scripts charts --useCache
 
 CHARTS_BUILD_SCRIPTS_TARGETS := prepare patch clean clean-cache charts list index unzip zip standardize template
 
 $(CHARTS_BUILD_SCRIPTS_TARGETS): pull-scripts
-	@./bin/charts-build-scripts $@
+	@charts-build-scripts $@
 
 .PHONY: $(TARGETS) $(CHARTS_BUILD_SCRIPTS_TARGETS) list
 
