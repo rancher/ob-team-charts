@@ -11,14 +11,21 @@ global:
   # - name: "image-pull-secret"
   # or
   # - "image-pull-secret"
+
 affinity: {}
 
 topologySpreadConstraints: []
 
+# Override the name of the chart
+nameOverride: ""
+
+# Override the full name of the release
+fullnameOverride: ""
+
 image:
   repository: rancher/mirrored-prometheus-adapter-prometheus-adapter
   # if not set appVersion field from Chart.yaml is used
-  tag: v0.12.0
+  tag: "v0.12.0"
   pullPolicy: IfNotPresent
   pullSecrets: []
     # - foo
