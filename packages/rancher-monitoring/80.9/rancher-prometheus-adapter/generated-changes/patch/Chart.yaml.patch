@@ -1,6 +1,6 @@
 --- charts-original/Chart.yaml
 +++ charts/Chart.yaml
-@@ -7,6 +7,7 @@
+@@ -8,6 +8,7 @@
  - metrics
  - prometheus
  - adapter
@@ -8,7 +8,7 @@
  maintainers:
  - email: mattias.gees@jetstack.io
    name: mattiasgees
-@@ -16,7 +17,7 @@
+@@ -17,7 +18,7 @@
  - email: hfernandez@mesosphere.com
    name: hectorj2f
    url: https://github.com/hectorj2f
