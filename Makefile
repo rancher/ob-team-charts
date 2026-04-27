@@ -8,7 +8,7 @@ $(TARGETS):
 
 # Charts Build Scripts
 pull-scripts:
-	dep-fetch sync
+	@command -v dep-fetch >/dev/null 2>&1 || { echo "WARNING: dep-fetch not found, skipping pull-scripts (expected in ci-image/charts environments)"; exit 0; }; dep-fetch sync
 
 remove:
 	./scripts/remove-asset
