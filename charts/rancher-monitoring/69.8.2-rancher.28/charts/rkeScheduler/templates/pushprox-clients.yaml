@@ -1,5 +1,5 @@
 {{- template "applyKubeVersionOverrides" . -}}
-{{- if .Values.clients }}{{- if .Values.clients.enabled }}
+{{- if and .Values.clients .Values.clients.enabled }}
 apiVersion: apps/v1
 {{- if .Values.clients.deployment.enabled }}
 kind: Deployment
@@ -35,13 +35,18 @@ spec:
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
       serviceAccountName: {{ template "pushProxy.client.name" . }}
-      {{- if .Values.global.imagePullSecretName }}
+      {{- if .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+      {{- range .Values.global.imagePullSecrets }}
+      - name: {{ . }}
+      {{- end }}
+      {{- else if .Values.global.imagePullSecretName }}
       imagePullSecrets:
       - name: {{ .Values.global.imagePullSecretName }}
       {{- end }}
       containers:
       - name: pushprox-client
-        image: {{ template "system_default_registry" . }}{{ .Values.clients.image.repository }}:{{ .Values.clients.image.tag }}
+        image: {{ template "pushProxy.clients.container" . }}
         command:
         {{- range .Values.clients.command }}
           - {{ . | quote }}
@@ -154,4 +159,4 @@ spec:
       - name: metrics-cert-dir
         emptyDir: {}
       {{- end }}
-{{- end }}{{- end }}
+{{- end }}
