@@ -1,0 +1,4 @@
+url: https://github.com/prometheus-community/helm-charts.git
+subdirectory: charts/prometheus-windows-exporter
+commit: 764e51bbc0106f720fc5ddbc362c50740f78f1a3
+doNotRelease: true

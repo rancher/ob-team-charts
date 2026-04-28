@@ -1,0 +1,143 @@
+--- charts-original/values.yaml
++++ charts/values.yaml
+@@ -1,6 +1,8 @@
+ global:
+-  # -- Overrides the Docker registry globally for all images
+-  imageRegistry: null
++  cattle:
++    psp:
++      enabled: false
++    systemDefaultRegistry: ""
+ 
+   # To help compatibility with other charts which use global.imagePullSecrets.
+   # Allow either an array of {name: pullSecret} maps (k8s-style), or an array of strings (more common helm-style).
+@@ -44,7 +46,7 @@
+ 
+   ## autoMount is deprecated in favor of automountServiceAccountToken
+   # autoMount: false
+-  automountServiceAccountToken: false
++  automountServiceAccountToken: true
+ 
+ replicas: 1
+ 
+@@ -96,12 +98,9 @@
+ # schedulerName: "default-scheduler"
+ 
+ image:
+-  # -- The Docker registry
+-  registry: docker.io
+-  # -- Docker image repository
+-  repository: grafana/grafana
++  repository: rancher/appco-grafana
+   # Overrides the Grafana image tag whose default is the chart appVersion
+-  tag: ""
++  tag: 12.4.2-3.11
+   sha: ""
+   pullPolicy: IfNotPresent
+ 
+@@ -114,16 +113,16 @@
+   #   - myRegistrKeySecretName
+ 
+ testFramework:
+-  enabled: true
++  enabled: false
+   ## The type of Helm hook used to run this test. Defaults to test.
+   ## ref: https://helm.sh/docs/topics/charts_hooks/#the-available-hooks
+   ##
+   # hookType: test
+   image:
+     # -- The Docker registry
+-    registry: docker.io
+-    repository: bats/bats
+-    tag: "1.13.0"
++    registry: ""
++    repository: rancher/mirrored-bci-busybox
++    tag: 16.0-15.4
+   imagePullPolicy: IfNotPresent
+   securityContext: {}
+   containerSecurityContext: {}
+@@ -188,9 +187,9 @@
+ 
+ downloadDashboardsImage:
+   # -- The Docker registry
+-  registry: docker.io
+-  repository: curlimages/curl
+-  tag: 8.18.0
++  registry: ""
++  repository: rancher/appco-curl
++  tag: 8.14.1-7.1
+   sha: ""
+   pullPolicy: IfNotPresent
+ 
+@@ -467,9 +466,9 @@
+   ##
+   image:
+     # -- The Docker registry
+-    registry: docker.io
+-    repository: library/busybox
+-    tag: "1.37.0"
++    registry: ""
++    repository: rancher/mirrored-bci-busybox
++    tag: 16.0-15.4
+     sha: ""
+     pullPolicy: IfNotPresent
+ 
+@@ -968,9 +967,9 @@
+ sidecar:
+   image:
+     # -- The Docker registry
+-    registry: quay.io
+-    repository: kiwigrid/k8s-sidecar
+-    tag: 2.5.4
++    registry: ""
++    repository: rancher/appco-k8s-sidecar
++    tag: 2.5.4-5.2
+     sha: ""
+   imagePullPolicy: IfNotPresent
+   resources: {}
+@@ -1067,7 +1066,7 @@
+     # It runs before calls to REQ_URI. If the file is not executable it will be passed to sh.
+     # Otherwise, it's executed as is. Shebangs known to work are #!/bin/sh and #!/usr/bin/env python
+     script: null
+-    skipReload: false
++    skipReload: true
+     # This is needed if skipReload is true, to load any alerts defined at startup time.
+     # Deploy the alert sidecar as an initContainer.
+     initAlerts: false
+@@ -1232,7 +1231,7 @@
+     # It's also possible to specify ALL to search in all namespaces
+     searchNamespace: null
+     # Method to use to detect ConfigMap changes. With WATCH the sidecar will do a WATCH requests, with SLEEP it will list all ConfigMaps, then sleep for 60 seconds.
+-    watchMethod: WATCH
++    watchMethod: LIST
+     # search in configmap, secret or both
+     resource: both
+     #
+@@ -1275,10 +1274,10 @@
+     # It runs before calls to REQ_URI. If the file is not executable it will be passed to sh.
+     # Otherwise, it's executed as is. Shebangs known to work are #!/bin/sh and #!/usr/bin/env python
+     script: null
+-    skipReload: false
++    skipReload: true
+     # This is needed if skipReload is true, to load any datasources defined at startup time.
+     # Deploy the datasources sidecar as an initContainer.
+-    initDatasources: false
++    initDatasources: true
+     # Use native sidecar https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/
+     # restartPolicy: Always
+     # # only applies to native sidecars
+@@ -1466,12 +1465,9 @@
+   # The callback url of grafana instances if it is not in the same namespace with the remote image renderer
+   renderingCallbackURL: ""
+   image:
+-    # -- The Docker registry
+-    registry: docker.io
+-    # image-renderer Image repository
+-    repository: grafana/grafana-image-renderer
++    repository: rancher/mirrored-grafana-grafana-image-renderer
+     # image-renderer Image tag
+-    tag: latest
++    tag: v5.1.0
+     # image-renderer Image sha (optional)
+     sha: ""
+     # image-renderer Image pull secrets (optional)
