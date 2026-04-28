@@ -1,6 +1,6 @@
 --- charts-original/templates/daemonset.yaml
 +++ charts/templates/daemonset.yaml
-@@ -65,10 +65,14 @@
+@@ -112,10 +112,14 @@
              {{- with .Values.extraArgs }}
              {{- toYaml . | nindent 12 }}
              {{- end }}

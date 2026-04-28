@@ -10,7 +10,7 @@
 +  repository: rancher/appco-node-exporter
    # Overrides the image tag whose default is {{ printf "v%s" .Chart.AppVersion }}
 -  tag: ""
-+  tag: 1.10.2-14.3
++  tag: "1.11.0-14.4"
    pullPolicy: IfNotPresent
    digest: ""
  
@@ -29,10 +29,10 @@
    image:
 -    registry: quay.io
 -    repository: brancz/kube-rbac-proxy
--    tag: v0.20.1
-+    registry: ''
+-    tag: v0.21.2
++    registry: ""
 +    repository: rancher/appco-kube-rbac-proxy
-+    tag: 0.20.1-16.15
++    tag: 0.21.2-21.1
      sha: ""
      pullPolicy: IfNotPresent
  
@@ -52,7 +52,7 @@
    ## Name of the service port. Sets the port name of the main container (NE) as well.
    portName: metrics
    ## Port number for service type NodePort
-@@ -459,6 +461,8 @@
+@@ -469,6 +471,8 @@
  tolerations:
    - effect: NoSchedule
      operator: Exists
@@ -61,3 +61,14 @@
  
  # Enable or disable container termination message settings
  # https://kubernetes.io/docs/tasks/debug/debug-application/determine-reason-pod-failure/
+@@ -548,8 +552,8 @@
+ permissionInitContainer:
+   image:
+     registry: quay.io
+-    repository: prometheus/busybox
+-    tag: latest
++    repository: rancher/mirrored-bci-busybox
++    tag: 16.0-15.4
+     sha: ""
+     pullPolicy: IfNotPresent
+   securityContext:
