@@ -1,6 +1,6 @@
 --- charts-original/templates/servicemonitor.yaml
 +++ charts/templates/servicemonitor.yaml
-@@ -30,14 +30,31 @@
+@@ -31,14 +31,31 @@
      tlsConfig:
        {{- toYaml . | nindent 6 }}
      {{- end }}

@@ -1,4 +1,4 @@
-url: https://github.com/grafana/helm-charts.git
+url: https://github.com/grafana-community/helm-charts.git
 subdirectory: charts/grafana
-commit: e2f9b791fae759fd77bd6a1bb804d03ea3651f57
+commit: fcd1ef1e7e006fcee398616f624c6b6ab33a50bb # grafana-11.3.7
 doNotRelease: true

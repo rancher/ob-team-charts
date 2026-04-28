@@ -1,6 +1,6 @@
 --- charts-original/templates/_pod.tpl
 +++ charts/templates/_pod.tpl
-@@ -36,11 +36,11 @@
+@@ -39,11 +39,11 @@
  {{- end }}
  {{- if ( and .Values.persistence.enabled .Values.initChownData.enabled ) }}
    - name: init-chown-data
@@ -15,7 +15,7 @@
      {{- end }}
      imagePullPolicy: {{ .Values.initChownData.image.pullPolicy }}
      {{- with .Values.initChownData.securityContext }}
-@@ -65,11 +65,11 @@
+@@ -68,11 +68,11 @@
  {{- end }}
  {{- if .Values.dashboards }}
    - name: download-dashboards
@@ -30,7 +30,7 @@
      {{- end }}
      imagePullPolicy: {{ .Values.downloadDashboardsImage.pullPolicy }}
      command: ["/bin/sh"]
-@@ -114,11 +114,11 @@
+@@ -117,11 +117,11 @@
  {{- end }}
  {{- if and .Values.sidecar.alerts.enabled .Values.sidecar.alerts.initAlerts }}
    - name: {{ include "grafana.name" . }}-init-sc-alerts
@@ -45,16 +45,7 @@
      {{- end }}
      imagePullPolicy: {{ .Values.sidecar.imagePullPolicy }}
      {{- if .Values.sidecar.alerts.restartPolicy }}
-@@ -140,7 +140,7 @@
-       {{- end }}
-       {{- if .Values.sidecar.alerts.startupProbe }}
-       - name: HEALTH_PORT
--        value: "{{ .Values.sidecar.alerts.startupProbe.httpGet.port | default "8080" }}"
-+        value: "{{ .Values.sidecar.alerts.startupProbe.httpGet.port | default "8084" }}"
-       {{- end }}
-       {{- if .Values.sidecar.alerts.ignoreAlreadyProcessed }}
-       - name: IGNORE_ALREADY_PROCESSED
-@@ -203,11 +203,11 @@
+@@ -213,11 +213,11 @@
  {{- end }}
  {{- if and .Values.sidecar.datasources.enabled .Values.sidecar.datasources.initDatasources }}
    - name: {{ include "grafana.name" . }}-init-sc-datasources
@@ -69,7 +60,7 @@
      {{- end }}
      imagePullPolicy: {{ .Values.sidecar.imagePullPolicy }}
      {{- if .Values.sidecar.datasources.restartPolicy }}
-@@ -346,11 +346,11 @@
+@@ -354,11 +354,11 @@
  {{- end }}
  {{- if and .Values.sidecar.notifiers.enabled .Values.sidecar.notifiers.initNotifiers }}
    - name: {{ include "grafana.name" . }}-init-sc-notifiers
@@ -84,7 +75,7 @@
      {{- end }}
      imagePullPolicy: {{ .Values.sidecar.imagePullPolicy }}
      {{- if .Values.sidecar.notifiers.restartPolicy }}
-@@ -588,11 +588,11 @@
+@@ -601,11 +601,11 @@
  containers:
  {{- if and .Values.sidecar.alerts.enabled (not .Values.sidecar.alerts.initAlerts) }}
    - name: {{ include "grafana.name" . }}-sc-alerts
@@ -99,7 +90,7 @@
      {{- end }}
      imagePullPolicy: {{ .Values.sidecar.imagePullPolicy }}
      env:
-@@ -720,11 +720,11 @@
+@@ -729,11 +729,11 @@
  {{- end}}
  {{- if and .Values.sidecar.dashboards.enabled (not .Values.sidecar.dashboards.initDashboards) }}
    - name: {{ include "grafana.name" . }}-sc-dashboard
@@ -114,16 +105,7 @@
      {{- end }}
      imagePullPolicy: {{ .Values.sidecar.imagePullPolicy }}
      env:
-@@ -743,6 +743,8 @@
-       {{- end }}
-       - name: METHOD
-         value: {{ .Values.sidecar.dashboards.watchMethod }}
-+      - name: HEALTH_PORT
-+        value: "8088"
-       - name: LABEL
-         value: "{{ tpl .Values.sidecar.dashboards.label $root }}"
-       {{- with .Values.sidecar.dashboards.labelValue }}
-@@ -856,11 +858,11 @@
+@@ -861,11 +861,11 @@
  {{- end}}
  {{- if and .Values.sidecar.datasources.enabled (not .Values.sidecar.datasources.initDatasources) }}
    - name: {{ include "grafana.name" . }}-sc-datasources
@@ -138,7 +120,7 @@
      {{- end }}
      imagePullPolicy: {{ .Values.sidecar.imagePullPolicy }}
      env:
-@@ -988,11 +990,11 @@
+@@ -989,11 +989,11 @@
  {{- end}}
  {{- if and .Values.sidecar.notifiers.enabled (not .Values.sidecar.notifiers.initNotifiers) }}
    - name: {{ include "grafana.name" . }}-sc-notifiers
@@ -153,7 +135,7 @@
      {{- end }}
      imagePullPolicy: {{ .Values.sidecar.imagePullPolicy }}
      env:
-@@ -1115,11 +1117,11 @@
+@@ -1112,11 +1112,11 @@
  {{- end}}
  {{- if .Values.sidecar.plugins.enabled }}
    - name: {{ include "grafana.name" . }}-sc-plugins
@@ -168,7 +150,7 @@
      {{- end }}
      imagePullPolicy: {{ .Values.sidecar.imagePullPolicy }}
      env:
-@@ -1241,11 +1243,11 @@
+@@ -1234,11 +1234,11 @@
        {{- end }}
  {{- end}}
    - name: grafana
@@ -183,7 +165,7 @@
      {{- end }}
      imagePullPolicy: {{ .Values.image.pullPolicy }}
      {{- if .Values.command }}
-@@ -1526,8 +1528,8 @@
+@@ -1523,8 +1523,8 @@
  {{- with .Values.extraContainers }}
    {{- tpl . $ | nindent 2 }}
  {{- end }}
@@ -193,7 +175,7 @@
    {{- toYaml . | nindent 2 }}
  {{- end }}
  {{- with .Values.affinity }}
-@@ -1538,8 +1540,8 @@
+@@ -1535,8 +1535,8 @@
  topologySpreadConstraints:
    {{- toYaml . | nindent 2 }}
  {{- end }}
