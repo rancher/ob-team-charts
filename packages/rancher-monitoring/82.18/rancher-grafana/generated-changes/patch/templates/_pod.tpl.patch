@@ -1,0 +1,205 @@
+--- charts-original/templates/_pod.tpl
++++ charts/templates/_pod.tpl
+@@ -36,11 +36,11 @@
+ {{- end }}
+ {{- if ( and .Values.persistence.enabled .Values.initChownData.enabled ) }}
+   - name: init-chown-data
+-    {{- $registry := .Values.global.imageRegistry | default .Values.initChownData.image.registry -}}
++    {{- $registry := include "system_default_registry" . | default .Values.initChownData.image.registry -}}
+     {{- if .Values.initChownData.image.sha }}
+-    image: "{{ $registry }}/{{ .Values.initChownData.image.repository }}:{{ .Values.initChownData.image.tag }}@sha256:{{ .Values.initChownData.image.sha }}"
++    image: "{{ $registry }}{{ .Values.initChownData.image.repository }}:{{ .Values.initChownData.image.tag }}@sha256:{{ .Values.initChownData.image.sha }}"
+     {{- else }}
+-    image: "{{ $registry }}/{{ .Values.initChownData.image.repository }}:{{ .Values.initChownData.image.tag }}"
++    image: "{{ $registry }}{{ .Values.initChownData.image.repository }}:{{ .Values.initChownData.image.tag }}"
+     {{- end }}
+     imagePullPolicy: {{ .Values.initChownData.image.pullPolicy }}
+     {{- with .Values.initChownData.securityContext }}
+@@ -65,11 +65,11 @@
+ {{- end }}
+ {{- if .Values.dashboards }}
+   - name: download-dashboards
+-    {{- $registry := .Values.global.imageRegistry | default .Values.downloadDashboardsImage.registry -}}
++    {{- $registry := include "system_default_registry" . | default .Values.downloadDashboardsImage.registry -}}
+     {{- if .Values.downloadDashboardsImage.sha }}
+-    image: "{{ $registry }}/{{ .Values.downloadDashboardsImage.repository }}:{{ .Values.downloadDashboardsImage.tag }}@sha256:{{ .Values.downloadDashboardsImage.sha }}"
++    image: "{{ $registry }}{{ .Values.downloadDashboardsImage.repository }}:{{ .Values.downloadDashboardsImage.tag }}@sha256:{{ .Values.downloadDashboardsImage.sha }}"
+     {{- else }}
+-    image: "{{ $registry }}/{{ .Values.downloadDashboardsImage.repository }}:{{ .Values.downloadDashboardsImage.tag }}"
++    image: "{{ $registry }}{{ .Values.downloadDashboardsImage.repository }}:{{ .Values.downloadDashboardsImage.tag }}"
+     {{- end }}
+     imagePullPolicy: {{ .Values.downloadDashboardsImage.pullPolicy }}
+     command: ["/bin/sh"]
+@@ -114,11 +114,11 @@
+ {{- end }}
+ {{- if and .Values.sidecar.alerts.enabled .Values.sidecar.alerts.initAlerts }}
+   - name: {{ include "grafana.name" . }}-init-sc-alerts
+-    {{- $registry := .Values.global.imageRegistry | default .Values.sidecar.image.registry -}}
++    {{- $registry := include "system_default_registry" . | default .Values.sidecar.image.registry -}}
+     {{- if .Values.sidecar.image.sha }}
+-    image: "{{ $registry }}/{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}@sha256:{{ .Values.sidecar.image.sha }}"
++    image: "{{ $registry }}{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}@sha256:{{ .Values.sidecar.image.sha }}"
+     {{- else }}
+-    image: "{{ $registry }}/{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}"
++    image: "{{ $registry }}{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}"
+     {{- end }}
+     imagePullPolicy: {{ .Values.sidecar.imagePullPolicy }}
+     {{- if .Values.sidecar.alerts.restartPolicy }}
+@@ -140,7 +140,7 @@
+       {{- end }}
+       {{- if .Values.sidecar.alerts.startupProbe }}
+       - name: HEALTH_PORT
+-        value: "{{ .Values.sidecar.alerts.startupProbe.httpGet.port | default "8080" }}"
++        value: "{{ .Values.sidecar.alerts.startupProbe.httpGet.port | default "8084" }}"
+       {{- end }}
+       {{- if .Values.sidecar.alerts.ignoreAlreadyProcessed }}
+       - name: IGNORE_ALREADY_PROCESSED
+@@ -203,11 +203,11 @@
+ {{- end }}
+ {{- if and .Values.sidecar.datasources.enabled .Values.sidecar.datasources.initDatasources }}
+   - name: {{ include "grafana.name" . }}-init-sc-datasources
+-    {{- $registry := .Values.global.imageRegistry | default .Values.sidecar.image.registry -}}
++    {{- $registry := include "system_default_registry" . | default .Values.sidecar.image.registry -}}
+     {{- if .Values.sidecar.image.sha }}
+-    image: "{{ $registry }}/{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}@sha256:{{ .Values.sidecar.image.sha }}"
++    image: "{{ $registry }}{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}@sha256:{{ .Values.sidecar.image.sha }}"
+     {{- else }}
+-    image: "{{ $registry }}/{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}"
++    image: "{{ $registry }}{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}"
+     {{- end }}
+     imagePullPolicy: {{ .Values.sidecar.imagePullPolicy }}
+     {{- if .Values.sidecar.datasources.restartPolicy }}
+@@ -346,11 +346,11 @@
+ {{- end }}
+ {{- if and .Values.sidecar.notifiers.enabled .Values.sidecar.notifiers.initNotifiers }}
+   - name: {{ include "grafana.name" . }}-init-sc-notifiers
+-    {{- $registry := .Values.global.imageRegistry | default .Values.sidecar.image.registry -}}
++    {{- $registry := include "system_default_registry" . | default .Values.sidecar.image.registry -}}
+     {{- if .Values.sidecar.image.sha }}
+-    image: "{{ $registry }}/{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}@sha256:{{ .Values.sidecar.image.sha }}"
++    image: "{{ $registry }}{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}@sha256:{{ .Values.sidecar.image.sha }}"
+     {{- else }}
+-    image: "{{ $registry }}/{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}"
++    image: "{{ $registry }}{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}"
+     {{- end }}
+     imagePullPolicy: {{ .Values.sidecar.imagePullPolicy }}
+     {{- if .Values.sidecar.notifiers.restartPolicy }}
+@@ -588,11 +588,11 @@
+ containers:
+ {{- if and .Values.sidecar.alerts.enabled (not .Values.sidecar.alerts.initAlerts) }}
+   - name: {{ include "grafana.name" . }}-sc-alerts
+-    {{- $registry := .Values.global.imageRegistry | default .Values.sidecar.image.registry -}}
++    {{- $registry := include "system_default_registry" . | default .Values.sidecar.image.registry -}}
+     {{- if .Values.sidecar.image.sha }}
+-    image: "{{ $registry }}/{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}@sha256:{{ .Values.sidecar.image.sha }}"
++    image: "{{ $registry }}{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}@sha256:{{ .Values.sidecar.image.sha }}"
+     {{- else }}
+-    image: "{{ $registry }}/{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}"
++    image: "{{ $registry }}{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}"
+     {{- end }}
+     imagePullPolicy: {{ .Values.sidecar.imagePullPolicy }}
+     env:
+@@ -720,11 +720,11 @@
+ {{- end}}
+ {{- if and .Values.sidecar.dashboards.enabled (not .Values.sidecar.dashboards.initDashboards) }}
+   - name: {{ include "grafana.name" . }}-sc-dashboard
+-    {{- $registry := .Values.global.imageRegistry | default .Values.sidecar.image.registry -}}
++    {{- $registry := include "system_default_registry" . | default .Values.sidecar.image.registry -}}
+     {{- if .Values.sidecar.image.sha }}
+-    image: "{{ $registry }}/{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}@sha256:{{ .Values.sidecar.image.sha }}"
++    image: "{{ $registry }}{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}@sha256:{{ .Values.sidecar.image.sha }}"
+     {{- else }}
+-    image: "{{ $registry }}/{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}"
++    image: "{{ $registry }}{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}"
+     {{- end }}
+     imagePullPolicy: {{ .Values.sidecar.imagePullPolicy }}
+     env:
+@@ -743,6 +743,8 @@
+       {{- end }}
+       - name: METHOD
+         value: {{ .Values.sidecar.dashboards.watchMethod }}
++      - name: HEALTH_PORT
++        value: "8088"
+       - name: LABEL
+         value: "{{ tpl .Values.sidecar.dashboards.label $root }}"
+       {{- with .Values.sidecar.dashboards.labelValue }}
+@@ -856,11 +858,11 @@
+ {{- end}}
+ {{- if and .Values.sidecar.datasources.enabled (not .Values.sidecar.datasources.initDatasources) }}
+   - name: {{ include "grafana.name" . }}-sc-datasources
+-    {{- $registry := .Values.global.imageRegistry | default .Values.sidecar.image.registry -}}
++    {{- $registry := include "system_default_registry" . | default .Values.sidecar.image.registry -}}
+     {{- if .Values.sidecar.image.sha }}
+-    image: "{{ $registry }}/{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}@sha256:{{ .Values.sidecar.image.sha }}"
++    image: "{{ $registry }}{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}@sha256:{{ .Values.sidecar.image.sha }}"
+     {{- else }}
+-    image: "{{ $registry }}/{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}"
++    image: "{{ $registry }}{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}"
+     {{- end }}
+     imagePullPolicy: {{ .Values.sidecar.imagePullPolicy }}
+     env:
+@@ -988,11 +990,11 @@
+ {{- end}}
+ {{- if and .Values.sidecar.notifiers.enabled (not .Values.sidecar.notifiers.initNotifiers) }}
+   - name: {{ include "grafana.name" . }}-sc-notifiers
+-    {{- $registry := .Values.global.imageRegistry | default .Values.sidecar.image.registry -}}
++    {{- $registry := include "system_default_registry" . | default .Values.sidecar.image.registry -}}
+     {{- if .Values.sidecar.image.sha }}
+-    image: "{{ $registry }}/{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}@sha256:{{ .Values.sidecar.image.sha }}"
++    image: "{{ $registry }}{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}@sha256:{{ .Values.sidecar.image.sha }}"
+     {{- else }}
+-    image: "{{ $registry }}/{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}"
++    image: "{{ $registry }}{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}"
+     {{- end }}
+     imagePullPolicy: {{ .Values.sidecar.imagePullPolicy }}
+     env:
+@@ -1115,11 +1117,11 @@
+ {{- end}}
+ {{- if .Values.sidecar.plugins.enabled }}
+   - name: {{ include "grafana.name" . }}-sc-plugins
+-    {{- $registry := .Values.global.imageRegistry | default .Values.sidecar.image.registry -}}
++    {{- $registry := include "system_default_registry" . | default .Values.sidecar.image.registry -}}
+     {{- if .Values.sidecar.image.sha }}
+-    image: "{{ $registry }}/{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}@sha256:{{ .Values.sidecar.image.sha }}"
++    image: "{{ $registry }}{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}@sha256:{{ .Values.sidecar.image.sha }}"
+     {{- else }}
+-    image: "{{ $registry }}/{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}"
++    image: "{{ $registry }}{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}"
+     {{- end }}
+     imagePullPolicy: {{ .Values.sidecar.imagePullPolicy }}
+     env:
+@@ -1241,11 +1243,11 @@
+       {{- end }}
+ {{- end}}
+   - name: grafana
+-    {{- $registry := .Values.global.imageRegistry | default .Values.image.registry -}}
++    {{- $registry := include "system_default_registry" . | default .Values.image.registry -}}
+     {{- if .Values.image.sha }}
+-    image: "{{ $registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}@sha256:{{ .Values.image.sha }}"
++    image: "{{ $registry }}{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}@sha256:{{ .Values.image.sha }}"
+     {{- else }}
+-    image: "{{ $registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
++    image: "{{ $registry }}{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+     {{- end }}
+     imagePullPolicy: {{ .Values.image.pullPolicy }}
+     {{- if .Values.command }}
+@@ -1526,8 +1528,8 @@
+ {{- with .Values.extraContainers }}
+   {{- tpl . $ | nindent 2 }}
+ {{- end }}
++nodeSelector: {{ include "linux-node-selector" . | nindent 2 }}
+ {{- with .Values.nodeSelector }}
+-nodeSelector:
+   {{- toYaml . | nindent 2 }}
+ {{- end }}
+ {{- with .Values.affinity }}
+@@ -1538,8 +1540,8 @@
+ topologySpreadConstraints:
+   {{- toYaml . | nindent 2 }}
+ {{- end }}
++tolerations: {{ include "linux-node-tolerations" . | nindent 2 }}
+ {{- with .Values.tolerations }}
+-tolerations:
+   {{- toYaml . | nindent 2 }}
+ {{- end }}
+ volumes:

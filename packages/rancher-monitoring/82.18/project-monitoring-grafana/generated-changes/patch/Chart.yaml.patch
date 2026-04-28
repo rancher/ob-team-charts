@@ -1,0 +1,11 @@
+--- charts-original/Chart.yaml
++++ charts/Chart.yaml
+@@ -29,7 +29,7 @@
+   name: jkroepke
+ - email: quentin.bisson@gmail.com
+   name: QuentinBisson
+-name: grafana
++name: rancher-grafana
+ sources:
+ - https://github.com/grafana/grafana
+ - https://github.com/grafana/helm-charts
