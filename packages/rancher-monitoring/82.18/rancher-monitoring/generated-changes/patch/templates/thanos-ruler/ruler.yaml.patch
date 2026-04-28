@@ -17,7 +17,7 @@
  {{- if .Values.thanosRuler.thanosRulerSpec.additionalArgs }}
    additionalArgs:
  {{ tpl (toYaml .Values.thanosRuler.thanosRulerSpec.additionalArgs) $ | indent 4 }}
-@@ -157,8 +158,8 @@
+@@ -160,8 +161,8 @@
                - {key: app.kubernetes.io/name, operator: In, values: [thanos-ruler]}
                - {key: thanos-ruler, operator: In, values: [{{ template "kube-prometheus-stack.thanosRuler.crname" . }}]}
  {{- end }}

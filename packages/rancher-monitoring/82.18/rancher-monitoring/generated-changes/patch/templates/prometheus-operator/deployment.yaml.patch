@@ -27,7 +27,7 @@
              {{- end }}
              {{- if .Values.prometheusOperator.prometheusConfigReloader.image.sha }}
              - --prometheus-config-reloader={{ $configReloaderRegistry }}/{{ .Values.prometheusOperator.prometheusConfigReloader.image.repository }}:{{ .Values.prometheusOperator.prometheusConfigReloader.image.tag | default .Chart.AppVersion }}@sha256:{{ .Values.prometheusOperator.prometheusConfigReloader.image.sha }}
-@@ -228,8 +229,8 @@
+@@ -231,8 +232,8 @@
        hostNetwork: true
        dnsPolicy: ClusterFirstWithHostNet
  {{- end }}
@@ -37,7 +37,7 @@
  {{ toYaml . | indent 8 }}
      {{- end }}
      {{- with .Values.prometheusOperator.affinity }}
-@@ -239,8 +240,8 @@
+@@ -242,8 +243,8 @@
      {{- with .Values.prometheusOperator.terminationGracePeriodSeconds }}
        terminationGracePeriodSeconds: {{ . }}
      {{- end }}

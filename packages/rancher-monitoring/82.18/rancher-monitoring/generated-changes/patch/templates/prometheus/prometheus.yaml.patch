@@ -24,7 +24,7 @@
  {{ toYaml .Values.prometheus.prometheusSpec.nodeSelector | indent 4 }}
  {{- end }}
    paused: {{ .Values.prometheus.prometheusSpec.paused }}
-@@ -183,7 +185,9 @@
+@@ -192,7 +194,9 @@
    serviceName: {{ tpl .Values.prometheus.prometheusSpec.serviceName  .}}
  {{- end }}
    serviceAccountName: {{ template "kube-prometheus-stack.prometheus.serviceAccountName" . }}
@@ -35,7 +35,7 @@
    serviceMonitorSelector:
  {{ tpl (toYaml .Values.prometheus.prometheusSpec.serviceMonitorSelector | indent 4) . }}
  {{ else if .Values.prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues  }}
-@@ -199,7 +203,9 @@
+@@ -208,7 +212,9 @@
  {{ else }}
    serviceMonitorNamespaceSelector: {}
  {{- end }}
@@ -46,7 +46,7 @@
    podMonitorSelector:
  {{ tpl (toYaml .Values.prometheus.prometheusSpec.podMonitorSelector | indent 4) . }}
  {{ else if .Values.prometheus.prometheusSpec.podMonitorSelectorNilUsesHelmValues  }}
-@@ -215,7 +221,9 @@
+@@ -224,7 +230,9 @@
  {{ else }}
    podMonitorNamespaceSelector: {}
  {{- end }}
@@ -57,7 +57,7 @@
    probeSelector:
  {{ tpl (toYaml .Values.prometheus.prometheusSpec.probeSelector | indent 4) . }}
  {{ else if .Values.prometheus.prometheusSpec.probeSelectorNilUsesHelmValues  }}
-@@ -333,8 +341,8 @@
+@@ -342,8 +350,8 @@
  {{- include "kube-prometheus-stack.prometheus.pod-anti-affinity.matchExpressions" . | indent 12 }}
  {{- end }}
  {{- end }}
@@ -67,7 +67,7 @@
  {{ toYaml .Values.prometheus.prometheusSpec.tolerations | indent 4 }}
  {{- end }}
  {{- if .Values.prometheus.prometheusSpec.topologySpreadConstraints }}
-@@ -383,7 +391,7 @@
+@@ -392,7 +400,7 @@
  {{- end }}
  {{- if .Values.prometheus.prometheusSpec.containers }}
    containers:

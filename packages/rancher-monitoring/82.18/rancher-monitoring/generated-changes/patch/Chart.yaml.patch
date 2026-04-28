@@ -18,9 +18,9 @@
 +  catalog.cattle.io/requests-memory: 4000Mi
 +  catalog.cattle.io/type: cluster-tool
 +  catalog.cattle.io/ui-component: monitoring
-+  catalog.cattle.io/upstream-version: 80.9.1
++  catalog.cattle.io/upstream-version: 82.18.0
  apiVersion: v2
- appVersion: v0.87.1
+ appVersion: v0.89.0
  dependencies:
 -- condition: crds.enabled
 -  name: crds
@@ -32,7 +32,7 @@
 @@ -59,10 +70,6 @@
    name: prometheus-node-exporter
    repository: file://./charts/prometheus-node-exporter
-   version: 4.49.2
+   version: 4.53.0
 -- condition: windowsMonitoring.enabled
 -  name: prometheus-windows-exporter
 -  repository: https://prometheus-community.github.io/helm-charts
@@ -49,7 +49,7 @@
  keywords:
  - operator
  - prometheus
-@@ -143,7 +150,7 @@
+@@ -140,7 +147,7 @@
  - email: quentin.bisson@gmail.com
    name: QuentinBisson
    url: https://github.com/QuentinBisson

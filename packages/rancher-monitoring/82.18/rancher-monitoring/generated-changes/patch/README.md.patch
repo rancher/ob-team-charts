@@ -47,5 +47,5 @@
 +| `kubeAdmProxy.enabled` | Create a PushProx installation for monitoring kube-proxy metrics in kubeAdm clusters | `false` |
 +| `kubeAdmEtcd.enabled` | Create a PushProx installation for monitoring etcd metrics in kubeAdm clusters | `false` |
  
- ### Multiple releases
+ For templated Grafana datasource definitions (e.g. when using Helm flow control), use `grafana.additionalDataSourcesString`, which is rendered via `tpl`.
  

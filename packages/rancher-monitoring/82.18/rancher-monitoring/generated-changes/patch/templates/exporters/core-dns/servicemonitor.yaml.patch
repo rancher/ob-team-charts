@@ -1,16 +1,14 @@
 --- charts-original/templates/exporters/core-dns/servicemonitor.yaml
 +++ charts/templates/exporters/core-dns/servicemonitor.yaml
-@@ -41,10 +41,20 @@
-     proxyUrl: {{ .Values.coreDns.serviceMonitor.proxyUrl}}
+@@ -43,10 +43,20 @@
+     {{- if .Values.coreDns.serviceMonitor.bearerTokenFile }}
+     bearerTokenFile: {{ .Values.coreDns.serviceMonitor.bearerTokenFile }}
      {{- end }}
-     bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
 -{{- if .Values.coreDns.serviceMonitor.metricRelabelings }}
      metricRelabelings:
--{{ tpl (toYaml .Values.coreDns.serviceMonitor.metricRelabelings | indent 4) . }}
--{{- end }}
-+    {{- if .Values.coreDns.serviceMonitor.metricRelabelings }}
-+    {{ tpl (toYaml .Values.coreDns.serviceMonitor.metricRelabelings | indent 4) . }}
-+    {{- end }}
++{{- if .Values.coreDns.serviceMonitor.metricRelabelings }}
+ {{ tpl (toYaml .Values.coreDns.serviceMonitor.metricRelabelings | indent 4) . }}
+ {{- end }}
 +    {{ if .Values.global.cattle.clusterId }}
 +    - sourceLabels: [__address__]
 +      targetLabel: cluster_id

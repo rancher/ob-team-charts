@@ -29,11 +29,10 @@ def change_style(style, representer):
 
 refs = {
     # renovate: git-refs=https://github.com/prometheus-operator/kube-prometheus branch=main
-    'ref.kube-prometheus': '55fcdae9667b220964a56c0aa5b363a43cb79037',
+    'ref.kube-prometheus': '3425561cdfea89a8ea65194c56dfcd81b2e84afd',
     # renovate: git-refs=https://github.com/kubernetes-monitoring/kubernetes-mixin branch=master
-    'ref.kubernetes-mixin': '93e5db5a9d7fbd0a1918102074d6acc4a6a0c7ee',
-    # renovate: git-refs=https://github.com/etcd-io/etcd branch=main
-    'ref.etcd': 'aef0361938cbc604fef2ac15996518988d0c9290',
+    'ref.kubernetes-mixin': 'bb22ff75f235469052283a112e64c00259500939',
+    'ref.etcd': 'be3acf4ed017efb7008beb08585d890e5364ce93',
 }
 
 # Source files list
@@ -147,7 +146,7 @@ metadata:
     {{ tpl $.Values.grafana.sidecar.dashboards.label $ }}: {{ ((tpl $.Values.grafana.sidecar.dashboards.labelValue $) | default 1) | quote }}
     {{- end }}
     app: {{ template "kube-prometheus-stack.name" $ }}-grafana
-{{ include "kube-prometheus-stack.labels" $ | indent 4 }}
+    {{- include "kube-prometheus-stack.labels" $ | nindent 4 }}
 data:
 '''
 
@@ -165,7 +164,11 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{ end }}
   labels:
+    {{- if $.Values.grafana.sidecar.dashboards.label }}
+    {{ tpl $.Values.grafana.sidecar.dashboards.label $ }}: {{ ((tpl $.Values.grafana.sidecar.dashboards.labelValue $) | default 1) | quote }}
+    {{- end }}
     app: {{ template "kube-prometheus-stack.name" $ }}-grafana
+    {{- include "kube-prometheus-stack.labels" $ | nindent 4 }}
 spec:
   allowCrossNamespaceImport: true
   resyncPeriod: {{ .Values.grafana.operator.resyncPeriod | quote | default "10m" }}

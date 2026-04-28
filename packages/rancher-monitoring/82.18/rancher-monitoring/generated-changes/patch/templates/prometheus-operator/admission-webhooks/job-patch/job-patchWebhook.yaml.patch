@@ -1,6 +1,6 @@
 --- charts-original/templates/prometheus-operator/admission-webhooks/job-patch/job-patchWebhook.yaml
 +++ charts/templates/prometheus-operator/admission-webhooks/job-patch/job-patchWebhook.yaml
-@@ -14,7 +14,10 @@
+@@ -22,7 +22,10 @@
      app: {{ template "kube-prometheus-stack.name" $ }}-admission-patch
      {{- include "kube-prometheus-stack.prometheus-operator-webhook.labels" $ | nindent 4 }}
  spec:
@@ -12,7 +12,7 @@
    template:
      metadata:
        name:  {{ template "kube-prometheus-stack.fullname" . }}-admission-patch
-@@ -35,7 +38,7 @@
+@@ -43,7 +46,7 @@
        {{- end }}
        containers:
          - name: patch
@@ -21,7 +21,7 @@
            {{- if .Values.prometheusOperator.admissionWebhooks.patch.image.sha }}
            image: {{ $registry }}/{{ .Values.prometheusOperator.admissionWebhooks.patch.image.repository }}:{{ .Values.prometheusOperator.admissionWebhooks.patch.image.tag }}@sha256:{{ .Values.prometheusOperator.admissionWebhooks.patch.image.sha }}
            {{- else }}
-@@ -56,16 +59,16 @@
+@@ -64,16 +67,16 @@
  {{ toYaml .Values.prometheusOperator.admissionWebhooks.patch.resources | indent 12 }}
        restartPolicy: OnFailure
        serviceAccountName: {{ template "kube-prometheus-stack.fullname" . }}-admission

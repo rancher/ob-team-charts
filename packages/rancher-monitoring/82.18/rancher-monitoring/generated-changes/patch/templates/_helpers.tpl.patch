@@ -166,10 +166,3 @@
  chart: {{ template "kube-prometheus-stack.chartref" . }}
  release: {{ $.Release.Name | quote }}
  heritage: {{ $.Release.Service | quote }}
-@@ -385,4 +537,4 @@
- {{- else if $folderRef }}
- folderRef: {{ $folderRef | quote }}
- {{- end }}
--{{- end }}
-\ No newline at end of file
-+{{- end }}
