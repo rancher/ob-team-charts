@@ -1,6 +1,6 @@
 --- charts-original/templates/_pod.tpl
 +++ charts/templates/_pod.tpl
-@@ -166,10 +166,8 @@
+@@ -176,10 +176,8 @@
        - name: UNIQUE_FILENAMES
          value: "{{ . }}"
        {{- end }}
@@ -12,7 +12,7 @@
        {{- with .Values.sidecar.alerts.skipTlsVerify }}
        - name: SKIP_TLS_VERIFY
          value: {{ quote . }}
-@@ -259,10 +257,8 @@
+@@ -267,10 +265,8 @@
        - name: UNIQUE_FILENAMES
          value: "{{ . }}"
        {{- end }}
@@ -24,7 +24,7 @@
        {{- if .Values.sidecar.skipTlsVerify }}
        - name: SKIP_TLS_VERIFY
          value: "{{ .Values.sidecar.skipTlsVerify }}"
-@@ -393,10 +389,8 @@
+@@ -408,10 +404,8 @@
        - name: UNIQUE_FILENAMES
          value: "{{ . }}"
        {{- end }}
@@ -36,7 +36,7 @@
        {{- with .Values.sidecar.skipTlsVerify }}
        - name: SKIP_TLS_VERIFY
          value: "{{ . }}"
-@@ -633,10 +627,8 @@
+@@ -646,10 +640,8 @@
        - name: UNIQUE_FILENAMES
          value: "{{ . }}"
        {{- end }}
@@ -48,7 +48,7 @@
        {{- with .Values.sidecar.alerts.skipTlsVerify }}
        - name: SKIP_TLS_VERIFY
          value: {{ quote . }}
-@@ -767,10 +759,8 @@
+@@ -774,10 +766,8 @@
        - name: UNIQUE_FILENAMES
          value: "{{ . }}"
        {{- end }}
@@ -60,7 +60,7 @@
        {{- with .Values.sidecar.skipTlsVerify }}
        - name: SKIP_TLS_VERIFY
          value: "{{ . }}"
-@@ -903,10 +893,8 @@
+@@ -906,10 +896,8 @@
        - name: UNIQUE_FILENAMES
          value: "{{ . }}"
        {{- end }}
@@ -72,7 +72,7 @@
        {{- if .Values.sidecar.skipTlsVerify }}
        - name: SKIP_TLS_VERIFY
          value: "{{ .Values.sidecar.skipTlsVerify }}"
-@@ -1030,10 +1018,8 @@
+@@ -1029,10 +1017,8 @@
        - name: UNIQUE_FILENAMES
          value: "{{ .Values.sidecar.enableUniqueFilenames }}"
        {{- end }}
@@ -84,7 +84,7 @@
        {{- with .Values.sidecar.skipTlsVerify }}
        - name: SKIP_TLS_VERIFY
          value: "{{ . }}"
-@@ -1157,10 +1143,8 @@
+@@ -1152,10 +1138,8 @@
        - name: UNIQUE_FILENAMES
          value: "{{ . }}"
        {{- end }}
