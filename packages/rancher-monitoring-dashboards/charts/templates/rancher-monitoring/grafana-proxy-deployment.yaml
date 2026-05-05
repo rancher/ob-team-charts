@@ -1,0 +1,78 @@
+{{- if .Values.grafanaProxy.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rancher-monitoring.fullname" . }}-grafana-proxy
+  namespace: {{ include "rancher-monitoring.namespace" . }}
+  labels:
+{{ include "rancher-monitoring.labels" . | indent 4 }}
+    app.kubernetes.io/component: grafana-proxy
+spec:
+  replicas: {{ .Values.grafanaProxy.replicas }}
+  selector:
+    matchLabels:
+{{ include "rancher-monitoring.selectorLabels" . | indent 6 }}
+      app.kubernetes.io/component: grafana-proxy
+  template:
+    metadata:
+      labels:
+{{ include "rancher-monitoring.selectorLabels" . | indent 8 }}
+        app.kubernetes.io/component: grafana-proxy
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/rancher-monitoring/grafana-proxy-configmap.yaml") . | sha256sum }}
+    spec:
+      {{- with .Values.grafanaProxy.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+      {{- with .Values.grafanaProxy.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+      {{- with .Values.grafanaProxy.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+      securityContext:
+        runAsUser: 101
+        runAsGroup: 101
+        fsGroup: 101
+        runAsNonRoot: true
+      containers:
+      - name: nginx
+        image: {{ template "system_default_registry" . }}{{ .Values.grafanaProxy.image.repository }}:{{ .Values.grafanaProxy.image.tag }}
+        imagePullPolicy: {{ .Values.grafanaProxy.image.pullPolicy }}
+        args:
+        - nginx
+        - -g
+        - daemon off;
+        - -c
+        - /nginx/nginx.conf
+        ports:
+        - containerPort: 8181
+          name: http
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /nginx
+          name: nginx-config
+        - mountPath: /var/cache/nginx
+          name: nginx-cache
+        resources:
+{{ toYaml .Values.grafanaProxy.resources | indent 10 }}
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: {{ include "rancher-monitoring.fullname" . }}-grafana-proxy-config
+          items:
+          - key: nginx.conf
+            mode: 438
+            path: nginx.conf
+      - name: nginx-cache
+        emptyDir: {}
+{{- end }}

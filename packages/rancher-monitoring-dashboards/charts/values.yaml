@@ -1,0 +1,102 @@
+# Default values for the rancher-monitoring dashboard artifact prototype.
+
+nameOverride: rancher-monitoring
+fullnameOverride: ""
+namespaceOverride: cattle-monitoring-system
+commonLabels: {}
+extraManifests: []
+
+global:
+  cattle:
+    systemDefaultRegistry: ""
+  rbac:
+    create: true
+    userRoles:
+      create: true
+      aggregateToDefaultRoles: true
+
+dashboardArtifacts:
+  enabled: true
+  namespace: cattle-dashboards
+  useExistingNamespace: false
+  cleanupOnUninstall: false
+  label: grafana_dashboard
+  labelValue: "1"
+  annotations: {}
+  groups:
+    rancherCore: true
+    fleet: true
+    ingressNginx: true
+    performance: true
+    logging:
+      fluentd: true
+      fluentbit: true
+    backupRestore: true
+
+dashboardIntegration:
+  grafanaURL: ""
+  grafana:
+    selector: {}  # Pod label selector — creates a ClusterIP service targeting matching pods in this namespace
+    port: 8181
+  prometheusURL: ""
+  prometheus:
+    selector: {}
+    port: 9090
+  alertmanagerURL: ""
+  alertmanager:
+    selector: {}
+    port: 9093
+
+# Optional nginx proxy for Grafana to handle Rancher's Kubernetes API proxy URL rewriting
+grafanaProxy:
+  enabled: false
+  replicas: 1
+  image:
+    repository: rancher/mirrored-library-nginx
+    tag: 1.29.1-alpine
+    pullPolicy: IfNotPresent
+  # The upstream Grafana service to proxy to (typically the kube-prometheus-stack Grafana service)
+  upstreamService: ext-monitoring-grafana
+  upstreamPort: 80
+  # The proxy path that will be used by Rancher (e.g., /api/v1/namespaces/cattle-monitoring-system/services/http:rancher-monitoring-grafana:80/proxy)
+  proxyPath: /api/v1/namespaces/cattle-monitoring-system/services/http:rancher-monitoring-grafana:80/proxy
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# Compatibility knobs retained for dashboard query compatibility and gradual migration.
+kubeTargetVersionOverride: ""
+rancherMonitoring:
+  enabled: true
+ingressNginx:
+  enabled: true
+loggingMonitors:
+  fluentd:
+    enabled: true
+  fluentbit:
+    enabled: true
+rancherBackupMonitoring:
+  dashboards:
+    enabled: true
+
+# Legacy Grafana settings are no longer authoritative for rendering, but these
+# values are kept as explicit compatibility fields for consumers that still look
+# for the old label/namespace conventions.
+grafana:
+  enabled: false
+  forceDeployDashboards: false
+  defaultDashboardsEnabled: true
+  defaultDashboards:
+    namespace: cattle-dashboards
+  sidecar:
+    dashboards:
+      label: grafana_dashboard
+      labelValue: "1"
+      annotations: {}

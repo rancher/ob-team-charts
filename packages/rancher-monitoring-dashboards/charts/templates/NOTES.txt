@@ -1,0 +1,17 @@
+{{ .Chart.Name }} dashboard artifacts have been installed.
+
+Dashboard ConfigMaps are rendered into:
+  {{ include "rancher-monitoring.dashboardNamespace" . }}
+
+Cluster-level integration metadata is published in:
+  {{ include "rancher-monitoring.fullname" . }}-dashboard-values
+  namespace: {{ include "rancher-monitoring.namespace" . }}
+
+Set `dashboardIntegration.grafanaURL` to the Rancher proxy path for Grafana.
+Optionally set `dashboardIntegration.prometheusURL` for consumers that need a Prometheus endpoint hint.
+Optionally set `dashboardIntegration.alertmanagerURL` for consumers that need an Alertmanager endpoint hint.
+
+To create a `rancher-monitoring-grafana` proxy Service in this namespace, set a pod selector and
+target port so the Service has real selector-managed endpoints (required for the Rancher API proxy):
+  dashboardIntegration.grafana.selector  - pod label selector (e.g. app.kubernetes.io/name: grafana)
+  dashboardIntegration.grafana.port      - target port on the matched pods (default: 8181)
