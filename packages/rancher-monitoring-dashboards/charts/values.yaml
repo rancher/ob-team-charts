@@ -7,8 +7,15 @@ commonLabels: {}
 extraManifests: []
 
 global:
+  disableProxyIPv6: false
   cattle:
     systemDefaultRegistry: ""
+    clusterId: "local"
+    clusterName: ""
+  kubectl:
+    repository: rancher/kuberlr-kubectl
+    tag: v7.0.1
+    pullPolicy: IfNotPresent
   rbac:
     create: true
     userRoles:
@@ -33,30 +40,62 @@ dashboardArtifacts:
       fluentbit: true
     backupRestore: true
 
+# Integration configuration for connecting to an existing monitoring stack.
+# This chart creates "bridge" Services with hardcoded names (rancher-monitoring-*)
+# that Rancher Dashboard expects, using pod selectors to route to your actual monitoring stack.
+#
+# DEFAULT CONFIGURATION:
+# The default selectors match kube-prometheus-stack with release name "kube-prometheus-stack".
+# If you use a different release name, update the selectors to match your pod labels.
+#
+# To find the correct labels for your installation:
+#   kubectl get pods -n cattle-monitoring-system -l app.kubernetes.io/name=prometheus --show-labels
+#
+# LIMITATIONS:
+# - Services can only target pods in the SAME namespace (cattle-monitoring-system)
+# - For external/cross-namespace monitoring, use URL-based integration (future feature)
+#
+# See INTEGRATION-GUIDE.md for detailed scenarios and troubleshooting.
 dashboardIntegration:
   grafanaURL: ""
   grafana:
-    selector: {}  # Pod label selector — creates a ClusterIP service targeting matching pods in this namespace
-    port: 8181
+    # Pod label selector — creates a ClusterIP service targeting matching pods in this namespace
+    # Default selector matches kube-prometheus-stack Grafana with default release name
+    # Override if using a different release name
+    selector:
+      app.kubernetes.io/name: grafana
+      app.kubernetes.io/instance: kube-prometheus-stack
+    port: 3000  # Grafana's actual container port
   prometheusURL: ""
   prometheus:
-    selector: {}
+    # Default selector matches kube-prometheus-stack Prometheus pods
+    # Note: operator.prometheus.io/name includes the release name
+    selector:
+      app.kubernetes.io/name: prometheus
+      operator.prometheus.io/name: kube-prometheus-stack-prometheus
     port: 9090
   alertmanagerURL: ""
   alertmanager:
-    selector: {}
+    # Default selector matches kube-prometheus-stack Alertmanager pods
+    # Note: alertmanager label includes the release name
+    selector:
+      app.kubernetes.io/name: alertmanager
+      alertmanager: kube-prometheus-stack-alertmanager
     port: 9093
 
-# Optional nginx proxy for Grafana to handle Rancher's Kubernetes API proxy URL rewriting
+# Nginx proxy for Grafana to handle Rancher's Kubernetes API proxy URL rewriting
+# REQUIRED for vanilla kube-prometheus-stack to work with embedded Rancher iframes.
+# Without this, Grafana static assets (plugins, JS) will fail to load because Grafana
+# doesn't know it's being accessed through a Kubernetes service proxy sub-path.
 grafanaProxy:
-  enabled: false
+  enabled: true
   replicas: 1
   image:
     repository: rancher/mirrored-library-nginx
     tag: 1.29.1-alpine
     pullPolicy: IfNotPresent
   # The upstream Grafana service to proxy to (typically the kube-prometheus-stack Grafana service)
-  upstreamService: ext-monitoring-grafana
+  upstreamService: kube-prometheus-stack-grafana
   upstreamPort: 80
   # The proxy path that will be used by Rancher (e.g., /api/v1/namespaces/cattle-monitoring-system/services/http:rancher-monitoring-grafana:80/proxy)
   proxyPath: /api/v1/namespaces/cattle-monitoring-system/services/http:rancher-monitoring-grafana:80/proxy
@@ -75,8 +114,57 @@ grafanaProxy:
 kubeTargetVersionOverride: ""
 rancherMonitoring:
   enabled: true
+  selector: {}  # Optional: override selector for Rancher service monitor
 ingressNginx:
+  enabled: false
+  namespace: ingress-nginx
+  service:
+    port: 9913
+    targetPort: 10254
+  serviceMonitor:
+    interval: "30s"
+    proxyUrl: ""
+    metricRelabelings: []
+    relabelings: []
+rkeIngressNginx:
+  enabled: false
+rke2IngressNginx:
+  enabled: false
+  networkPolicy:
+    enabled: false
+hardenedNodeExporter:
+  enabled: false
+kubeStateMetrics:
+  enabled: false
+nodeExporter:
+  enabled: false
+hardened:
+  enabled: false
+  k3s:
+    networkPolicy:
+      enabled: false
+defaultRules:
+  create: false
+prometheus:
+  enabled: false
+kubeEtcd:
+  enabled: false
+rkeEtcd:
+  enabled: false
+kubeAdmEtcd:
+  enabled: false
+rke2Etcd:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+rkeControllerManager:
+  enabled: false
+k3sServer:
   enabled: true
+kubeAdmControllerManager:
+  enabled: false
+rke2ControllerManager:
+  enabled: false
 loggingMonitors:
   fluentd:
     enabled: true

@@ -1,0 +1,73 @@
+Thank you for installing {{ .Chart.Name }}.
+
+Your release is named {{ .Release.Name }}.
+
+════════════════════════════════════════════════════════════════════════════════
+
+DASHBOARD ARTIFACTS:
+  Dashboard ConfigMaps: {{ include "rancher-monitoring.dashboardNamespace" . }}
+  Integration metadata: {{ include "rancher-monitoring.fullname" . }}-dashboard-values
+                        (namespace: {{ include "rancher-monitoring.namespace" . }})
+
+BRIDGE SERVICES CREATED:
+{{- if .Values.dashboardIntegration.prometheus.selector }}
+  ✓ rancher-monitoring-prometheus:9090
+{{- else }}
+  ✗ rancher-monitoring-prometheus (DISABLED - empty selector)
+{{- end }}
+{{- if .Values.dashboardIntegration.alertmanager.selector }}
+  ✓ rancher-monitoring-alertmanager:9093
+{{- else }}
+  ✗ rancher-monitoring-alertmanager (DISABLED - empty selector)
+{{- end }}
+{{- if .Values.dashboardIntegration.grafana.selector }}
+  ✓ rancher-monitoring-grafana:80
+{{- else }}
+  ✗ rancher-monitoring-grafana (DISABLED - empty selector)
+{{- end }}
+
+════════════════════════════════════════════════════════════════════════════════
+
+VERIFICATION:
+
+Run the following command to verify services are routing to your monitoring pods:
+
+  kubectl get endpoints -n {{ include "rancher-monitoring.namespace" . }} | grep rancher-monitoring
+
+Expected: All endpoints should show IP addresses (not <none>).
+
+If any endpoint is empty, the selector is not matching your monitoring pods.
+See INTEGRATION-GUIDE.md for troubleshooting steps.
+
+════════════════════════════════════════════════════════════════════════════════
+{{- $emptyPrometheus := not .Values.dashboardIntegration.prometheus.selector }}
+{{- $emptyAlertmanager := not .Values.dashboardIntegration.alertmanager.selector }}
+{{- $emptyGrafana := not .Values.dashboardIntegration.grafana.selector }}
+{{- if or $emptyPrometheus $emptyAlertmanager $emptyGrafana }}
+
+⚠️  WARNINGS:
+{{- if $emptyPrometheus }}
+  - Prometheus service disabled: Rancher Dashboard will not show Prometheus metrics
+{{- end }}
+{{- if $emptyAlertmanager }}
+  - Alertmanager service disabled: Rancher Dashboard will not show alerts
+{{- end }}
+{{- if $emptyGrafana }}
+  - Grafana service disabled: Rancher Dashboard will not show Grafana dashboards
+{{- end }}
+
+If you intended to enable these services, configure the selectors in values.yaml.
+See INTEGRATION-GUIDE.md for detailed instructions.
+
+════════════════════════════════════════════════════════════════════════════════
+{{- end }}
+
+NEXT STEPS:
+
+1. Verify endpoints are populated (see command above)
+2. Access Rancher Dashboard → Cluster Explorer → Monitoring
+3. Check that dashboards appear in embedded iframes
+
+For detailed integration scenarios and troubleshooting:
+  INTEGRATION-GUIDE.md (comprehensive guide)
+  README.md (quick reference)

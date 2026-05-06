@@ -1,0 +1,70 @@
+# Values file for kube-prometheus-stack to work with rancher-monitoring-dashboards
+# This configures Grafana with:
+# 1. Nginx sidecar for URL rewriting
+# 2. Proper server configuration for sub-path serving
+# 3. Security settings for embedding in Rancher Dashboard
+
+grafana:
+  # Grafana server configuration
+  grafana.ini:
+    server:
+      root_url: /api/v1/namespaces/cattle-monitoring-system/services/http:rancher-monitoring-grafana:80/proxy
+      serve_from_sub_path: true
+    security:
+      allow_embedding: true
+    auth:
+      disable_login_form: true
+    auth.anonymous:
+      enabled: true
+      org_role: Viewer
+
+  # Add nginx proxy sidecar
+  extraContainers: |
+    - name: grafana-proxy
+      image: rancher/mirrored-library-nginx:1.29.1-alpine
+      args:
+        - nginx
+        - -g
+        - daemon off;
+        - -c
+        - /nginx/nginx.conf
+      ports:
+        - containerPort: 8080
+          name: nginx-http
+          protocol: TCP
+      volumeMounts:
+        - name: grafana-nginx
+          mountPath: /nginx
+        - name: nginx-cache
+          mountPath: /var/cache/nginx
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: [ALL]
+        readOnlyRootFilesystem: true
+        runAsUser: 101
+        runAsGroup: 101
+
+  # Mount nginx config (created by rancher-monitoring-dashboards chart)
+  extraVolumes: |
+    - name: grafana-nginx
+      configMap:
+        name: grafana-nginx-proxy-config
+        items:
+          - key: nginx.conf
+            path: nginx.conf
+            mode: 438
+    - name: nginx-cache
+      emptyDir: {}
+
+  # Service configuration - route to nginx sidecar instead of Grafana directly
+  service:
+    portName: nginx-http
+    port: 80
+    targetPort: 8080
+
+# Prometheus configuration to pick up all ServiceMonitors
+prometheus:
+  prometheusSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false

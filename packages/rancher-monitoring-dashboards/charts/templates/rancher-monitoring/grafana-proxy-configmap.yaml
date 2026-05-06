@@ -32,8 +32,10 @@ data:
       }
 
       server {
-        listen          8181;
-        listen     [::]:8181;
+        listen          8080;
+        {{- if ne .Values.global.disableProxyIPv6 true }}
+        listen     [::]:8080;
+        {{- end }}
         access_log      off;
 
         gzip            on;
@@ -44,13 +46,15 @@ data:
         gzip_disable    "MSIE [1-6]\.";
 
         proxy_set_header Host $host;
+        {{/* nginx sub_filter does not work with compressed server responses */}}
+        proxy_set_header Accept-Encoding "";
 
         location /api/dashboards {
-          proxy_pass     http://{{ .Values.grafanaProxy.upstreamService }}.{{ include "rancher-monitoring.namespace" . }}.svc.cluster.local:{{ .Values.grafanaProxy.upstreamPort }};
+          proxy_pass     http://{{ .Values.grafanaProxy.upstreamService }}.{{ include "rancher-monitoring.namespace" . }}.svc.cluster.{{ .Values.global.cattle.clusterId }}:{{ .Values.grafanaProxy.upstreamPort }};
         }
 
         location /api/search {
-          proxy_pass     http://{{ .Values.grafanaProxy.upstreamService }}.{{ include "rancher-monitoring.namespace" . }}.svc.cluster.local:{{ .Values.grafanaProxy.upstreamPort }};
+          proxy_pass     http://{{ .Values.grafanaProxy.upstreamService }}.{{ include "rancher-monitoring.namespace" . }}.svc.cluster.{{ .Values.global.cattle.clusterId }}:{{ .Values.grafanaProxy.upstreamPort }};
 
           sub_filter_types application/json;
           sub_filter_once off;
@@ -61,7 +65,8 @@ data:
           proxy_set_header Upgrade $http_upgrade;
           proxy_set_header Connection $connection_upgrade;
           proxy_set_header Host $http_host;
-          proxy_pass http://{{ .Values.grafanaProxy.upstreamService }}.{{ include "rancher-monitoring.namespace" . }}.svc.cluster.local:{{ .Values.grafanaProxy.upstreamPort }};
+          proxy_set_header Accept-Encoding "";
+          proxy_pass http://{{ .Values.grafanaProxy.upstreamService }}.{{ include "rancher-monitoring.namespace" . }}.svc.cluster.{{ .Values.global.cattle.clusterId }}:{{ .Values.grafanaProxy.upstreamPort }};
         }
 
         location / {
@@ -73,18 +78,18 @@ data:
           add_header          X-Proxy-Cache $upstream_cache_status;
           add_header          Cache-Control "public";
 
-          proxy_pass     http://{{ .Values.grafanaProxy.upstreamService }}.{{ include "rancher-monitoring.namespace" . }}.svc.cluster.local:{{ .Values.grafanaProxy.upstreamPort }}/;
+          proxy_pass     http://{{ .Values.grafanaProxy.upstreamService }}.{{ include "rancher-monitoring.namespace" . }}.svc.cluster.{{ .Values.global.cattle.clusterId }}:{{ .Values.grafanaProxy.upstreamPort }}/;
 
           sub_filter_once off;
           sub_filter '"appSubUrl":""' '"appSubUrl":"{{ .Values.grafanaProxy.proxyPath }}"';
           sub_filter ':"/avatar/' ':"avatar/';
 
-          rewrite ^{{ .Values.grafanaProxy.proxyPath }}(.*)$ /$1 break;
-          rewrite ^/k8s/clusters/.*/{{ .Values.grafanaProxy.proxyPath }}(.*)$ /$1 break;
-
           if ($request_filename ~ .*\.(?:js|css|jpg|jpeg|gif|png|ico|cur|gz|svg|svgz|mp4|ogg|ogv|webm)$) {
             expires             90d;
           }
+
+          rewrite ^/k8s/clusters/.*/proxy(.*) /$1 break;
+
         }
       }
     }

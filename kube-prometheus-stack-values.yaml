@@ -1,0 +1,103 @@
+grafana:
+  podPortName: grafana
+  gossipPort: 9094
+  readinessProbe:
+    httpGet:
+      path: /api/health
+      port: 3000
+
+  livenessProbe:
+    httpGet:
+      path: /api/health
+      port: 3000
+    initialDelaySeconds: 60
+    timeoutSeconds: 30
+    failureThreshold: 10
+
+  # Grafana server configuration
+  # NOTE: Do NOT set root_url or serve_from_sub_path here!
+  # The nginx proxy handles all URL rewriting using Accept-Encoding header
+  # Grafana should think it's at root / with default gzip enabled
+  grafana.ini:
+    security:
+      allow_embedding: true
+    auth:
+      disable_login_form: false
+    auth.anonymous:
+      enabled: true
+      org_role: Viewer
+    dashboards:
+      default_home_dashboard_path: /tmp/dashboards/rancher-default-home.json
+    grafana_net:
+      url: https://grafana.net
+    users:
+      auto_assign_org_role: Viewer
+  forceDeployDatasources: false
+  sidecar:
+    testFramework:
+      containerSecurityContext: { }
+      enabled: false
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+      searchNamespace: cattle-dashboards
+
+      # Support for new table panels, when enabled grafana auto migrates the old table panels to newer table panels
+      enableNewTablePanelSyntax: false
+
+      ## Annotations for Grafana dashboard configmaps
+      ##
+      annotations: { }
+      multicluster:
+        global:
+          enabled: false
+        etcd:
+          enabled: false
+      provider:
+        allowUiUpdates: false
+    datasources:
+      enabled: true
+      skipReload: true
+      watchMethod: LIST
+      defaultDatasourceEnabled: true
+      isDefaultDatasource: true
+      initDatasources: true
+      name: Prometheus
+      uid: prometheus
+
+      annotations: { }
+
+      ## Set method for HTTP to send query to datasource
+      httpMethod: POST
+
+      ## Create datasource for each Pod of Prometheus StatefulSet;
+      ## this uses by default the headless service `prometheus-operated` which is
+      ## created by Prometheus Operator. In case you deployed your own Service for your
+      ## Prometheus instance, you can specify it with the field `prometheusServiceName`
+      ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/0fee93e12dc7c2ea1218f19ae25ec6b893460590/pkg/prometheus/statefulset.go#L255-L286
+      createPrometheusReplicasDatasources: false
+      prometheusServiceName: prometheus-operated
+      label: grafana_datasource
+      labelValue: "1"
+
+      ## Field with internal link pointing to existing data source in Grafana.
+      ## Can be provisioned via additionalDataSources
+      exemplarTraceIdDestinations: { }
+        # datasourceUid: Jaeger
+      # traceIdLabelName: trace_id
+      # urlDisplayLabel: View traces
+      alertmanager:
+        enabled: false
+#        name: Alertmanager
+#        uid: alertmanager
+#        handleGrafanaManagedAlerts: false
+#        implementation: prometheus
+  ## ForceDeployDashboard Create dashboard configmap even if grafana deployment has been disabled
+  ##
+  forceDeployDashboards: false
+# Prometheus configuration to pick up all ServiceMonitors
+prometheus:
+  prometheusSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false

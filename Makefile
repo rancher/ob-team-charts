@@ -1,4 +1,4 @@
-export PATH := $(CURDIR)/bin:$(PATH)
+export PATH := $(pwd)/bin:$(PATH)
 
 TARGETS := $(shell ls scripts|grep -ve "^util-")
 
