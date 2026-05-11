@@ -114,25 +114,6 @@ image:
 
 testFramework:
   enabled: false
-  ## The type of Helm hook used to run this test. Defaults to test.
-  ## ref: https://helm.sh/docs/topics/charts_hooks/#the-available-hooks
-  ##
-  # hookType: test
-  image:
-    # -- The Docker registry
-    registry: ""
-    repository: rancher/mirrored-bci-busybox
-    tag: 16.0-15.4
-  imagePullPolicy: IfNotPresent
-  securityContext: {}
-  containerSecurityContext: {}
-  resources: {}
-  #  limits:
-  #    cpu: 100m
-  #    memory: 128Mi
-  #  requests:
-  #    cpu: 100m
-  #    memory: 128Mi
 
 # dns configuration for pod
 dnsPolicy: ~
