@@ -63,7 +63,7 @@
 -    tag: "1.37.0"
 +    registry: ""
 +    repository: rancher/mirrored-bci-busybox
-+    tag: 16.0-15.4
++    tag: 16.0-16.3
      sha: ""
      pullPolicy: IfNotPresent
  
@@ -91,7 +91,7 @@
 +    repository: rancher/mirrored-grafana-grafana-image-renderer
      # image-renderer Image tag
 -    tag: latest
-+    tag: v5.1.0
++    tag: v5.8.3
      # image-renderer Image sha (optional)
      sha: ""
      # image-renderer Image pull secrets (optional)

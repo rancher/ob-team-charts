@@ -34,7 +34,7 @@
 -    repository: prometheus/busybox
 -    tag: latest
 +    repository: rancher/mirrored-bci-busybox
-+    tag: 16.0-15.4
++    tag: 16.0-16.3
      sha: ""
      pullPolicy: IfNotPresent
    securityContext:

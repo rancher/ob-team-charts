@@ -559,7 +559,7 @@
 +  ## Image to use to run the scripts
 +  image:
 +    repository: rancher/kuberlr-kubectl
-+    tag: v7.0.2
++    tag: v7.0.3
 +
 +## Rancher Monitoring
 +##
@@ -642,7 +642,7 @@
 -        tag: "latest"
 +        registry: ""
 +        repository: rancher/mirrored-bci-busybox
-+        tag: 16.0-15.4
++        tag: 16.0-16.3
          sha: ""
          pullPolicy: IfNotPresent
        kubectl:
@@ -674,7 +674,7 @@
 +    enabled: false
 +  kubectl:
 +    repository: rancher/kuberlr-kubectl
-+    tag: v7.0.1
++    tag: v7.0.3
 +    pullPolicy: IfNotPresent
    rbac:
 +    ## Create RBAC resources for ServiceAccounts and users
@@ -931,8 +931,8 @@
  
 +  proxy:
 +    image:
-+      repository: rancher/appco-nginx
-+      tag: 1.29.8-6.1
++      repository: rancher/mirrored-library-nginx
++      tag: 1.29.8-alpine
 +
 +  ## Enable an Specify container in extraContainers. This is meant to allow adding an authentication proxy to a grafana pod
 +  extraContainers: |
@@ -1093,7 +1093,7 @@
 -    tag: v0.41.0
 +    registry: ""
 +    repository: rancher/appco-thanos
-+    tag: 0.41.0-12.1
++    tag: 0.41.0-12.2
      sha: ""
  
    ## Set a Label Selector to filter watched prometheus and prometheusAgent
@@ -1139,19 +1139,17 @@
  
      ## ListenLocal makes the Prometheus server listen on loopback, so that it does not bind against the Pod IP.
      ##
-@@ -4136,9 +4951,9 @@
+@@ -4136,8 +4951,8 @@
      ## Image of Prometheus.
      ##
      image:
 -      registry: quay.io
 -      repository: prometheus/prometheus
--      tag: v3.11.0
 +      registry: ""
-+      repository: rancher/appco-prometheus
-+      tag: 3.11.0-1.1
++      repository: rancher/mirrored-prometheus-prometheus
+       tag: v3.11.0
        sha: ""
        pullPolicy: IfNotPresent
- 
 @@ -4242,7 +5057,7 @@
      ## prometheus resource to be created with selectors based on values in the helm deployment,
      ## which will also match the PrometheusRule resources created
@@ -1217,8 +1215,8 @@
  
 +    proxy:
 +      image:
-+        repository: rancher/appco-nginx
-+        tag: 1.29.8-6.1
++        repository: rancher/mirrored-library-nginx
++        tag: 1.29.8-alpine
 +
      ## Containers allows injecting additional containers. This is meant to allow adding an authentication proxy to a Prometheus pod.
      ## if using proxy extraContainer update targetPort with proxy container port
@@ -1277,7 +1275,7 @@
 -      tag: v0.41.0
 +      registry: ""
 +      repository: rancher/appco-thanos
-+      tag: 0.41.0-12.1
++      tag: 0.41.0-12.2
        sha: ""
  
      ## Namespaces to be selected for PrometheusRules discovery.
