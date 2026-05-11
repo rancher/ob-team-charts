@@ -20,6 +20,15 @@
  
  replicas: 1
  
+@@ -114,7 +116,7 @@
+   #   - myRegistrKeySecretName
+ 
+ testFramework:
+-  enabled: true
++  enabled: false
+   ## The type of Helm hook used to run this test. Defaults to test.
+   ## ref: https://helm.sh/docs/topics/charts_hooks/#the-available-hooks
+   ##
 @@ -1067,7 +1069,7 @@
      # It runs before calls to REQ_URI. If the file is not executable it will be passed to sh.
      # Otherwise, it's executed as is. Shebangs known to work are #!/bin/sh and #!/usr/bin/env python
