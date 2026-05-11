@@ -1,0 +1,3 @@
+workingDir: ""
+url: packages/kube-prometheus-stack/84.5/grafana
+doNotRelease: true

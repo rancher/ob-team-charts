@@ -1,0 +1,40 @@
+--- charts-original/values.yaml
++++ charts/values.yaml
+@@ -2,10 +2,10 @@
+ # This is a YAML-formatted file.
+ # Declare variables to be passed into your templates.
+ image:
+-  registry: quay.io
+-  repository: prometheus/node-exporter
++  registry: ""
++  repository: rancher/appco-node-exporter
+   # Overrides the image tag whose default is {{ printf "v%s" .Chart.AppVersion }}
+-  tag: ""
++  tag: "1.11.0-14.4"
+   # Use the distroless image variant.
+   distroless: false
+   pullPolicy: IfNotPresent
+@@ -47,9 +47,9 @@
+   env: {}
+     # VARIABLE: value
+   image:
+-    registry: quay.io
+-    repository: brancz/kube-rbac-proxy
+-    tag: v0.22.0
++    registry: ""
++    repository: rancher/appco-kube-rbac-proxy
++    tag: 0.22.0-21.4
+     sha: ""
+     pullPolicy: IfNotPresent
+ 
+@@ -554,8 +554,8 @@
+ permissionInitContainer:
+   image:
+     registry: quay.io
+-    repository: prometheus/busybox
+-    tag: latest
++    repository: rancher/mirrored-bci-busybox
++    tag: 16.0-16.3
+     sha: ""
+     pullPolicy: IfNotPresent
+   securityContext:
