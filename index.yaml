@@ -5532,7 +5532,7 @@ entries:
       catalog.cattle.io/upstream-version: 69.8.2
     apiVersion: v2
     appVersion: v0.80.1
-    created: "2026-04-27T16:58:44.503088962+02:00"
+    created: "2026-05-11T18:24:29.359933422+02:00"
     dependencies:
     - condition: grafana.enabled
       name: grafana
@@ -5541,15 +5541,15 @@ entries:
     - condition: hardenedKubelet.enabled
       name: hardenedKubelet
       repository: file://./charts/hardenedKubelet
-      version: 0.1.10
+      version: 0.1.11-rc.1
     - condition: hardenedNodeExporter.enabled
       name: hardenedNodeExporter
       repository: file://./charts/hardenedNodeExporter
-      version: 0.1.10
+      version: 0.1.11-rc.1
     - condition: k3sServer.enabled
       name: k3sServer
       repository: file://./charts/k3sServer
-      version: 0.1.10
+      version: 0.1.11-rc.1
     - condition: kubeStateMetrics.enabled
       name: kube-state-metrics
       repository: file://./charts/kube-state-metrics
@@ -5557,19 +5557,19 @@ entries:
     - condition: kubeAdmControllerManager.enabled
       name: kubeAdmControllerManager
       repository: file://./charts/kubeAdmControllerManager
-      version: 0.1.10
+      version: 0.1.11-rc.1
     - condition: kubeAdmEtcd.enabled
       name: kubeAdmEtcd
       repository: file://./charts/kubeAdmEtcd
-      version: 0.1.10
+      version: 0.1.11-rc.1
     - condition: kubeAdmProxy.enabled
       name: kubeAdmProxy
       repository: file://./charts/kubeAdmProxy
-      version: 0.1.10
+      version: 0.1.11-rc.1
     - condition: kubeAdmScheduler.enabled
       name: kubeAdmScheduler
       repository: file://./charts/kubeAdmScheduler
-      version: 0.1.10
+      version: 0.1.11-rc.1
     - condition: prometheus-adapter.enabled
       name: prometheus-adapter
       repository: file://./charts/prometheus-adapter
@@ -5581,43 +5581,43 @@ entries:
     - condition: rke2ControllerManager.enabled
       name: rke2ControllerManager
       repository: file://./charts/rke2ControllerManager
-      version: 0.1.10
+      version: 0.1.11-rc.1
     - condition: rke2Etcd.enabled
       name: rke2Etcd
       repository: file://./charts/rke2Etcd
-      version: 0.1.10
+      version: 0.1.11-rc.1
     - condition: rke2IngressNginx.enabled
       name: rke2IngressNginx
       repository: file://./charts/rke2IngressNginx
-      version: 0.1.10
+      version: 0.1.11-rc.1
     - condition: rke2Proxy.enabled
       name: rke2Proxy
       repository: file://./charts/rke2Proxy
-      version: 0.1.10
+      version: 0.1.11-rc.1
     - condition: rke2Scheduler.enabled
       name: rke2Scheduler
       repository: file://./charts/rke2Scheduler
-      version: 0.1.10
+      version: 0.1.11-rc.1
     - condition: rkeControllerManager.enabled
       name: rkeControllerManager
       repository: file://./charts/rkeControllerManager
-      version: 0.1.10
+      version: 0.1.11-rc.1
     - condition: rkeEtcd.enabled
       name: rkeEtcd
       repository: file://./charts/rkeEtcd
-      version: 0.1.10
+      version: 0.1.11-rc.1
     - condition: rkeIngressNginx.enabled
       name: rkeIngressNginx
       repository: file://./charts/rkeIngressNginx
-      version: 0.1.10
+      version: 0.1.11-rc.1
     - condition: rkeProxy.enabled
       name: rkeProxy
       repository: file://./charts/rkeProxy
-      version: 0.1.10
+      version: 0.1.11-rc.1
     - condition: rkeScheduler.enabled
       name: rkeScheduler
       repository: file://./charts/rkeScheduler
-      version: 0.1.10
+      version: 0.1.11-rc.1
     - condition: windowsExporter.enabled
       name: windowsExporter
       repository: file://./charts/windowsExporter
@@ -5626,7 +5626,7 @@ entries:
       and Prometheus rules combined with documentation and scripts to provide easy
       to operate end-to-end Kubernetes cluster monitoring with Prometheus using the
       Prometheus Operator.
-    digest: 6a8d6fcebfe321e7dc469917978f37959c8e35e7373931120e5b4560ad5db522
+    digest: dd4b1cd8c1ebce0748f56b4e36b5191671bec59121b2566355998492c817dc38
     home: https://github.com/prometheus-operator/kube-prometheus
     icon: file://assets/logos/rancher-monitoring.png
     keywords:

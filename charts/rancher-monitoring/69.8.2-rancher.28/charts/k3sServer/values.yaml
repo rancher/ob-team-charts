@@ -132,7 +132,7 @@ clients:
 
   image:
     repository: rancher/pushprox
-    tag: v0.1.10
+    tag: v0.1.11-rc.1
   command: ["pushprox-client"]
 
   copyCertsImage:
@@ -164,5 +164,5 @@ proxy:
 
   image:
     repository: rancher/pushprox
-    tag: v0.1.10
+    tag: v0.1.11-rc.1
   command: ["pushprox-proxy"]
