@@ -1,0 +1,4 @@
+url: https://github.com/prometheus-community/helm-charts.git
+subdirectory: charts/prometheus-node-exporter
+commit: 0371ce7dac3c16698547a72370324f4b9432e0ea # prometheus-node-exporter-4.55.0
+doNotRelease: true
