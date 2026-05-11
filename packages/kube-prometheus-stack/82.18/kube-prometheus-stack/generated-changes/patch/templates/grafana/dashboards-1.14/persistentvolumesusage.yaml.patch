@@ -1,0 +1,16 @@
+--- charts-original/templates/grafana/dashboards-1.14/persistentvolumesusage.yaml
++++ charts/templates/grafana/dashboards-1.14/persistentvolumesusage.yaml
+@@ -5,11 +5,11 @@
+ */ -}}
+ {{- $kubeTargetVersion := default .Capabilities.KubeVersion.GitVersion .Values.kubeTargetVersionOverride }}
+ {{- if and (or .Values.grafana.enabled .Values.grafana.forceDeployDashboards) (semverCompare ">=1.14.0-0" $kubeTargetVersion) (semverCompare "<9.9.9-9" $kubeTargetVersion) .Values.grafana.defaultDashboardsEnabled }}
+-{{- $kubeletJob := include "kube-prometheus-stack-kubelet.name" . }}
++{{- $kubeletJob := include "exporter.kubelet.jobName" . }}
+ apiVersion: v1
+ kind: ConfigMap
+ metadata:
+-  namespace: {{ template "kube-prometheus-stack-grafana.namespace" . }}
++  namespace: {{ .Values.grafana.defaultDashboards.namespace }}
+   name: {{ printf "%s-%s" (include "kube-prometheus-stack.fullname" $) "persistentvolumesusage" | trunc 63 | trimSuffix "-" }}
+   annotations:
+ {{ toYaml .Values.grafana.sidecar.dashboards.annotations | indent 4 }}
