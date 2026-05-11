@@ -553,7 +553,7 @@ extraInitContainers: []
 ##
 permissionInitContainer:
   image:
-    registry: quay.io
+    registry: ""
     repository: rancher/mirrored-bci-busybox
     tag: 16.0-16.3
     sha: ""
