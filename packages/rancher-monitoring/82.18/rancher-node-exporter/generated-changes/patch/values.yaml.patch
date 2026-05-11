@@ -27,15 +27,6 @@
      sha: ""
      pullPolicy: IfNotPresent
  
-@@ -473,6 +473,8 @@
-     operator: Exists
-   - effect: NoExecute
-     operator: Exists
-+  - effect: NoExecute
-+    operator: Exists
- 
- # Enable or disable container termination message settings
- # https://kubernetes.io/docs/tasks/debug/debug-application/determine-reason-pod-failure/
 @@ -552,8 +554,8 @@
  permissionInitContainer:
    image:
