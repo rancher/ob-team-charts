@@ -557,7 +557,7 @@ upgrade:
   ## Image to use to run the scripts
   image:
     repository: rancher/kuberlr-kubectl
-    tag: v7.0.2
+    tag: v7.0.3
 
 ## Rancher Monitoring
 ##
@@ -660,7 +660,7 @@ crds:
       busybox:
         registry: ""
         repository: rancher/mirrored-bci-busybox
-        tag: 16.0-15.4
+        tag: 16.0-16.3
         sha: ""
         pullPolicy: IfNotPresent
       kubectl:
@@ -967,7 +967,7 @@ global:
     enabled: false
   kubectl:
     repository: rancher/kuberlr-kubectl
-    tag: v7.0.1
+    tag: v7.0.3
     pullPolicy: IfNotPresent
   rbac:
     ## Create RBAC resources for ServiceAccounts and users
@@ -2316,8 +2316,8 @@ grafana:
 
   proxy:
     image:
-      repository: rancher/appco-nginx
-      tag: 1.29.8-6.1
+      repository: rancher/mirrored-library-nginx
+      tag: 1.29.8-alpine
 
   ## Enable an Specify container in extraContainers. This is meant to allow adding an authentication proxy to a grafana pod
   extraContainers: |
@@ -4245,7 +4245,7 @@ prometheusOperator:
   thanosImage:
     registry: ""
     repository: rancher/appco-thanos
-    tag: 0.41.0-12.1
+    tag: 0.41.0-12.2
     sha: ""
 
   ## Set a Label Selector to filter watched prometheus and prometheusAgent
@@ -4952,8 +4952,8 @@ prometheus:
     ##
     image:
       registry: ""
-      repository: rancher/appco-prometheus
-      tag: 3.11.0-1.1
+      repository: rancher/mirrored-prometheus-prometheus
+      tag: v3.11.0
       sha: ""
       pullPolicy: IfNotPresent
 
@@ -5480,8 +5480,8 @@ prometheus:
 
     proxy:
       image:
-        repository: rancher/appco-nginx
-        tag: 1.29.8-6.1
+        repository: rancher/mirrored-library-nginx
+        tag: 1.29.8-alpine
 
     ## Containers allows injecting additional containers. This is meant to allow adding an authentication proxy to a Prometheus pod.
     ## if using proxy extraContainer update targetPort with proxy container port
@@ -6103,7 +6103,7 @@ thanosRuler:
     image:
       registry: ""
       repository: rancher/appco-thanos
-      tag: 0.41.0-12.1
+      tag: 0.41.0-12.2
       sha: ""
 
     ## Namespaces to be selected for PrometheusRules discovery.

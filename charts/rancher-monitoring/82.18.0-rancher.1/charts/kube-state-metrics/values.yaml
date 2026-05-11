@@ -4,7 +4,7 @@ image:
   registry: ""
   repository: rancher/appco-kube-state-metrics
   # If unset use v + .Charts.appVersion
-  tag: 2.18.0-15.1
+  tag: 2.18.0-15.2
   sha: ""
   pullPolicy: IfNotPresent
 
