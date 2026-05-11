@@ -27,12 +27,14 @@
      sha: ""
      pullPolicy: IfNotPresent
  
-@@ -554,8 +554,8 @@
+@@ -553,9 +553,9 @@
+ ##
  permissionInitContainer:
    image:
-     registry: quay.io
+-    registry: quay.io
 -    repository: prometheus/busybox
 -    tag: latest
++    registry: ""
 +    repository: rancher/mirrored-bci-busybox
 +    tag: 16.0-16.3
      sha: ""
