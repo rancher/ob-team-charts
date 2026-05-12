@@ -2395,7 +2395,7 @@ grafana:
 
   resources:
     limits:
-      memory: 200Mi
+      memory: 600Mi
       cpu: 200m
     requests:
       memory: 100Mi

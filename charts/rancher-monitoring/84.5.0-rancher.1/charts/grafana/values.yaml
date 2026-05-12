@@ -896,6 +896,7 @@ grafana.ini:
   log:
     mode: console
   server:
+    enable_gzip: false
     domain: "{{ if (and .Values.ingress.enabled .Values.ingress.hosts) }}{{ tpl (.Values.ingress.hosts | first) . }}{{ else if (and .Values.route.main.enabled .Values.route.main.hostnames) }}{{ tpl (.Values.route.main.hostnames | first) . }}{{ else }}''{{ end }}"
   unified_storage:
     index_path: /var/lib/grafana-search/bleve
