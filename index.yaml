@@ -50,6 +50,92 @@ entries:
       catalog.cattle.io/upstream-version: 82.18.0
     apiVersion: v2
     appVersion: v0.90.1
+    created: "2026-05-12T11:38:03.022555-04:00"
+    dependencies:
+    - condition: grafana.enabled
+      name: grafana
+      repository: file://./charts/grafana
+      version: 12.3.0
+    - condition: kubeStateMetrics.enabled
+      name: kube-state-metrics
+      repository: file://./charts/kube-state-metrics
+      version: 7.3.0
+    - condition: nodeExporter.enabled
+      name: prometheus-node-exporter
+      repository: file://./charts/prometheus-node-exporter
+      version: 4.55.0
+    - condition: windowsExporter.enabled
+      name: windowsExporter
+      repository: file://./charts/windowsExporter
+      version: 0.12.6
+    description: kube-prometheus-stack collects Kubernetes manifests, Grafana dashboards,
+      and Prometheus rules combined with documentation and scripts to provide easy
+      to operate end-to-end Kubernetes cluster monitoring with Prometheus using the
+      Prometheus Operator.
+    digest: 4b4c47bc6b22d01283d6f1159e42c0537c8e00a48ec78f28e64ac70355a5ce8f
+    home: https://github.com/prometheus-operator/kube-prometheus
+    icon: https://raw.githubusercontent.com/prometheus/prometheus.github.io/master/assets/prometheus_logo-cb55bb5c346.png
+    keywords:
+    - operator
+    - prometheus
+    - kube-prometheus
+    kubeVersion: '>=1.25.0-0'
+    maintainers:
+    - email: andrew@quadcorps.co.uk
+      name: andrewgkew
+      url: https://github.com/andrewgkew
+    - email: gianrubio@gmail.com
+      name: gianrubio
+      url: https://github.com/gianrubio
+    - email: github.gkarthiks@gmail.com
+      name: gkarthiks
+      url: https://github.com/gkarthiks
+    - email: kube-prometheus-stack@sisti.pt
+      name: GMartinez-Sisti
+      url: https://github.com/GMartinez-Sisti
+    - email: github@jkroepke.de
+      name: jkroepke
+      url: https://github.com/jkroepke
+    - email: miroslav.hadzhiev@gmail.com
+      name: Xtigyro
+      url: https://github.com/Xtigyro
+    - email: quentin.bisson@gmail.com
+      name: QuentinBisson
+      url: https://github.com/QuentinBisson
+    name: kube-prometheus-stack
+    sources:
+    - https://github.com/prometheus-community/helm-charts
+    - https://github.com/prometheus-operator/kube-prometheus
+    type: application
+    urls:
+    - assets/kube-prometheus-stack/kube-prometheus-stack-84.5.0-rev.3.tgz
+    version: 84.5.0-rev.3
+  - annotations:
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: |
+        - name: Chart Source
+          url: https://github.com/prometheus-community/helm-charts
+        - name: Upstream Project
+          url: https://github.com/prometheus-operator/kube-prometheus
+        - name: Upgrade Process
+          url: https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/README.md#upgrading-chart
+      artifacthub.io/operator: "true"
+      catalog.cattle.io/auto-install: kube-prometheus-stack-crd=match
+      catalog.cattle.io/deploys-on-os: windows
+      catalog.cattle.io/display-name: Monitoring
+      catalog.cattle.io/kube-version: '>= 1.26.0-0'
+      catalog.cattle.io/namespace: cattle-monitoring-system
+      catalog.cattle.io/permits-os: linux,windows
+      catalog.cattle.io/provides-gvr: monitoring.coreos.com.prometheus/v1
+      catalog.cattle.io/rancher-version: '>= 2.9.0-0'
+      catalog.cattle.io/release-name: kube-prometheus-stack
+      catalog.cattle.io/requests-cpu: 4500m
+      catalog.cattle.io/requests-memory: 4000Mi
+      catalog.cattle.io/type: cluster-tool
+      catalog.cattle.io/ui-component: monitoring
+      catalog.cattle.io/upstream-version: 82.18.0
+    apiVersion: v2
+    appVersion: v0.90.1
     created: "2026-05-11T16:28:05.80619-04:00"
     dependencies:
     - condition: grafana.enabled
@@ -197,6 +283,19 @@ entries:
     - assets/kube-prometheus-stack/kube-prometheus-stack-84.5.0-rev.1.tgz
     version: 84.5.0-rev.1
   kube-prometheus-stack-crd:
+  - annotations:
+      catalog.cattle.io/hidden: "true"
+      catalog.cattle.io/namespace: cattle-monitoring-system
+      catalog.cattle.io/release-name: kube-prometheus-stack-crd
+    apiVersion: v2
+    created: "2026-05-12T11:38:03.02626-04:00"
+    description: Installs the CRDs for kube-prometheus-stack.
+    digest: b4767c3d7ad0255a998e8c6d31e41327bd89fe0bc5a4e03ba367abf22a0c073b
+    name: kube-prometheus-stack-crd
+    type: application
+    urls:
+    - assets/kube-prometheus-stack-crd/kube-prometheus-stack-crd-84.5.0-rev.3.tgz
+    version: 84.5.0-rev.3
   - annotations:
       catalog.cattle.io/hidden: "true"
       catalog.cattle.io/namespace: cattle-monitoring-system

@@ -1,0 +1,9 @@
+annotations:
+  catalog.cattle.io/hidden: "true"
+  catalog.cattle.io/namespace: cattle-monitoring-system
+  catalog.cattle.io/release-name: kube-prometheus-stack-crd
+apiVersion: v2
+description: Installs the CRDs for kube-prometheus-stack.
+name: kube-prometheus-stack-crd
+type: application
+version: 84.5.0-rev.3
