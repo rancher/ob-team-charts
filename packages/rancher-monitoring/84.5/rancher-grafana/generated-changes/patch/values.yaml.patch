@@ -67,7 +67,7 @@
      sha: ""
      pullPolicy: IfNotPresent
  
-@@ -991,9 +969,9 @@
+@@ -992,9 +970,9 @@
  sidecar:
    image:
      # -- The Docker registry
@@ -80,7 +80,7 @@
      sha: ""
    imagePullPolicy: IfNotPresent
    resources: {}
-@@ -1497,12 +1475,9 @@
+@@ -1498,12 +1476,9 @@
    # Use an existing secret for the image renderer token. Must contain a key named "token".
    existingSecret: ""
    image:
