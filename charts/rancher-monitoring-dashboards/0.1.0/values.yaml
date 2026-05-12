@@ -1,6 +1,6 @@
 # Default values for the rancher-monitoring dashboard artifact prototype.
 
-nameOverride: rancher-monitoring
+nameOverride: ""
 fullnameOverride: ""
 namespaceOverride: cattle-monitoring-system
 commonLabels: {}
@@ -10,7 +10,7 @@ global:
   disableProxyIPv6: false
   cattle:
     systemDefaultRegistry: ""
-    clusterId: "local"
+    clusterId: ""
     clusterName: ""
   kubectl:
     repository: rancher/kuberlr-kubectl

@@ -1621,45 +1621,6 @@ entries:
       artifacthub.io/license: Apache-2.0
       artifacthub.io/links: |
         - name: Chart Source
-          url: https://github.com/rancher/ob-team-charts
-        - name: Prototype README
-          url: https://github.com/rancher/ob-team-charts/tree/main/charts/rancher-monitoring/80.9.1-rancher.6
-      catalog.cattle.io/certified: rancher
-      catalog.cattle.io/display-name: Monitoring
-      catalog.cattle.io/kube-version: '>= 1.26.0-0'
-      catalog.cattle.io/namespace: cattle-monitoring-system
-      catalog.cattle.io/rancher-version: '>= 2.9.0-0'
-      catalog.cattle.io/release-name: rancher-monitoring
-      catalog.cattle.io/type: cluster-tool
-      catalog.cattle.io/ui-component: monitoring
-    apiVersion: v2
-    appVersion: 85.0.0
-    created: "2026-05-11T20:59:34.534383-03:00"
-    description: Dashboard artifact delivery for Rancher Monitoring with BYO Grafana
-      integration metadata and optional nginx proxy.
-    digest: ed76532e6d4c9591f2c64c7fa9106dfd28920cc8e0c8e598ea0321ca012c3e4a
-    home: https://github.com/rancher/ob-team-charts
-    icon: file://assets/logos/rancher-monitoring.png
-    keywords:
-    - rancher
-    - monitoring
-    - dashboards
-    - grafana
-    kubeVersion: '>=1.25.0-0'
-    maintainers:
-    - name: Rancher Observability and Backups Team
-      url: https://github.com/rancher/ob-team-charts
-    name: rancher-monitoring
-    sources:
-    - https://github.com/rancher/ob-team-charts
-    type: application
-    urls:
-    - assets/rancher-monitoring/rancher-monitoring-85.0.0.tgz
-    version: 85.0.0
-  - annotations:
-      artifacthub.io/license: Apache-2.0
-      artifacthub.io/links: |
-        - name: Chart Source
           url: https://github.com/prometheus-community/helm-charts
         - name: Upstream Project
           url: https://github.com/prometheus-operator/kube-prometheus
@@ -16463,6 +16424,46 @@ entries:
     urls:
     - assets/rancher-monitoring-crd/rancher-monitoring-crd-40.1.2-rancher.1.tgz
     version: 40.1.2-rancher.1
+  rancher-monitoring-dashboards:
+  - annotations:
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: |
+        - name: Chart Source
+          url: https://github.com/rancher/ob-team-charts
+        - name: README
+          url: https://github.com/rancher/ob-team-charts/tree/main/charts/rancher-monitoring-dashboards/0.1.0
+      catalog.cattle.io/certified: rancher
+      catalog.cattle.io/display-name: Monitoring Dashboards
+      catalog.cattle.io/kube-version: '>= 1.26.0-0'
+      catalog.cattle.io/namespace: cattle-monitoring-system
+      catalog.cattle.io/rancher-version: '>= 2.9.0-0'
+      catalog.cattle.io/release-name: rancher-monitoring-dashboards
+      catalog.cattle.io/type: cluster-tool
+      catalog.cattle.io/ui-component: monitoring
+    apiVersion: v2
+    appVersion: 0.1.0
+    created: "2026-05-12T23:53:59.498141-03:00"
+    description: Dashboard artifact delivery for Rancher Monitoring with BYO Grafana
+      and prometheus integration metadata and optional nginx proxy.
+    digest: df4bb28abcd528a99ae709e70b965cf1e293f65d31c5805af8d49aebf3f236b1
+    home: https://github.com/rancher/ob-team-charts
+    icon: file://assets/logos/rancher-monitoring.png
+    keywords:
+    - rancher
+    - monitoring
+    - dashboards
+    - grafana
+    kubeVersion: '>=1.25.0-0'
+    maintainers:
+    - name: Rancher Observability and Backups Team
+      url: https://github.com/rancher/ob-team-charts
+    name: rancher-monitoring-dashboards
+    sources:
+    - https://github.com/rancher/ob-team-charts
+    type: application
+    urls:
+    - assets/rancher-monitoring-dashboards/rancher-monitoring-dashboards-0.1.0.tgz
+    version: 0.1.0
   rancher-project-monitoring:
   - annotations:
       catalog.cattle.io/certified: rancher
