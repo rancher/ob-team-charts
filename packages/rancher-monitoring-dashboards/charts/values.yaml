@@ -1,8 +1,5 @@
 # Default values for the rancher-monitoring dashboard artifact prototype.
 
-nameOverride: ""
-fullnameOverride: ""
-namespaceOverride: cattle-monitoring-system
 commonLabels: {}
 extraManifests: []
 
@@ -58,30 +55,7 @@ dashboardArtifacts:
 # See INTEGRATION-GUIDE.md for detailed scenarios and troubleshooting.
 dashboardIntegration:
   grafanaURL: ""
-  grafana:
-    # Pod label selector — creates a ClusterIP service targeting matching pods in this namespace
-    # Default selector matches kube-prometheus-stack Grafana with default release name
-    # Override if using a different release name
-    selector:
-      app.kubernetes.io/name: grafana
-      app.kubernetes.io/instance: kube-prometheus-stack
-    port: 3000  # Grafana's actual container port
   prometheusURL: ""
-  prometheus:
-    # Default selector matches kube-prometheus-stack Prometheus pods
-    # Note: operator.prometheus.io/name includes the release name
-    selector:
-      app.kubernetes.io/name: prometheus
-      operator.prometheus.io/name: kube-prometheus-stack-prometheus
-    port: 9090
-  alertmanagerURL: ""
-  alertmanager:
-    # Default selector matches kube-prometheus-stack Alertmanager pods
-    # Note: alertmanager label includes the release name
-    selector:
-      app.kubernetes.io/name: alertmanager
-      alertmanager: kube-prometheus-stack-alertmanager
-    port: 9093
 
 # Nginx proxy for Grafana to handle Rancher's Kubernetes API proxy URL rewriting
 # REQUIRED for vanilla kube-prometheus-stack to work with embedded Rancher iframes.
@@ -124,14 +98,6 @@ ingressNginx:
   serviceMonitor:
     interval: "30s"
     proxyUrl: ""
-    metricRelabelings: []
-    relabelings: []
-rkeIngressNginx:
-  enabled: false
-rke2IngressNginx:
-  enabled: false
-  networkPolicy:
-    enabled: false
 hardenedNodeExporter:
   enabled: false
 kubeStateMetrics:
@@ -145,8 +111,6 @@ hardened:
       enabled: false
 defaultRules:
   create: false
-prometheus:
-  enabled: false
 kubeEtcd:
   enabled: false
 rkeEtcd:
@@ -165,14 +129,6 @@ kubeAdmControllerManager:
   enabled: false
 rke2ControllerManager:
   enabled: false
-loggingMonitors:
-  fluentd:
-    enabled: true
-  fluentbit:
-    enabled: true
-rancherBackupMonitoring:
-  dashboards:
-    enabled: true
 
 # Legacy Grafana settings are no longer authoritative for rendering, but these
 # values are kept as explicit compatibility fields for consumers that still look

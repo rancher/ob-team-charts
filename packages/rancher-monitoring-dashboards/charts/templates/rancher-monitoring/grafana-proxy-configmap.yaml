@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "rancher-monitoring.fullname" . }}-grafana-proxy-config
+  name: {{ include "rancher-monitoring.name" . }}-grafana-proxy-config
   namespace: {{ include "rancher-monitoring.namespace" . }}
   labels:
 {{ include "rancher-monitoring.labels" . | indent 4 }}

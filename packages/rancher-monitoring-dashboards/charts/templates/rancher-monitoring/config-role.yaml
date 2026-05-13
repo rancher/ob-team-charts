@@ -3,8 +3,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: monitoring-config-admin
-  namespace: {{ template "kube-prometheus-stack.namespace" . }}
-  labels: {{ include "kube-prometheus-stack.labels" . | nindent 4 }}
+  namespace: {{ template "rancher-monitoring.namespace" . }}
+  labels: {{ include "rancher-monitoring.labels" . | nindent 4 }}
 rules:
 - apiGroups:
   - ""
@@ -18,8 +18,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: monitoring-config-edit
-  namespace: {{ template "kube-prometheus-stack.namespace" . }}
-  labels: {{ include "kube-prometheus-stack.labels" . | nindent 4 }}
+  namespace: {{ template "rancher-monitoring.namespace" . }}
+  labels: {{ include "rancher-monitoring.labels" . | nindent 4 }}
 rules:
 - apiGroups:
   - ""
@@ -33,8 +33,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: monitoring-config-view
-  namespace: {{ template "kube-prometheus-stack.namespace" . }}
-  labels: {{ include "kube-prometheus-stack.labels" . | nindent 4 }}
+  namespace: {{ template "rancher-monitoring.namespace" . }}
+  labels: {{ include "rancher-monitoring.labels" . | nindent 4 }}
 rules:
 - apiGroups:
   - ""

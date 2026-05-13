@@ -5,7 +5,7 @@ kind: Role
 metadata:
   name: monitoring-dashboard-admin
   namespace: {{ .Values.grafana.defaultDashboards.namespace }}
-  labels: {{ include "kube-prometheus-stack.labels" . | nindent 4 }}
+  labels: {{ include "rancher-monitoring.labels" . | nindent 4 }}
 rules:
 - apiGroups:
   - ""
@@ -19,7 +19,7 @@ kind: Role
 metadata:
   name: monitoring-dashboard-edit
   namespace: {{ .Values.grafana.defaultDashboards.namespace }}
-  labels: {{ include "kube-prometheus-stack.labels" . | nindent 4 }}
+  labels: {{ include "rancher-monitoring.labels" . | nindent 4 }}
 rules:
 - apiGroups:
   - ""
@@ -33,7 +33,7 @@ kind: Role
 metadata:
   name: monitoring-dashboard-view
   namespace: {{ .Values.grafana.defaultDashboards.namespace }}
-  labels: {{ include "kube-prometheus-stack.labels" . | nindent 4 }}
+  labels: {{ include "rancher-monitoring.labels" . | nindent 4 }}
 rules:
 - apiGroups:
   - ""

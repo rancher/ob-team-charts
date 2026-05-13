@@ -1,22 +1,9 @@
 {{- define "rancher-monitoring.name" -}}
-{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-
-{{- define "rancher-monitoring.fullname" -}}
-{{- if .Values.fullnameOverride -}}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- $name := include "rancher-monitoring.name" . -}}
-{{- if contains $name .Release.Name -}}
-{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-{{- end -}}
+{{ .Chart.Name }}
 {{- end -}}
 
 {{- define "rancher-monitoring.namespace" -}}
-{{- default .Release.Namespace .Values.namespaceOverride -}}
+{{.Release.Namespace }}
 {{- end -}}
 
 {{- define "rancher-monitoring.chartref" -}}
@@ -41,22 +28,6 @@ heritage: {{ .Release.Service | quote }}
 {{- define "rancher-monitoring.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "rancher-monitoring.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
-{{- end -}}
-
-{{- define "kube-prometheus-stack.name" -}}
-{{- include "rancher-monitoring.name" . -}}
-{{- end -}}
-
-{{- define "kube-prometheus-stack.fullname" -}}
-{{- include "rancher-monitoring.fullname" . -}}
-{{- end -}}
-
-{{- define "kube-prometheus-stack.namespace" -}}
-{{- include "rancher-monitoring.namespace" . -}}
-{{- end -}}
-
-{{- define "kube-prometheus-stack.labels" -}}
-{{- include "rancher-monitoring.labels" . -}}
 {{- end -}}
 
 {{- define "rancher-monitoring.dashboardArtifacts.enabled" -}}

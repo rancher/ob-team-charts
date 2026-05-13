@@ -2,7 +2,7 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  labels: {{ include "kube-prometheus-stack.labels" . | nindent 4 }}
+  labels: {{ include "rancher-monitoring.labels" . | nindent 4 }}
   name: monitoring-fleet-controller
   namespace: cattle-fleet-system
 spec:
@@ -29,7 +29,7 @@ spec:
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  labels: {{ include "kube-prometheus-stack.labels" . | nindent 4 }}
+  labels: {{ include "rancher-monitoring.labels" . | nindent 4 }}
   name: monitoring-gitops-controller
   namespace: cattle-fleet-system
 spec:

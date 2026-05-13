@@ -3,7 +3,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: monitoring-admin
-  labels: {{ include "kube-prometheus-stack.labels" . | nindent 4 }}
+  labels: {{ include "rancher-monitoring.labels" . | nindent 4 }}
   {{- if .Values.global.rbac.userRoles.aggregateToDefaultRoles }}
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
   {{- end }}
@@ -38,7 +38,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: monitoring-edit
-  labels: {{ include "kube-prometheus-stack.labels" . | nindent 4 }}
+  labels: {{ include "rancher-monitoring.labels" . | nindent 4 }}
   {{- if .Values.global.rbac.userRoles.aggregateToDefaultRoles }}
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
   {{- end }}
@@ -72,7 +72,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: monitoring-view
-  labels: {{ include "kube-prometheus-stack.labels" . | nindent 4 }}
+  labels: {{ include "rancher-monitoring.labels" . | nindent 4 }}
   {{- if .Values.global.rbac.userRoles.aggregateToDefaultRoles }}
     rbac.authorization.k8s.io/aggregate-to-view: "true"
   {{- end }}
@@ -102,7 +102,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: monitoring-ui-view
-  labels: {{ include "kube-prometheus-stack.labels" . | nindent 4 }}
+  labels: {{ include "rancher-monitoring.labels" . | nindent 4 }}
 rules:
 - apiGroups:
   - ""
