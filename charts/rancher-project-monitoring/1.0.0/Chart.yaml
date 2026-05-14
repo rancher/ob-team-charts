@@ -1,0 +1,25 @@
+annotations:
+  catalog.cattle.io/certified: rancher
+  catalog.cattle.io/display-name: Project Monitoring
+  catalog.cattle.io/hidden: "true"
+  catalog.cattle.io/permits-os: linux,windows
+  catalog.cattle.io/release-name: rancher-project-monitoring
+apiVersion: v2
+appVersion: v0.87.1
+description: Project monitoring compatibility payload for Rancher dashboard metadata,
+  dashboard artifacts, and RBAC integration without embedded monitoring runtimes
+home: https://github.com/rancher/ob-team-charts
+keywords:
+- monitoring
+- dashboards
+- rancher
+maintainers:
+- email: alexandre.lamarre@suse.com
+  name: Alexandre
+- email: joshua.meranda@suse.com
+  name: Joshua
+- email: dan.pock@suse.com
+  name: Dan
+name: rancher-project-monitoring
+type: application
+version: 1.0.0

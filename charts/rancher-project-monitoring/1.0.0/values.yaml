@@ -1,0 +1,20 @@
+# Default values for the rancher-project-monitoring compatibility prototype.
+
+nameOverride: rancher-project-monitoring
+namespaceOverride: ""
+fullnameOverride: ""
+commonLabels: {}
+
+# External endpoint metadata published for Rancher consumers through the
+# dashboard-values ConfigMap.
+dashboardIntegration:
+  grafanaURL: ""
+  prometheusURL: ""
+  alertmanagerURL: ""
+
+global:
+  rbac:
+    create: true
+    userRoles:
+      create: true
+      aggregateToDefaultRoles: true

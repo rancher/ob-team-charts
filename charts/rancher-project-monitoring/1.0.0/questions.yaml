@@ -1,0 +1,21 @@
+questions:
+- variable: dashboardIntegration.grafanaURL
+  label: External Grafana URL
+  default: ""
+  type: string
+  group: Integrations
+- variable: dashboardIntegration.prometheusURL
+  label: External Prometheus URL
+  default: ""
+  type: string
+  group: Integrations
+- variable: dashboardIntegration.alertmanagerURL
+  label: External Alertmanager URL
+  default: ""
+  type: string
+  group: Integrations
+- variable: grafana.defaultDashboardsEnabled
+  label: Publish Default Dashboard Artifacts
+  default: true
+  type: boolean
+  group: Dashboards

@@ -1,0 +1,4 @@
+{{ $.Chart.Name }} has been installed.
+
+This chart deploys dashboard metadata only.
+Access dashboards via cluster Grafana at: {{ .Values.dashboardIntegration.grafanaURL }}
