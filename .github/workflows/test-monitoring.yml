@@ -78,10 +78,10 @@ jobs:
           SERIES=$(echo "${{ matrix.version }}" | grep -oE '^[0-9]+\.[0-9]+')
           # Look up the highest Rancher branch for this series: "80.9" → "dev-v2.14" → "2.14"
           RANCHER_MINOR=$(grep -A30 "\"${SERIES}\":" charts-config.yaml \
-            | grep -oP 'dev-v\K[\d.]+' | sort -V | tail -1)
+            | grep -o 'dev-v[0-9.]*' | sed 's/dev-v//' | sort -V | tail -1)
           # Look up k3s version from rancher-k3s table in charts-config.yaml
           K3S_VERSION=$(grep -A10 '^rancher-k3s:' charts-config.yaml \
-            | grep "\"${RANCHER_MINOR}\"" | grep -oP '"v[^"]*"' | tr -d '"')
+            | grep "\"${RANCHER_MINOR}\"" | grep -o '"v[^"]*"' | tr -d '"')
           helm repo add rancher-latest https://releases.rancher.com/server-charts/latest
           # Pick the latest patch release for that Rancher minor (e.g. 2.14.x)
           RANCHER_VERSION=$(helm search repo rancher-latest/rancher --versions -o json \
@@ -93,7 +93,9 @@ jobs:
 
       - name: Install k3s
         run: |
-          curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=${{ steps.versions.outputs.k3s }} sh -
+          curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=${{ steps.versions.outputs.k3s }} INSTALL_K3S_SKIP_ENABLE=true sh -
+          sudo k3s server &
+          timeout 60s bash -c 'until [ -f /etc/rancher/k3s/k3s.yaml ]; do sleep 1; done'
           sudo chmod 644 /etc/rancher/k3s/k3s.yaml
           mkdir -p $HOME/.kube
           sudo cp /etc/rancher/k3s/k3s.yaml $HOME/.kube/config
