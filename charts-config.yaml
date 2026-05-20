@@ -39,3 +39,10 @@ kuberlr-kubectl:
   dev-v2.13: release/v6.x
   dev-v2.14: release/v7.x
   dev-v2.15: main
+
+rancher-k3s:
+  "2.10": "v1.30.2+k3s1"
+  "2.11": "v1.31.2+k3s1"
+  "2.12": "v1.31.2+k3s1"
+  "2.13": "v1.32.2+k3s1"
+  "2.14": "v1.33.1+k3s1"
