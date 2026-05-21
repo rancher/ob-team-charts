@@ -14,7 +14,7 @@ permissions:
 jobs:
   detect:
     name: Detect Changed Monitoring Versions
-    if: github.event.label.name == 'test-monitoring'
+    if: github.event.label.name == 'ci-test-monitoring'
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/rancher/ci-image/charts
@@ -22,14 +22,11 @@ jobs:
       versions: ${{ steps.detect.outputs.versions }}
 
     steps:
-      - name: Checkout PR HEAD from fork
+      - name: Checkout PR HEAD
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
-
-      - name: Mark git directory as safe
-        run: git config --global --add safe.directory "$(pwd)"
 
       - name: Detect monitoring versions
         id: detect
@@ -51,25 +48,24 @@ jobs:
     needs: detect
     if: needs.detect.outputs.versions != '[]'
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/rancher/ci-image/charts
     strategy:
       matrix:
         version: ${{ fromJson(needs.detect.outputs.versions) }}
       fail-fast: false
 
     steps:
-      - name: Checkout PR HEAD from fork
+      - name: Checkout PR HEAD
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Mark git directory as safe
-        run: git config --global --add safe.directory "$(pwd)"
-
-      - name: Re-attach to PR branch
-        run: git switch -c "${{ github.event.pull_request.head.ref }}"
+      - name: Install ob-charts-tool
+        run: |
+          curl -fsSL https://github.com/rancher/ob-charts-tool/releases/download/v0.5.0/ob-charts-tool_linux_amd64 \
+            -o /tmp/ob-charts-tool
+          echo "7387439e73e5f48a13f8f1f0800023d255f086562293bc17affb7535a093887d  /tmp/ob-charts-tool" | sha256sum -c
+          sudo install /tmp/ob-charts-tool /usr/local/bin/ob-charts-tool
 
       - name: Resolve Rancher and k3s versions for chart
         id: versions
