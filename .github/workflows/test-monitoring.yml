@@ -1,7 +1,7 @@
 name: Test Monitoring Chart
 
-# Triggered when a maintainer adds the 'test-monitoring' label to a PR.
-# Uses pull_request_target so secrets are available even for fork PRs.
+# Triggered when a maintainer adds the 'ci-test-monitoring' label to a PR.
+# Uses the pull_request event so fork PRs can be tested without exposing repository secrets to PR-controlled code.
 on:
   pull_request_target:
     types: [labeled]
