@@ -104,7 +104,7 @@ jobs:
           mkdir -p $HOME/.kube
           sudo cp /etc/rancher/k3s/k3s.yaml $HOME/.kube/config
           sudo chown $(id -u):$(id -g) $HOME/.kube/config
-          kubectl wait --for=condition=Ready node --all --timeout=300s
+          timeout 300s bash -c 'until kubectl wait --for=condition=Ready node --all --timeout=10s 2>/dev/null; do sleep 2; done'
 
       - name: Install cert-manager
         run: |
