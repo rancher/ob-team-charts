@@ -56,7 +56,7 @@ jobs:
             done < <(yq ".packages.rancher-monitoring.\"${SERIES}\".branches[].branch" charts-config.yaml)
           done < <(echo "$CHARTS" | tr ' ' '\n' | grep '^rancher-monitoring/')
           echo "Detected matrix: $MATRIX"
-          echo "matrix=${MATRIX}" >> $GITHUB_OUTPUT
+          echo "matrix=$(echo "$MATRIX" | jq -c .)" >> $GITHUB_OUTPUT
 
   test:
     name: Test rancher-monitoring ${{ matrix.version }} on Rancher ${{ matrix.rancher_minor }}
