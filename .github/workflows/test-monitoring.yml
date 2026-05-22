@@ -1,0 +1,205 @@
+name: Test Monitoring Chart
+
+# Triggered when a maintainer adds the 'test-monitoring' label to a PR.
+# Uses pull_request_target so secrets are available even for fork PRs.
+on:
+  pull_request_target:
+    types: [labeled]
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  detect:
+    name: Detect Changed Monitoring Versions
+    if: github.event.label.name == 'ci-test-monitoring'
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/rancher/ci-image/charts
+    outputs:
+      matrix: ${{ steps.detect.outputs.matrix }}
+
+    steps:
+      - name: Checkout PR HEAD
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Install yq
+        run: |
+          curl -fsSL https://github.com/mikefarah/yq/releases/download/v4.53.2/yq_linux_amd64 \
+            -o /tmp/yq
+          echo "d56bf5c6819e8e696340c312bd70f849dc1678a7cda9c2ad63eebd906371d56b  /tmp/yq" | sha256sum -c
+          install /tmp/yq /usr/local/bin/yq
+
+      - name: Detect monitoring versions
+        id: detect
+        shell: bash
+        env:
+          OB_DIR: ${{ github.workspace }}
+          COMMIT_SHA_BEFORE: ${{ github.event.pull_request.base.sha }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # Detect which rancher-monitoring chart versions changed in this PR.
+          # Output is space-separated "rancher-monitoring/<version>" entries.
+          CHARTS=$(./.github/workflows/push/detect-charts.sh)
+          MATRIX='[]'
+          # For each changed rancher-monitoring version, look up all Rancher branches
+          # it targets in charts-config.yaml and emit one matrix entry per branch.
+          # A single chart version may support multiple Rancher minors (e.g. 69.8 → 2.11 and 2.12),
+          # so we test each combination independently.
+          while IFS= read -r entry; do
+            [ -z "$entry" ] && continue
+            # Strip the "rancher-monitoring/" prefix to get the bare version (e.g. 80.9.1-rancher.9)
+            VERSION="${entry#rancher-monitoring/}"
+            # Extract the series prefix used as the key in charts-config.yaml (e.g. 80.9.1-rancher.9 → 80.9)
+            SERIES=$(echo "$VERSION" | grep -oE '^[0-9]+\.[0-9]+')
+            # Look up every Rancher branch configured for this series (e.g. dev-v2.14)
+            while IFS= read -r branch; do
+              # Strip "dev-v" to get the Rancher minor version (e.g. dev-v2.14 → 2.14)
+              RANCHER_MINOR="${branch#dev-v}"
+              # Append {"version": "...", "rancher_minor": "..."} to the matrix array
+              MATRIX=$(printf '%s' "$MATRIX" | jq --arg v "$VERSION" --arg r "$RANCHER_MINOR" \
+                '. + [{"version": $v, "rancher_minor": $r}]')
+            done < <(yq ".packages.rancher-monitoring.\"${SERIES}\".branches[].branch" charts-config.yaml)
+          done < <(echo "$CHARTS" | tr ' ' '\n' | grep '^rancher-monitoring/')
+          echo "Detected matrix: $MATRIX"
+          # Compact to a single line — GITHUB_OUTPUT does not support multiline values
+          echo "matrix=$(echo "$MATRIX" | jq -c .)" >> $GITHUB_OUTPUT
+
+  test:
+    name: Test rancher-monitoring ${{ matrix.version }} on Rancher ${{ matrix.rancher_minor }}
+    needs: detect
+    if: needs.detect.outputs.matrix != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include: ${{ fromJson(needs.detect.outputs.matrix) }}
+      fail-fast: false
+
+    steps:
+      - name: Checkout PR HEAD
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Install ob-charts-tool
+        run: |
+          curl -fsSL https://github.com/rancher/ob-charts-tool/releases/download/v0.5.0/ob-charts-tool_linux_amd64 \
+            -o /tmp/ob-charts-tool
+          echo "7387439e73e5f48a13f8f1f0800023d255f086562293bc17affb7535a093887d  /tmp/ob-charts-tool" | sha256sum -c
+          sudo install /tmp/ob-charts-tool /usr/local/bin/ob-charts-tool
+
+      - name: Resolve Rancher and k3s versions for chart
+        id: versions
+        run: |
+          RANCHER_MINOR="${{ matrix.rancher_minor }}"
+          K3S_VERSION=$(yq ".\"rancher-k3s\".\"${RANCHER_MINOR}\"" charts-config.yaml)
+          helm repo add rancher-latest https://releases.rancher.com/server-charts/latest
+          RANCHER_VERSION=$(helm search repo rancher-latest/rancher --versions -o json \
+            | jq -r --arg minor "${RANCHER_MINOR}." \
+              '[.[] | select(.version | startswith($minor)) | .version] | sort | last')
+          echo "Rancher version: $RANCHER_VERSION, k3s version: $K3S_VERSION"
+          echo "rancher=$RANCHER_VERSION" >> $GITHUB_OUTPUT
+          echo "k3s=$K3S_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Install k3s
+        run: |
+          curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=${{ steps.versions.outputs.k3s }} INSTALL_K3S_SKIP_ENABLE=true sh -
+          sudo k3s server &
+          timeout 60s bash -c 'until [ -f /etc/rancher/k3s/k3s.yaml ]; do sleep 1; done'
+          sudo chmod 644 /etc/rancher/k3s/k3s.yaml
+          mkdir -p $HOME/.kube
+          sudo cp /etc/rancher/k3s/k3s.yaml $HOME/.kube/config
+          sudo chown $(id -u):$(id -g) $HOME/.kube/config
+          timeout 300s bash -c 'until kubectl wait --for=condition=Ready node --all --timeout=10s 2>/dev/null; do sleep 2; done'
+
+      - name: Install cert-manager
+        run: |
+          helm repo add jetstack https://charts.jetstack.io
+          helm install cert-manager jetstack/cert-manager \
+            --namespace cert-manager \
+            --version v1.17.2 \
+            --set crds.enabled=true \
+            --wait \
+            --create-namespace
+
+      - name: Get node IP and set Rancher URL
+        id: rancher-url
+        run: |
+          NODE_IP=$(kubectl get node -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}')
+          RANCHER_URL="https://rancher.$NODE_IP.sslip.io"
+          echo "url=$RANCHER_URL" >> $GITHUB_OUTPUT
+
+      - name: Install Rancher
+        run: |
+          kubectl create namespace cattle-system
+          helm install rancher rancher-latest/rancher \
+            --namespace cattle-system \
+            --set hostname=$(echo ${{ steps.rancher-url.outputs.url }} | sed 's|https://||') \
+            --set bootstrapPassword=admin \
+            --set replicas=1 \
+            --version ${{ steps.versions.outputs.rancher }}
+          kubectl wait --for=condition=ready pod -l app=rancher -n cattle-system --timeout=600s
+
+      - name: Wait for Rancher API
+        run: |
+          RANCHER_URL="${{ steps.rancher-url.outputs.url }}"
+          ATTEMPTS=0
+          while [ $ATTEMPTS -lt 60 ]; do
+            HTTP_CODE=$(curl -k -s -o /dev/null -w "%{http_code}" "${RANCHER_URL}/v3")
+            [ "$HTTP_CODE" -eq 401 ] && exit 0
+            echo "Attempt $((ATTEMPTS+1))/60: not ready (status $HTTP_CODE), retrying..."
+            sleep 5
+            ATTEMPTS=$((ATTEMPTS+1))
+          done
+          echo "::error::Timed out waiting for Rancher API"
+          exit 1
+
+      - name: Create Rancher API token
+        id: rancher-token
+        run: |
+          RANCHER_URL="${{ steps.rancher-url.outputs.url }}"
+          LOGIN_TOKEN=$(curl -k -s -X POST "${RANCHER_URL}/v3-public/localProviders/local?action=login" \
+            -H 'Content-Type: application/json' \
+            --data-binary '{"username":"admin","password":"admin"}' | jq -r .token)
+          API_TOKEN=$(curl -k -s -X POST "${RANCHER_URL}/v3/tokens" \
+            -H "Authorization: Bearer ${LOGIN_TOKEN}" \
+            -H 'Content-Type: application/json' \
+            --data-binary '{"type":"token","description":"github-action-token","ttl":0}' | jq -r .token)
+          echo "::add-mask::$API_TOKEN"
+          echo "token=$API_TOKEN" >> $GITHUB_OUTPUT
+
+      - name: Create ClusterRepo for PR branch
+        run: |
+          BRANCH="${{ github.event.pull_request.head.ref }}"
+          FORK_REPO="${{ github.event.pull_request.head.repo.full_name }}"
+          REPO_NAME="ob-team-charts-$(echo "${BRANCH}" | tr '/' '-' | tr '[:upper:]' '[:lower:]' | cut -c1-47)"
+          echo "REPO_NAME=${REPO_NAME}" >> $GITHUB_ENV
+          kubectl apply -f - <<EOF
+          apiVersion: catalog.cattle.io/v1
+          kind: ClusterRepo
+          metadata:
+            name: ${REPO_NAME}
+          spec:
+            gitBranch: ${BRANCH}
+            gitRepo: https://github.com/${FORK_REPO}
+          EOF
+
+      - name: Wait for ClusterRepo to sync
+        run: |
+          echo "Waiting for ${REPO_NAME} clusterrepo to be downloaded..."
+          timeout 300s bash -c \
+            'while [[ -z "$(kubectl get clusterrepo ${REPO_NAME} -o jsonpath={.status.downloadTime})" ]]; do echo -n "."; sleep 5; done'
+          echo ""
+
+      - name: Run monitoring version test
+        run: |
+          ob-charts-tool monitoring:testNewVersion "${{ matrix.version }}" \
+            --rancher-url "${{ steps.rancher-url.outputs.url }}" \
+            --rancher-token "${{ steps.rancher-token.outputs.token }}" \
+            --cluster-repo "${REPO_NAME}"
