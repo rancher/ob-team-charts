@@ -33,7 +33,7 @@ jobs:
           curl -fsSL https://github.com/mikefarah/yq/releases/download/v4.53.2/yq_linux_amd64 \
             -o /tmp/yq
           echo "d56bf5c6819e8e696340c312bd70f849dc1678a7cda9c2ad63eebd906371d56b  /tmp/yq" | sha256sum -c
-          sudo install /tmp/yq /usr/local/bin/yq
+          install /tmp/yq /usr/local/bin/yq
 
       - name: Detect monitoring versions
         id: detect
