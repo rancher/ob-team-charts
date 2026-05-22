@@ -19,7 +19,7 @@ jobs:
     container:
       image: ghcr.io/rancher/ci-image/charts
     outputs:
-      versions: ${{ steps.detect.outputs.versions }}
+      matrix: ${{ steps.detect.outputs.matrix }}
 
     steps:
       - name: Checkout PR HEAD
@@ -27,6 +27,13 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
+
+      - name: Install yq
+        run: |
+          curl -fsSL https://github.com/mikefarah/yq/releases/download/v4.53.2/yq_linux_amd64 \
+            -o /tmp/yq
+          echo "d56bf5c6819e8e696340c312bd70f849dc1678a7cda9c2ad63eebd906371d56b  /tmp/yq" | sha256sum -c
+          sudo install /tmp/yq /usr/local/bin/yq
 
       - name: Detect monitoring versions
         id: detect
@@ -36,21 +43,28 @@ jobs:
           COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           CHARTS=$(./.github/workflows/push/detect-charts.sh)
-          VERSIONS=$(echo "$CHARTS" | tr ' ' '\n' \
-            | grep '^rancher-monitoring/' \
-            | sed 's|rancher-monitoring/||' \
-            | jq -Rsc 'split("\n") | map(select(length > 0))')
-          echo "Detected versions: $VERSIONS"
-          echo "versions=${VERSIONS}" >> $GITHUB_OUTPUT
+          MATRIX='[]'
+          while IFS= read -r entry; do
+            [ -z "$entry" ] && continue
+            VERSION="${entry#rancher-monitoring/}"
+            SERIES=$(echo "$VERSION" | grep -oE '^[0-9]+\.[0-9]+')
+            while IFS= read -r branch; do
+              RANCHER_MINOR="${branch#dev-v}"
+              MATRIX=$(printf '%s' "$MATRIX" | jq --arg v "$VERSION" --arg r "$RANCHER_MINOR" \
+                '. + [{"version": $v, "rancher_minor": $r}]')
+            done < <(yq ".packages.rancher-monitoring.\"${SERIES}\".branches[].branch" charts-config.yaml)
+          done < <(echo "$CHARTS" | tr ' ' '\n' | grep '^rancher-monitoring/')
+          echo "Detected matrix: $MATRIX"
+          echo "matrix=${MATRIX}" >> $GITHUB_OUTPUT
 
   test:
-    name: Test rancher-monitoring ${{ matrix.version }}
+    name: Test rancher-monitoring ${{ matrix.version }} on Rancher ${{ matrix.rancher_minor }}
     needs: detect
-    if: needs.detect.outputs.versions != '[]'
+    if: needs.detect.outputs.matrix != '[]'
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        version: ${{ fromJson(needs.detect.outputs.versions) }}
+        include: ${{ fromJson(needs.detect.outputs.matrix) }}
       fail-fast: false
 
     steps:
@@ -70,16 +84,9 @@ jobs:
       - name: Resolve Rancher and k3s versions for chart
         id: versions
         run: |
-          # Extract series: 80.9.1-rancher.9 → 80.9
-          SERIES=$(echo "${{ matrix.version }}" | grep -oE '^[0-9]+\.[0-9]+')
-          # Look up the highest Rancher branch for this series: "80.9" → "dev-v2.14" → "2.14"
-          RANCHER_MINOR=$(grep -A30 "\"${SERIES}\":" charts-config.yaml \
-            | grep -o 'dev-v[0-9.]*' | sed 's/dev-v//' | sort -V | tail -1)
-          # Look up k3s version from rancher-k3s table in charts-config.yaml
-          K3S_VERSION=$(grep -A10 '^rancher-k3s:' charts-config.yaml \
-            | grep "\"${RANCHER_MINOR}\"" | grep -o '"v[^"]*"' | tr -d '"')
+          RANCHER_MINOR="${{ matrix.rancher_minor }}"
+          K3S_VERSION=$(yq ".\"rancher-k3s\".\"${RANCHER_MINOR}\"" charts-config.yaml)
           helm repo add rancher-latest https://releases.rancher.com/server-charts/latest
-          # Pick the latest patch release for that Rancher minor (e.g. 2.14.x)
           RANCHER_VERSION=$(helm search repo rancher-latest/rancher --versions -o json \
             | jq -r --arg minor "${RANCHER_MINOR}." \
               '[.[] | select(.version | startswith($minor)) | .version] | sort | last')
