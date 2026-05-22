@@ -37,6 +37,7 @@ jobs:
 
       - name: Detect monitoring versions
         id: detect
+        shell: bash
         env:
           OB_DIR: ${{ github.workspace }}
           COMMIT_SHA_BEFORE: ${{ github.event.pull_request.base.sha }}
