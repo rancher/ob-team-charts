@@ -12,7 +12,6 @@ annotations:
   catalog.cattle.io/rancher-version: '>= 2.9.0-0'
   catalog.cattle.io/release-name: rancher-monitoring-dashboards
   catalog.cattle.io/type: cluster-tool
-  catalog.cattle.io/ui-component: monitoring
 apiVersion: v2
 appVersion: 0.1.0
 description: Dashboard artifact delivery for Rancher Monitoring with BYO Grafana and
