@@ -60,13 +60,18 @@ jobs:
             # Extract the series prefix used as the key in charts-config.yaml (e.g. 80.9.1-rancher.9 → 80.9)
             SERIES=$(echo "$VERSION" | grep -oE '^[0-9]+\.[0-9]+')
             # Look up every Rancher branch configured for this series (e.g. dev-v2.14)
+            BRANCHES=$(yq -r ".packages.rancher-monitoring.\"${SERIES}\".branches[].branch // empty" charts-config.yaml)
+            if [ -z "$BRANCHES" ]; then
+              echo "::error::No rancher-monitoring branch mapping found for series ${SERIES} (version ${VERSION}) in charts-config.yaml"
+              exit 1
+            fi
             while IFS= read -r branch; do
               # Strip "dev-v" to get the Rancher minor version (e.g. dev-v2.14 → 2.14)
               RANCHER_MINOR="${branch#dev-v}"
               # Append {"version": "...", "rancher_minor": "..."} to the matrix array
               MATRIX=$(printf '%s' "$MATRIX" | jq --arg v "$VERSION" --arg r "$RANCHER_MINOR" \
                 '. + [{"version": $v, "rancher_minor": $r}]')
-            done < <(yq ".packages.rancher-monitoring.\"${SERIES}\".branches[].branch" charts-config.yaml)
+            done <<< "$BRANCHES"
           done < <(echo "$CHARTS" | tr ' ' '\n' | grep '^rancher-monitoring/')
           echo "Detected matrix: $MATRIX"
           # Compact to a single line — GITHUB_OUTPUT does not support multiline values
@@ -75,11 +80,11 @@ jobs:
   test:
     name: Test rancher-monitoring ${{ matrix.version }} on Rancher ${{ matrix.rancher_minor }}
     needs: detect
-    if: needs.detect.outputs.matrix != '[]'
+    if: needs.detect.result == 'success' && needs.detect.outputs.matrix != '[]'
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        include: ${{ fromJson(needs.detect.outputs.matrix) }}
+        include: ${{ fromJson(needs.detect.outputs.matrix || '[]') }}
       fail-fast: false
 
     steps:
