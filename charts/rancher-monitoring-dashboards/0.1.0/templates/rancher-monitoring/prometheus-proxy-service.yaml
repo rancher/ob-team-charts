@@ -1,0 +1,13 @@
+{{- if .Values.prometheusProxy.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: rancher-monitoring-prometheus
+  namespace: {{ include "rancher-monitoring.namespace" . }}
+  labels:
+{{ include "rancher-monitoring.labels" . | indent 4 }}
+    app.kubernetes.io/component: prometheus-proxy
+spec:
+  type: ExternalName
+  externalName: {{ .Values.prometheusProxy.upstreamService }}.cattle-monitoring-system.svc.cluster.{{ .Values.global.cattle.clusterId }}
+{{- end }}

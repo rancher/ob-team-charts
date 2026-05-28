@@ -84,6 +84,14 @@ grafanaProxy:
   tolerations: []
   affinity: {}
 
+prometheusProxy:
+  enabled: true
+  upstreamService: kube-prometheus-stack-prometheus
+
+alertmanagerProxy:
+  enabled: true
+  upstreamService: kube-prometheus-stack-alertmanager
+
 # Compatibility knobs retained for dashboard query compatibility and gradual migration.
 kubeTargetVersionOverride: ""
 rancherMonitoring:
