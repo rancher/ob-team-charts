@@ -1,10 +1,10 @@
 name: Test Monitoring Chart
 
-# Triggered when a maintainer adds the 'ci-test-monitoring' label to a PR.
-# Uses the pull_request event so fork PRs can be tested without exposing repository secrets to PR-controlled code.
+# Runs automatically for org members, or when a maintainer adds the 'ci-test-monitoring' label.
+# Uses pull_request_target so the workflow has repo context even for fork PRs.
 on:
   pull_request_target:
-    types: [labeled]
+    types: [labeled, opened, synchronize]
     branches:
       - main
 
@@ -14,7 +14,9 @@ permissions:
 jobs:
   detect:
     name: Detect Changed Monitoring Versions
-    if: github.event.label.name == 'ci-test-monitoring'
+    if: >
+      github.event.label.name == 'ci-test-monitoring' ||
+      github.event.pull_request.author_association == 'MEMBER'
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/rancher/ci-image/charts
