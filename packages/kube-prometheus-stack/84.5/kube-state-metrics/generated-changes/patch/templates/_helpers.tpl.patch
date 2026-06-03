@@ -1,0 +1,57 @@
+--- charts-original/templates/_helpers.tpl
++++ charts/templates/_helpers.tpl
+@@ -1,3 +1,32 @@
++# Rancher
++{{- define "system_default_registry" -}}
++{{- if .Values.global.cattle.systemDefaultRegistry -}}
++{{- printf "%s/" .Values.global.cattle.systemDefaultRegistry -}}
++{{- end -}}
++{{- end -}}
++
++# Windows Support
++
++{{/*
++Windows cluster will add default taint for linux nodes,
++add below linux tolerations to workloads could be scheduled to those linux nodes
++*/}}
++
++{{- define "linux-node-tolerations" -}}
++- key: "cattle.io/os"
++  value: "linux"
++  effect: "NoSchedule"
++  operator: "Equal"
++{{- end -}}
++
++{{- define "linux-node-selector" -}}
++{{- if semverCompare "<1.14-0" .Capabilities.KubeVersion.GitVersion -}}
++beta.kubernetes.io/os: linux
++{{- else -}}
++kubernetes.io/os: linux
++{{- end -}}
++{{- end -}}
++
+ {{/* vim: set filetype=mustache: */}}
+ {{/*
+ Expand the name of the chart.
+@@ -140,14 +169,19 @@
+ The image to use for kube-state-metrics
+ */}}
+ {{- define "kube-state-metrics.image" -}}
++{{- $temp_registry := (include "system_default_registry" .) }}
+ {{- if .Values.image.sha }}
+-{{- if .Values.global.imageRegistry }}
++{{- if $temp_registry }}
++{{- printf "%s%s:%s@%s" $temp_registry .Values.image.repository (default (printf "v%s" .Chart.AppVersion) .Values.image.tag) .Values.image.sha }}
++{{- else if .Values.global.imageRegistry }}
+ {{- printf "%s/%s:%s@%s" .Values.global.imageRegistry .Values.image.repository (default (printf "v%s" .Chart.AppVersion) .Values.image.tag) .Values.image.sha }}
+ {{- else }}
+ {{- printf "%s/%s:%s@%s" .Values.image.registry .Values.image.repository (default (printf "v%s" .Chart.AppVersion) .Values.image.tag) .Values.image.sha }}
+ {{- end }}
+ {{- else }}
+-{{- if .Values.global.imageRegistry }}
++{{- if $temp_registry }}
++{{- printf "%s%s:%s" $temp_registry .Values.image.repository (default (printf "v%s" .Chart.AppVersion) .Values.image.tag) }}
++{{- else if .Values.global.imageRegistry }}
+ {{- printf "%s/%s:%s" .Values.global.imageRegistry .Values.image.repository (default (printf "v%s" .Chart.AppVersion) .Values.image.tag) }}
+ {{- else }}
+ {{- printf "%s/%s:%s" .Values.image.registry .Values.image.repository (default (printf "v%s" .Chart.AppVersion) .Values.image.tag) }}

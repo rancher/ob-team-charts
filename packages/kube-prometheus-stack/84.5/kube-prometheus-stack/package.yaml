@@ -1,0 +1,14 @@
+url: https://github.com/prometheus-community/helm-charts.git
+subdirectory: charts/kube-prometheus-stack
+commit: 0dba7cdace3c8cb8191e73fc1fc8ebaff4c4d62c # kube-prometheus-stack-84.5.0
+version: 84.5.0-rev.3
+additionalCharts:
+  - workingDir: charts-crd
+    upstreamOptions:
+      url: https://github.com/prometheus-community/helm-charts.git
+      commit: 0dba7cdace3c8cb8191e73fc1fc8ebaff4c4d62c # kube-prometheus-stack-84.5.0
+      subdirectory: charts/kube-prometheus-stack/charts/crds/files
+    crdOptions:
+      templateDirectory: crd-template
+      crdDirectory: monitoring-crd
+doNotRelease: false
