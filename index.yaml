@@ -16439,12 +16439,13 @@ entries:
       catalog.cattle.io/rancher-version: '>= 2.9.0-0'
       catalog.cattle.io/release-name: rancher-monitoring-dashboards
       catalog.cattle.io/type: cluster-tool
+      catalog.cattle.io/ui-component: rancher-monitoring-dashboards
     apiVersion: v2
     appVersion: 0.1.0
-    created: "2026-06-11T17:08:26.943285-03:00"
+    created: "2026-06-11T17:57:14.840157-03:00"
     description: Dashboard artifact delivery for Rancher Monitoring with BYO Grafana
       and prometheus integration metadata and optional nginx proxy.
-    digest: 282ae5eaf1ef395ebd09dce85fad2dbe9826bf5bae88ef09e58091b350a0cef4
+    digest: 3072edea0797fbc52f1c257d633c65c54da667e53a8444bac81b7ee7f90b53b9
     home: https://github.com/rancher/ob-team-charts
     icon: file://assets/logos/rancher-monitoring.png
     keywords:
