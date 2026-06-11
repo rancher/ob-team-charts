@@ -4,13 +4,8 @@
 {{- $filesDict = (unset $filesDict "rancher-etcd-nodes.json") -}}
 {{- $filesDict = (unset $filesDict "rancher-etcd.json") -}}
 {{- end }}
-{{- if not (include "exporter.kubeControllerManager.enabled" .) }}
-{{- $filesDict = (unset $filesDict "rancher-k8s-components-nodes.json") -}}
-{{- $filesDict = (unset $filesDict "rancher-k8s-components.json") -}}
-{{- else }}
 {{- $_ := (set $filesDict "rancher-k8s-components-nodes.json" (get $filesDict "rancher-k8s-components-nodes.json" | replace "kube-controller-manager" (include "exporter.kubeControllerManager.jobName" .))) -}}
 {{- $_ := (set $filesDict "rancher-k8s-components.json" (get $filesDict "rancher-k8s-components.json" | replace "kube-controller-manager" (include "exporter.kubeControllerManager.jobName" .))) -}}
-{{- end }}
 {{ $files = (toYaml $filesDict) }}
 apiVersion: v1
 kind: ConfigMap

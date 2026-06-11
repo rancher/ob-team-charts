@@ -97,15 +97,6 @@ kubeTargetVersionOverride: ""
 rancherMonitoring:
   enabled: true
   selector: {}  # Optional: override selector for Rancher service monitor
-ingressNginx:
-  enabled: false
-  namespace: ingress-nginx
-  service:
-    port: 9913
-    targetPort: 10254
-  serviceMonitor:
-    interval: "30s"
-    proxyUrl: ""
 hardenedNodeExporter:
   enabled: false
 kubeStateMetrics:
@@ -119,24 +110,10 @@ hardened:
       enabled: false
 defaultRules:
   create: false
-kubeEtcd:
-  enabled: false
-rkeEtcd:
-  enabled: false
-kubeAdmEtcd:
-  enabled: false
-rke2Etcd:
-  enabled: false
-kubeControllerManager:
-  enabled: false
-rkeControllerManager:
+etcd:
   enabled: false
 k3sServer:
   enabled: true
-kubeAdmControllerManager:
-  enabled: false
-rke2ControllerManager:
-  enabled: false
 
 # Legacy Grafana settings are no longer authoritative for rendering, but these
 # values are kept as explicit compatibility fields for consumers that still look
