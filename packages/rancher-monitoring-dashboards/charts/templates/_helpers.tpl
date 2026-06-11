@@ -99,13 +99,7 @@ matchLabels:
 {{- end -}}
 
 {{- define "exporter.kubeEtcd.enabled" -}}
-{{- if or .Values.kubeEtcd.enabled .Values.rkeEtcd.enabled .Values.kubeAdmEtcd.enabled .Values.rke2Etcd.enabled -}}
-"true"
-{{- end -}}
-{{- end }}
-
-{{- define "exporter.kubeControllerManager.enabled" -}}
-{{- if or .Values.kubeControllerManager.enabled .Values.rkeControllerManager.enabled .Values.k3sServer.enabled .Values.kubeAdmControllerManager.enabled .Values.rke2ControllerManager.enabled -}}
+{{ if not (.Values.etcd.enabled) -}}
 "true"
 {{- end -}}
 {{- end }}
