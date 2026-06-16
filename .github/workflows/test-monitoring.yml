@@ -206,7 +206,7 @@ jobs:
           metadata:
             name: ${REPO_NAME}
           spec:
-            gitBranch: ${BRANCH}
+            gitBranch: "${BRANCH}"
             gitRepo: https://github.com/${FORK_REPO}
           EOF
 
