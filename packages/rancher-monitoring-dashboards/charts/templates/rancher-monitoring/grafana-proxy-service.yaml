@@ -11,7 +11,7 @@ spec:
   type: ClusterIP
   selector:
 {{ include "rancher-monitoring.selectorLabels" . | indent 4 }}
-    app.kubernetes.io/component: grafana-proxy
+    app.kubernetes.io/component: monitoring-proxy
   ports:
   - port: 80
     targetPort: 8080

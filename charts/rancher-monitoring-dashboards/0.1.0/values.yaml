@@ -57,40 +57,60 @@ dashboardIntegration:
   grafanaURL: ""
   prometheusURL: ""
 
-# Nginx proxy for Grafana to handle Rancher's Kubernetes API proxy URL rewriting
-# REQUIRED for vanilla kube-prometheus-stack to work with embedded Rancher iframes.
-# Without this, Grafana static assets (plugins, JS) will fail to load because Grafana
-# doesn't know it's being accessed through a Kubernetes service proxy sub-path.
+# A single nginx pod (monitoringProxy) sits in front of Grafana, Prometheus,
+# and Alertmanager so the Kubernetes API server's service proxy (used by Rancher
+# UI) can reach them reliably. It solves:
+#   - Grafana: rewrites appSubUrl so static assets resolve under the proxy path.
+#   - Alertmanager: strips Accept-Encoding so alertmanager v0.32+ does not
+#     return brotli-compressed responses, which kube-apiserver's service proxy
+#     cannot forward (returns HTTP 500 "stream error ... INTERNAL_ERROR").
+#   - Prometheus: same Accept-Encoding stripping, preemptive in case the
+#     prometheus/common web stack adopts the same brotli middleware.
+#
+# Each per-backend block below controls a single `server` block inside the
+# shared nginx config. Setting enabled: false drops that server block (the
+# bridge Service is also skipped). The shared pod's image, resources, and
+# scheduling live under monitoringProxy.
+
+# Grafana server block. Needs sub_filter to rewrite appSubUrl so static assets
+# resolve under the kube-apiserver service proxy path.
 grafanaProxy:
   enabled: true
+  upstreamService: kube-prometheus-stack-grafana
+  upstreamPort: 80
+  # The proxy path that will be used by Rancher (e.g., /api/v1/namespaces/cattle-monitoring-system/services/http:rancher-monitoring-grafana:80/proxy)
+  proxyPath: /api/v1/namespaces/cattle-monitoring-system/services/http:rancher-monitoring-grafana:80/proxy
+
+# Prometheus server block. Strips Accept-Encoding preemptively.
+prometheusProxy:
+  enabled: true
+  upstreamService: kube-prometheus-stack-prometheus
+  upstreamPort: 9090
+
+# Alertmanager server block. Stripping Accept-Encoding is REQUIRED for
+# alertmanager v0.32+ (see PR prometheus/alertmanager#5133).
+alertmanagerProxy:
+  enabled: true
+  upstreamService: kube-prometheus-stack-alertmanager
+  upstreamPort: 9093
+
+# Shared nginx pod fronting all three backends.
+monitoringProxy:
   replicas: 1
   image:
     repository: rancher/mirrored-library-nginx
     tag: 1.29.1-alpine
     pullPolicy: IfNotPresent
-  # The upstream Grafana service to proxy to (typically the kube-prometheus-stack Grafana service)
-  upstreamService: kube-prometheus-stack-grafana
-  upstreamPort: 80
-  # The proxy path that will be used by Rancher (e.g., /api/v1/namespaces/cattle-monitoring-system/services/http:rancher-monitoring-grafana:80/proxy)
-  proxyPath: /api/v1/namespaces/cattle-monitoring-system/services/http:rancher-monitoring-grafana:80/proxy
   resources:
     limits:
-      cpu: 100m
-      memory: 128Mi
+      cpu: 200m
+      memory: 256Mi
     requests:
       cpu: 50m
       memory: 64Mi
   nodeSelector: {}
   tolerations: []
   affinity: {}
-
-prometheusProxy:
-  enabled: true
-  upstreamService: kube-prometheus-stack-prometheus
-
-alertmanagerProxy:
-  enabled: true
-  upstreamService: kube-prometheus-stack-alertmanager
 
 # Compatibility knobs retained for dashboard query compatibility and gradual migration.
 kubeTargetVersionOverride: ""

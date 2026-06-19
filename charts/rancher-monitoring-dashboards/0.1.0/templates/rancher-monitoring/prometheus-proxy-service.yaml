@@ -13,8 +13,8 @@ spec:
     - name: http-web
       port: 9090
       protocol: TCP
-      targetPort: 9090
+      targetPort: 8090
   selector:
-    app.kubernetes.io/name: prometheus
-    operator.prometheus.io/name: {{ .Values.prometheusProxy.upstreamService }}
+{{ include "rancher-monitoring.selectorLabels" . | indent 4 }}
+    app.kubernetes.io/component: monitoring-proxy
 {{- end }}
