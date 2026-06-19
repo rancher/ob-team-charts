@@ -98,8 +98,8 @@ alertmanagerProxy:
 monitoringProxy:
   replicas: 1
   image:
-    repository: rancher/mirrored-library-nginx
-    tag: 1.29.1-alpine
+    repository: library/nginx
+    tag: 1.31.2-alpine
     pullPolicy: IfNotPresent
   resources:
     limits:
