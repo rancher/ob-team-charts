@@ -53,6 +53,6 @@ roleRef:
   name: {{ template "rancher-monitoring.name" . }}-rancher-metrics
 subjects:
   - kind: ServiceAccount
-    name: {{ template "rancher-monitoring.name" . }}-prometheus
+    name: {{ .Values.rancherMonitoring.prometheusServiceAccount }}
     namespace: {{ template "rancher-monitoring.namespace" . }}
 {{- end }}

@@ -117,6 +117,10 @@ kubeTargetVersionOverride: ""
 rancherMonitoring:
   enabled: true
   selector: {}  # Optional: override selector for Rancher service monitor
+  # ServiceAccount used by Prometheus — must match the SA of the Prometheus pod
+  # so the ranchermetrics ClusterRole is bound to the right identity.
+  # Default matches kube-prometheus-stack with release name "kube-prometheus-stack".
+  prometheusServiceAccount: kube-prometheus-stack-prometheus
 hardenedNodeExporter:
   enabled: false
 kubeStateMetrics:
