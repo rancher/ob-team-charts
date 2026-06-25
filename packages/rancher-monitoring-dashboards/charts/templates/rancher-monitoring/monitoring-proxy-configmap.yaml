@@ -53,11 +53,11 @@ data:
         proxy_set_header Accept-Encoding "";
 
         location /api/dashboards {
-          proxy_pass     http://{{ .Values.grafanaProxy.upstreamService }}.{{ $ns }}.svc.cluster.{{ $cluster }}:{{ .Values.grafanaProxy.upstreamPort }};
+          proxy_pass     http://{{ .Values.grafanaProxy.upstreamService }}.{{ $ns }}.svc.cluster.local:{{ .Values.grafanaProxy.upstreamPort }};
         }
 
         location /api/search {
-          proxy_pass     http://{{ .Values.grafanaProxy.upstreamService }}.{{ $ns }}.svc.cluster.{{ $cluster }}:{{ .Values.grafanaProxy.upstreamPort }};
+          proxy_pass     http://{{ .Values.grafanaProxy.upstreamService }}.{{ $ns }}.svc.cluster.local:{{ .Values.grafanaProxy.upstreamPort }};
           sub_filter_types application/json;
           sub_filter_once off;
         }
@@ -68,7 +68,7 @@ data:
           proxy_set_header Connection $connection_upgrade;
           proxy_set_header Host $http_host;
           proxy_set_header Accept-Encoding "";
-          proxy_pass http://{{ .Values.grafanaProxy.upstreamService }}.{{ $ns }}.svc.cluster.{{ $cluster }}:{{ .Values.grafanaProxy.upstreamPort }};
+          proxy_pass http://{{ .Values.grafanaProxy.upstreamService }}.{{ $ns }}.svc.cluster.local:{{ .Values.grafanaProxy.upstreamPort }};
         }
 
         location / {
@@ -80,10 +80,14 @@ data:
           add_header          X-Proxy-Cache $upstream_cache_status;
           add_header          Cache-Control "public";
 
-          proxy_pass     http://{{ .Values.grafanaProxy.upstreamService }}.{{ $ns }}.svc.cluster.{{ $cluster }}:{{ .Values.grafanaProxy.upstreamPort }}/;
+          proxy_pass     http://{{ .Values.grafanaProxy.upstreamService }}.{{ $ns }}.svc.cluster.local:{{ .Values.grafanaProxy.upstreamPort }}/;
 
           sub_filter_once off;
+          {{- if eq .Values.global.cattle.clusterId "local" -}}
           sub_filter '"appSubUrl":""' '"appSubUrl":"{{ .Values.grafanaProxy.proxyPath }}"';
+          {{- else -}}
+          sub_filter '"appSubUrl":""' '"appSubUrl":"/k8s/clusters/{{ .Values.global.cattle.clusterId }}{{ .Values.grafanaProxy.proxyPath }}"';
+          {{- end -}}
           sub_filter ':"/avatar/' ':"avatar/';
 
           if ($request_filename ~ .*\.(?:js|css|jpg|jpeg|gif|png|ico|cur|gz|svg|svgz|mp4|ogg|ogv|webm)$) {
@@ -108,7 +112,7 @@ data:
         location / {
           proxy_set_header Accept-Encoding "";
           proxy_set_header Host $host;
-          proxy_pass http://{{ .Values.prometheusProxy.upstreamService }}.{{ $ns }}.svc.cluster.{{ $cluster }}:{{ .Values.prometheusProxy.upstreamPort }};
+          proxy_pass http://{{ .Values.prometheusProxy.upstreamService }}.{{ $ns }}.svc.cluster.local:{{ .Values.prometheusProxy.upstreamPort }};
         }
       }
       {{- end }}
@@ -127,7 +131,7 @@ data:
         location / {
           proxy_set_header Accept-Encoding "";
           proxy_set_header Host $host;
-          proxy_pass http://{{ .Values.alertmanagerProxy.upstreamService }}.{{ $ns }}.svc.cluster.{{ $cluster }}:{{ .Values.alertmanagerProxy.upstreamPort }};
+          proxy_pass http://{{ .Values.alertmanagerProxy.upstreamService }}.{{ $ns }}.svc.cluster.local:{{ .Values.alertmanagerProxy.upstreamPort }};
         }
       }
       {{- end }}
