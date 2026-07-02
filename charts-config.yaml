@@ -10,6 +10,10 @@ packages:
           package: rancher-logging
         - branch: "dev-v2.13"
           package: rancher-logging
+        - branch: "dev-v2.14"
+          package: rancher-logging
+        - branch: "dev-v2.15"
+          package: rancher-logging
   rancher-monitoring:
     "66.7":
       branches:
@@ -46,3 +50,4 @@ rancher-k3s:
   "2.12": "v1.31.2+k3s1"
   "2.13": "v1.32.2+k3s1"
   "2.14": "v1.33.1+k3s1"
+  "2.15": "v1.34.1+k3s1"
