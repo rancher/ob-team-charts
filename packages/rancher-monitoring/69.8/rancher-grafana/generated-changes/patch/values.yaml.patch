@@ -119,10 +119,10 @@
 -    registry: docker.io
      # image-renderer Image repository
 -    repository: grafana/grafana-image-renderer
-+    repository: rancher/appco-grafana-image-renderer
++    repository: rancher/mirrored-grafana-grafana-image-renderer
      # image-renderer Image tag
 -    tag: latest
-+    tag: 5
++    tag: v5.10.1
      # image-renderer Image sha (optional)
      sha: ""
      # image-renderer ImagePullPolicy
