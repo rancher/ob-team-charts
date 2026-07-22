@@ -20,7 +20,7 @@ else
 
   git -C "$OB_DIR" fetch origin "$COMMIT_SHA_BEFORE" 2>/dev/null || true
   RESULT=$(git -C "$OB_DIR" diff --name-only "$COMMIT_SHA_BEFORE" "$COMMIT_SHA" \
-    | grep -E '^charts/(rancher-monitoring|rancher-logging)/[^/]*/Chart.yaml$' \
+    | grep -E '^charts/(rancher-monitoring|rancher-logging)/[^/]*/Chart.yaml$' || true \
     | sed -e 's|charts/\(.*\)/\(.*\)/Chart.yaml|\1/\2|' \
     | tr '\n' ' ' | sed 's/ $//')
 fi
