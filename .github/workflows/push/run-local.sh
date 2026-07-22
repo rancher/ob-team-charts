@@ -5,14 +5,16 @@
 #   ./run-local.sh --charts-dir /path/to/rancher/charts [OPTIONS]
 #
 # Options:
-#   --charts-dir DIR    Path to local rancher/charts clone (required)
-#   --charts CHARTS     Space-separated "chart/version" pairs to process
-#                       If omitted, auto-detects from git diff (HEAD~1..HEAD) in this repo
-#   --commit-sha SHA    Commit SHA to pin in package.yaml (defaults to HEAD of ob-team-charts)
-#   --source-repo REPO  Source repo for PR body (default: rancher/ob-team-charts)
-#   --remote NAME       Remote name for rancher/charts in CHARTS_DIR (default: origin)
-#   --dry-run           Skip push and PR creation (all local git work still runs)
-#   --help              Show this message
+#   --charts-dir DIR      Path to local rancher/charts clone (required)
+#   --charts CHARTS       Space-separated "chart/version" pairs to process
+#                         If omitted, auto-detects from git diff (HEAD~1..HEAD) in this repo
+#   --commit-sha SHA      Commit SHA to pin in package.yaml (defaults to HEAD of ob-team-charts)
+#   --source-repo REPO    Source repo for PR body (default: rancher/ob-team-charts)
+#   --remote NAME         Remote name for rancher/charts in CHARTS_DIR (default: origin)
+#   --target-branch NAME  Process only this target branch (e.g., dev-v2.9, dev-v2.10)
+#                         If omitted, processes all detected target branches
+#   --dry-run             Skip push and PR creation (all local git work still runs)
+#   --help                Show this message
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -25,16 +27,18 @@ usage() {
 
 COMMIT_SHA=""
 SOURCE_REPO="rancher/ob-team-charts"
+TARGET_BRANCH_FILTER=""
 
 while [[ $# -gt 0 ]]; do
   case $1 in
-    --charts-dir)  CHARTS_DIR="$2";      shift 2 ;;
-    --charts)      NEW_CHARTS="$2";      shift 2 ;;
-    --commit-sha)  COMMIT_SHA="$2";      shift 2 ;;
-    --source-repo) SOURCE_REPO="$2";     shift 2 ;;
-    --remote)      CHARTS_REMOTE="$2";   shift 2 ;;
-    --dry-run)     DRY_RUN="true";       shift ;;
-    --help|-h)     usage ;;
+    --charts-dir)     CHARTS_DIR="$2";           shift 2 ;;
+    --charts)         NEW_CHARTS="$2";           shift 2 ;;
+    --commit-sha)     COMMIT_SHA="$2";           shift 2 ;;
+    --source-repo)    SOURCE_REPO="$2";          shift 2 ;;
+    --remote)         CHARTS_REMOTE="$2";        shift 2 ;;
+    --target-branch)  TARGET_BRANCH_FILTER="$2"; shift 2 ;;
+    --dry-run)        DRY_RUN="true";            shift ;;
+    --help|-h)        usage ;;
     *) echo "Unknown option: $1" >&2; usage ;;
   esac
 done
@@ -63,8 +67,16 @@ export NEW_CHARTS
 bash "$SCRIPT_DIR/group-by-branch.sh"
 
 # --- Step 3: Process each target branch ---
+PROCESSED_ANY=false
 for branch_file in "$BRANCH_DATA_DIR"/*; do
   TARGET_BRANCH=$(basename "$branch_file")
+
+  # Skip if --target-branch was specified and this isn't it
+  if [ -n "$TARGET_BRANCH_FILTER" ] && [ "$TARGET_BRANCH" != "$TARGET_BRANCH_FILTER" ]; then
+    continue
+  fi
+
+  PROCESSED_ANY=true
   echo ""
   echo "=== Processing branch: $TARGET_BRANCH ==="
 
@@ -102,6 +114,16 @@ for branch_file in "$BRANCH_DATA_DIR"/*; do
 
   echo "=== Done with $TARGET_BRANCH ==="
 done
+
+if [ -n "$TARGET_BRANCH_FILTER" ] && [ "$PROCESSED_ANY" = "false" ]; then
+  echo ""
+  echo "Error: Target branch '$TARGET_BRANCH_FILTER' not found in detected branches."
+  echo "Available branches:"
+  for branch_file in "$BRANCH_DATA_DIR"/*; do
+    echo "  - $(basename "$branch_file")"
+  done
+  exit 1
+fi
 
 echo ""
 echo "Workflow complete."
