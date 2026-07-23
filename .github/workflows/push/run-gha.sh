@@ -29,11 +29,11 @@ git -C "$CHARTS_DIR" config user.email "github-actions[bot]@users.noreply.github
 make -C "$CHARTS_DIR" pull-scripts
 
 # --- Download code-freeze manifest ---
-FREEZE_MANIFEST="/tmp/ob-push/code-freeze.yaml"
-mkdir -p "$(dirname "$FREEZE_MANIFEST")"
-gh api repos/rancher/org/contents/manifests/resources/RepositoryRuleset/rancher/code-freeze.yaml?ref=main \
-  -H "Accept: application/vnd.github.raw+json" \
-  > "$FREEZE_MANIFEST" || echo "WARNING: Could not fetch code-freeze manifest, freeze checks will be skipped" >&2
+#FREEZE_MANIFEST="/tmp/ob-push/code-freeze.yaml"
+#mkdir -p "$(dirname "$FREEZE_MANIFEST")"
+#gh api repos/rancher/org/contents/manifests/resources/RepositoryRuleset/rancher/code-freeze.yaml?ref=main \
+#  -H "Accept: application/vnd.github.raw+json" \
+#  > "$FREEZE_MANIFEST" || echo "WARNING: Could not fetch code-freeze manifest, freeze checks will be skipped" >&2
 
 # --- Group charts by target branch ---
 export NEW_CHARTS
@@ -48,11 +48,11 @@ for branch_file in "$BRANCH_DATA_DIR"/*; do
   summary ""
   summary "### Processing branch: \`$TARGET_BRANCH\`"
 
-  if is_branch_frozen "$TARGET_BRANCH" "$FREEZE_MANIFEST"; then
-    MANIFEST_BRANCH=$(echo "$TARGET_BRANCH" | sed 's|dev-v|release/v|')
-    summary "- Branch \`$MANIFEST_BRANCH\` is frozen. Skipping."
-    continue
-  fi
+#  if is_branch_frozen "$TARGET_BRANCH" "$FREEZE_MANIFEST"; then
+#    MANIFEST_BRANCH=$(echo "$TARGET_BRANCH" | sed 's|dev-v|release/v|')
+#    summary "- Branch \`$MANIFEST_BRANCH\` is frozen. Skipping."
+#    continue
+#  fi
 
   BRANCH_NAME="bot/update-charts-for-$TARGET_BRANCH-$(date +%s)"
   CHART_NAMES=$(cut -d',' -f1 "$branch_file" | cut -d'/' -f1 | sort -u | tr '\n' ',' | sed 's/,$//' | sed 's/,/, /g')
