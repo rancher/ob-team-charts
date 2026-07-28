@@ -33,4 +33,4 @@ name: rancher-monitoring-dashboards
 sources:
 - https://github.com/rancher/ob-team-charts
 type: application
-version: 0.1.0
+version: 0.1.2
