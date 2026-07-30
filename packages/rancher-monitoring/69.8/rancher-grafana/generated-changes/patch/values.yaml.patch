@@ -58,17 +58,19 @@
    containerSecurityContext: {}
    resources: {}
    #  limits:
-@@ -184,9 +176,7 @@
+@@ -184,10 +176,8 @@
  # priorityClassName:
  
  downloadDashboardsImage:
 -  # -- The Docker registry
 -  registry: docker.io
 -  repository: curlimages/curl
+-  tag: 8.9.1
 +  repository: rancher/mirrored-curlimages-curl
-   tag: 8.9.1
++  tag: 8.20.0
    sha: ""
    pullPolicy: IfNotPresent
+ 
 @@ -455,9 +445,7 @@
    ## initChownData container image
    ##
