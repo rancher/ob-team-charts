@@ -1,53 +1,64 @@
+# Chart Release Process
 
-# Chart Branches
+This document explains how charts are released from this repository to the downstream `rancher/charts` repository.
 
-This file outlines the process of how charts are released from this repository to the downstream repository.
+## The `charts-config.yaml` file
 
-## The `chart-branches.yaml` file
-
-The `chart-branches.yaml` file is a structured data file that defines the relationship between the charts in this repository and the branches in the downstream repository.
+The `charts-config.yaml` file defines the relationship between charts in this repository and branches in the downstream repository.
 
 This file serves two purposes:
 
-1.  **Coordination:** It provides a single source of truth for the team to understand which chart versions are expected to be in which downstream branch. This helps to coordinate the team's work and avoid confusion.
-2.  **Automation:** In the future, this file will be used by automation to create Pull Requests in the downstream repository, ensuring that the charts are always up-to-date.
+1.  **Coordination**: It provides a single source of truth for which chart versions should go to which downstream branch. This helps coordinate team work and prevents confusion.
+2.  **Automation**: GitHub Actions workflows use this file to automatically create pull requests in the downstream `rancher/charts` repository when changes are merged to `main`.
 
-## Schema
+## File structure
 
-The `chart-branches.yaml` file has the following structure:
+The `charts-config.yaml` file uses this structure:
 
 ```yaml
 packages:
   <package-name>:
     "<package-version>":
-      - "<downstream-branch-1>"
-      - "<downstream-branch-2>"
+      branches:
+        - branch: "<downstream-branch-1>"
+          package: <package-path>
+        - branch: "<downstream-branch-2>"
+          package: <package-path>
 ```
 
-Where:
+**Fields**:
 
-*   `<package-name>`: The name of the chart package, which corresponds to a directory in the `packages` directory.
-*   `<package-version>`: The version of the package. This corresponds to a sub-directory within the package's directory.
-*   `<downstream-branch>`: The name of the branch in the downstream repository that should receive updates from this package version.
+*   `<package-name>`: Chart package name (example: `rancher-monitoring`, `rancher-logging`).
+*   `<package-version>`: Package version (example: `4.10`, `66.7`).
+*   `<downstream-branch>`: Branch name in the downstream `rancher/charts` repository (example: `dev-v2.14`, `dev-v2.15`).
+*   `<package-path>`: Path to the package within this repository (example: `rancher-logging`, `rancher-monitoring/rancher-monitoring`).
 
-### How it is used
+## How to use this file
 
-The file is a mapping that indicates which downstream branches should receive chart updates for a specific version of a chart package.
+This file maps which downstream branches should receive chart updates for each package version.
 
-For example, if `chart-branches.yaml` contains:
+**Example**:
 
 ```yaml
 packages:
   rancher-logging:
     "4.10":
-      - "release/v2.6"
-      - "release/v2.7"
+      branches:
+        - branch: "dev-v2.14"
+          package: rancher-logging
+        - branch: "dev-v2.15"
+          package: rancher-logging
 ```
 
-This means that any updates to the `4.10` version of the `rancher-logging` package should be propagated to the `release/v2.6` and `release/v2.7` branches in the downstream repository.
+This configuration means: any updates to the `4.10` version of `rancher-logging` will automatically create pull requests in both the `dev-v2.14` and `dev-v2.15` branches of the `rancher/charts` repository.
 
+## How the automation works
 
-## Future consideration
+When changes are merged to the `main` branch, the GitHub Actions workflow (`.github/workflows/push.yaml`) automatically:
 
-This file could be used by future automation tooling that would help create PRs.
-These tools would have to resolve Chart versions from Packages via `package.yaml`.
+1. Detects which charts were updated
+2. Reads `charts-config.yaml` to determine target branches
+3. Creates pull requests in `rancher/charts` for each target branch
+4. Updates dependencies, patches, and release metadata
+
+The automation can also be triggered manually using the workflow dispatch option if needed.
