@@ -1,53 +1,57 @@
-# Docs for Dev Scripts
+# Developer Scripts
 
 > [!NOTE]
-> Currently all the dev-scripts are wrappers for a golang CLI tool. New dev tools can be added as either bash scripts or part of the golang CLI.
+> All dev-scripts are wrappers for a Go CLI tool. New dev tools can be added as either bash scripts or as part of the Go CLI.
 
 ## Verify Chart Images
 
-The verify-chart-images script checks whether the Docker images referenced in a Helm chart exist in Docker Hub.
-It can process images from either:
+This script checks whether Docker images referenced in a Helm chart exist in Docker Hub.
 
-- A Rancher Monitoring chart version (provided as an argument, must be in `charts/rancher-monitoring`).
-- Standard input, such as the output of a Helm install dry-run.
+**Input sources**:
+- A Rancher Monitoring chart version (must be in `charts/rancher-monitoring`)
+- Standard input from a Helm install dry-run
 
 ### Usage
 
-You can run the script in two ways:
+**Method 1: Specify a chart version**
 
-1. **By specifying a Rancher Monitoring chart version:**
-   ```bash
-   ./dev-scripts/verify-chart-images <chart_version>
-   ```
-   Example:
-   ```bash
-   ./dev-scripts/verify-chart-images 66.7.1-rancher.1
-   ```
+```bash
+./dev-scripts/verify-chart-images <chart_version>
+```
+
+Example:
+```bash
+./dev-scripts/verify-chart-images 66.7.1-rancher.1
+```
 
 > [!NOTE]
-> In this mode you should setup a `debug.yaml` (values.yaml) file generated from Rancher.
-> In the future we may provide a default file that does the equivalent in a generic way.
+> When using this method, create a `debug.yaml` (values.yaml) file generated from Rancher. A default file may be provided in the future.
 
-2. **By piping Helm debug output to the script:**
-   ```bash
-   helm install --dry-run --debug rancher-monitoring ./charts/rancher-monitoring/<chart_version> -n cattle-monitoring-system | ./dev-scripts/verify-chart-images
-   ```
-   Example:
-   ```bash
-   helm install --dry-run --debug rancher-monitoring ./charts/rancher-monitoring/57.0.3-rancher.1 -n cattle-monitoring-system | ./dev-scripts/verify-chart-images
-   ```
+**Method 2: Pipe Helm debug output**
 
-3. **With a values file for additional customization:**
-   ```bash
-   helm install --dry-run --debug rancher-monitoring ./charts/rancher-monitoring/<chart_version> -f ./debug.yaml -n cattle-monitoring-system | ./dev-scripts/verify-chart-images
-   ```
-   Example:
-   ```bash
-   helm install --dry-run --debug rancher-monitoring ./charts/rancher-monitoring/57.0.3-rancher.1 -f ./debug.yaml -n cattle-monitoring-system | ./dev-scripts/verify-chart-images
-   ```
+```bash
+helm install --dry-run --debug rancher-monitoring ./charts/rancher-monitoring/<chart_version> -n cattle-monitoring-system | ./dev-scripts/verify-chart-images
+```
 
-### Output Example
-Primary output will be a table similar to:
+Example:
+```bash
+helm install --dry-run --debug rancher-monitoring ./charts/rancher-monitoring/57.0.3-rancher.1 -n cattle-monitoring-system | ./dev-scripts/verify-chart-images
+```
+
+**Method 3: Use a custom values file**
+
+```bash
+helm install --dry-run --debug rancher-monitoring ./charts/rancher-monitoring/<chart_version> -f ./debug.yaml -n cattle-monitoring-system | ./dev-scripts/verify-chart-images
+```
+
+Example:
+```bash
+helm install --dry-run --debug rancher-monitoring ./charts/rancher-monitoring/57.0.3-rancher.1 -f ./debug.yaml -n cattle-monitoring-system | ./dev-scripts/verify-chart-images
+```
+
+### Output
+
+The script outputs a table showing each image and its status:
 ```bash
 +----+-------------------------------------------------------------------------+--------+
 |  # | IMAGE                                                                   | STATUS |
@@ -70,7 +74,7 @@ Primary output will be a table similar to:
 +----+-------------------------------------------------------------------------+--------+
 ```
 
-Above this table, will be additional information about the checks done. Take note of any section like:
+The script may also show images that need manual verification:
 
 ```bash
 👨‍🔧 These need manual checks:
@@ -78,42 +82,36 @@ Above this table, will be additional information about the checks done. Take not
 ● image: {{ template system_default_registry . }}{{ .Values.prometheus.prometheusSpec.proxy.image.repository }}:{{ .Values.prometheus.prometheusSpec.proxy.image.tag }}
 ```
 
-### Dependencies
+### Requirements
 
-Ensure the following dependencies are installed:
-- bash
-- helm (for processing chart versions)
+- `bash`
+- `helm` (for processing chart versions)
 
 ## Get Rebase Target Info
 
-When starting a rebase process for monitoring, we often spend some time collecting information and generally taking notes about chart and image versions.
-Or we have to discover those versions as we do the process and encounter new versions for charts and images.
+When starting a rebase for monitoring charts, you need to collect information about chart and image versions. This tool automates that process by gathering chart information based on the upstream target version.
 
-This tool seeks to help speed up that process by collecting relevant chart information based on upstream target versions.
+### Usage
 
-## Usage
+```bash
+./dev-scripts/get-rebase-info <upstream chart version>
+```
 
-You can run the script with:
-   ```bash
-   ./dev-scripts/get-rebase-info <upstream chart version>
-   ```
 Example:
-   ```bash
-   ./dev-scripts/get-rebase-info 66.7.1
-   ```
+```bash
+./dev-scripts/get-rebase-info 66.7.1
+```
 
-### Output Example
+### Output
 
-After it runs, assuming you don't see errors, you can find the `rebase.yaml` file with rebase details.
-It will be in the project `ob-team-charts` project root (where ever you cloned the git repo).
+The script creates a `rebase.yaml` file in the repository root with the following sections:
 
-An overview of how to use each section of the rebase info file:
-- `target_version` - the upstream chart version
-- `found_chart` - the specific details about the found chart matching the target version
-- `chart_dependencies` - the list of sub-chart dependencies for the found chart (directly from Chart.yaml)
-- `dependency_chart_versions` - the list of specific sub-chart dependencies to use for this rebase (selects the highest valid chart at time of running)
-  - Each of these indicate what version of the sub-chart will be used and the git hash to use for it.
-  - Make sure that the `packages/rancher-monitoring/{version}/{sub-chart}/package.yaml` uses the correct hash.
-- `charts_images_lists` - this lists all found images grouped by the chart it is needed for.
-  - This should be used to review and update the list of images in `image-mirror`.
-  - Be aware, this part of the script is a WIP so may not catch all images.
+- **`target_version`**: The upstream chart version you specified
+- **`found_chart`**: Details about the chart matching the target version
+- **`chart_dependencies`**: Sub-chart dependencies from the upstream `Chart.yaml`
+- **`dependency_chart_versions`**: Specific sub-chart versions to use for this rebase (automatically selects the highest valid version)
+  - Each entry shows the sub-chart version and its git commit hash
+  - Update `packages/rancher-monitoring/{version}/{sub-chart}/package.yaml` to use the correct hash
+- **`charts_images_lists`**: All images found, grouped by chart
+  - Use this to review and update the image list in `image-mirror`
+  - **Note**: This feature is work in progress and may not detect all images
