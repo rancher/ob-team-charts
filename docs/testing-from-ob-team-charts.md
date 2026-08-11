@@ -1,10 +1,22 @@
-# How to test charts straight from ob-team-charts
+# How to Test Charts from ob-team-charts
 
-The ob-team-charts repository is used by the ORBS team to handle all of its custom Helm charts, but Rancher does not pull them directly from this repo. Rancher only pulls from the `rancher/charts` repository by default, so some extra steps are needed if you want to run and test charts from `rancher/ob-team-charts` or from a fork.
+The ORBS team uses the ob-team-charts repository for custom Helm charts. By default, Rancher only pulls charts from the `rancher/charts` repository. To test charts directly from `ob-team-charts` or a fork, you need to complete some extra steps.
 
-## Creating a ClusterRepo
+## Step 1: Create a ClusterRepo
 
-First step is to create a custom ClusterRepo resource as shown in the example:
+### Quick method: Use ob-charts-tool
+
+If you have the repository cloned locally, you can generate a ClusterRepo for your current branch:
+
+```bash
+./bin/ob-charts-tool branchQaHint
+```
+
+This outputs a ClusterRepo YAML that points to your current branch and remote repository. Copy the output and apply it to your cluster.
+
+### Manual method: Create ClusterRepo YAML
+
+Alternatively, create a custom ClusterRepo resource manually:
 
 ```yaml
 ## ClusterRepo pulling from the main branch in the original ob-team-charts repo
@@ -18,10 +30,12 @@ spec:
 
 ```
 
-This ClusterRepo definition targets the main branch under the original ob-team-charts repository. If instead you want to pull straight from a fork, simply specify the correct Github organization and repository name in the link under *gitRepo* and the target branch under *gitBranch*. For instance:
+This ClusterRepo points to the `main` branch in the original ob-team-charts repository. 
+
+To pull from a fork instead, change the `gitRepo` URL and `gitBranch` to match your fork:
 
 ```yaml
-## ClusterRepo pulling from the rancher-monitoring-69.8.2 branch in the ob-team-charts fork by 'jbiers' Github user
+## ClusterRepo pulling from a fork
 apiVersion: catalog.cattle.io/v1
 kind: ClusterRepo
 metadata:
@@ -29,14 +43,18 @@ metadata:
 spec:
   gitBranch: rancher-monitoring-69.8.2
   gitRepo: https://github.com/jbiers/ob-team-charts
-
 ```
-Having your ClusterRepo definition, save it as a YAML file and run `kubectl apply -f <my-clusterrepo-file>` or import the file via Rancher UI.
 
-## Installing charts from ob-team-charts
+Save your ClusterRepo definition as a YAML file and apply it:
+- Using kubectl: `kubectl apply -f <my-clusterrepo-file>`
+- Or import the file through the Rancher UI
 
-With the ClusterRepo created Rancher should now be pulling charts from the desired repo. In the Rancher UI, go to **Apps > Charts** and you will see a dropdown menu indicating all sources from which Rancher is pulling charts. Uncheck all others and leave only the one you just created, its name will reflect the metadata.name field.
+## Step 2: Install Charts from ob-team-charts
 
-You also need to allow Rancher to show pre-release Charts. This can be done also by Rancher UI via **Preferences > Helm Charts > Include Prerelease Versions**.
+After creating the ClusterRepo, Rancher will pull charts from the specified repository.
 
-Now, all charts defined in the target repository can be installed directly from the Apps section in Rancher UI as usual.
+1. **Filter chart sources**: In the Rancher UI, go to **Apps > Charts**. Use the dropdown menu to show only your new ClusterRepo (the name matches the `metadata.name` field).
+
+2. **Enable prerelease charts**: Go to **Preferences > Helm Charts > Include Prerelease Versions** and enable it.
+
+3. **Install charts**: All charts from the target repository are now available in the Apps section and can be installed normally.
