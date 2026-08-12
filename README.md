@@ -6,6 +6,12 @@ This repository contains Helm charts maintained by the Rancher Observability & B
 
 You need [`dep-fetch`](https://github.com/rancherlabs/dep-fetch) installed and available on your `PATH`. The Makefile and scripts use it to download binary dependencies (such as `charts-build-scripts`, `yq`, and `gh`) before running chart operations.
 
+**Installation:**
+1. Download the latest release from https://github.com/rancherlabs/dep-fetch
+2. Place the binary in your `PATH` (e.g., `/usr/local/bin`)
+3. Make it executable: `chmod +x /path/to/dep-fetch`
+4. After cloning this repository, run: `dep-fetch sync`
+
 ## What charts are in this repository?
 
 This repository contains the following ORBS team charts:
