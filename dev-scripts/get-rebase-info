@@ -1,18 +1,13 @@
 #!/usr/bin/env bash
 
-SCRIPT_PATH=$(realpath "${BASH_SOURCE[0]}")
 PROJECT_ROOT=$(git rev-parse --show-toplevel)
 
-cd $(dirname "$SCRIPT_PATH") # Move to the directory of the script
-
-bash ./pull-scripts
-
 # Move to the root of the project
-cd "$PROJECT_ROOT"
-
+cd "$PROJECT_ROOT" || exit
 
 if [[ -f ./bin/ob-charts-tool ]]; then
   exec ./bin/ob-charts-tool getRebaseInfo "$@"
 else
-  echo "Your ob-charts-tool bin is missing..."
+  echo "Your ob-charts-tool bin is missing. Run 'dep-fetch sync' to install it."
+  exit 1
 fi
