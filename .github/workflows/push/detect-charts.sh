@@ -19,10 +19,15 @@ else
   require_var COMMIT_SHA
 
   git -C "$OB_DIR" fetch origin "$COMMIT_SHA_BEFORE" 2>/dev/null || true
-  RESULT=$(git -C "$OB_DIR" diff --name-only "$COMMIT_SHA_BEFORE" "$COMMIT_SHA" \
+  CHANGED_FILES=$(git -C "$OB_DIR" diff --name-only "$COMMIT_SHA_BEFORE" "$COMMIT_SHA")
+
+  # Allow grep to return no matches without failing the script
+  set +o pipefail
+  RESULT=$(echo "$CHANGED_FILES" \
     | grep -E '^charts/(rancher-monitoring|rancher-logging)/[^/]*/Chart.yaml$' \
     | sed -e 's|charts/\(.*\)/\(.*\)/Chart.yaml|\1/\2|' \
     | tr '\n' ' ' | sed 's/ $//')
+  set -o pipefail
 fi
 
 if [ -n "${GITHUB_OUTPUT:-}" ]; then
