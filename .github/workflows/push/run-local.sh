@@ -106,6 +106,9 @@ for branch_file in "$BRANCH_DATA_DIR"/*; do
   echo "--- Generating final chart assets ---"
   ASSET_LABEL="Final" bash "$SCRIPT_DIR/generate-assets.sh"
 
+  echo "--- Removing superseded rc versions ---"
+  bash "$SCRIPT_DIR/remove-old-rc.sh"
+
   echo "--- Updating release.yaml ---"
   bash "$SCRIPT_DIR/update-release-yaml.sh"
 

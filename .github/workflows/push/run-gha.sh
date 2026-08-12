@@ -80,6 +80,9 @@ for branch_file in "$BRANCH_DATA_DIR"/*; do
   summary "- Generating final chart assets..."
   ASSET_LABEL="Final" bash "$SCRIPT_DIR/generate-assets.sh"
 
+  summary "- Removing superseded rc versions..."
+  bash "$SCRIPT_DIR/remove-old-rc.sh"
+
   summary "- Updating release.yaml..."
   bash "$SCRIPT_DIR/update-release-yaml.sh"
 
