@@ -1,45 +1,48 @@
-# FAQs about the new repo
+# Repository FAQ
 
 ## What is this repository for compared to `rancher/charts`?
-This repo is the ORBS teams primary source of truth for the Charts we maintain.
-Primarily it is focused on the charts we pull from 3rd party sources.
-But can also be used for internal produced charts from ORBS team if it makes sense.
 
-## What issues does this repo solve compared to the existing `rancher/charts` repo and process?
-This repository solves a unique set of problems that the ORBS team have while maintaining our charts Monitoring and Logging charts.
-At a high level, these problems are:
-- Issues with Regressions caused by current rebase workflows,
-- Missed dependency bumps during current rebase causing usage of more image tags than necessary,
-  - In other words, we do a rebase and expect to remove CVEs, but they remain because some charts use old tags.
-- Varying patches based on Upstream Chart Version for Rancher Branch on `rancher/charts`
+This repository is the ORBS team's primary source of truth for the charts we maintain. It focuses on charts we pull from third-party sources, but can also include internally-produced ORBS charts when appropriate.
 
-## What factors make the current (or old) chart process for ORBS complex?
-- We have 3 distinct types of changes that are made to `rancher/charts` by our team:
-  - Chart Rebase Work,
-  - Chart Image Bumps and Security Patches,
-  - Rancher Specific Changes
-- Of those sets of change types, each may (or may not) have subsets of:
-- Specific Image Tags Needed to Match Upstream chart targets,
-- Rancher Version dependant changes
+## What problems does this repository solve?
 
-These variables cause our team to repeat a lot of work, but just subtly different.
-However, the cognitive load of comparing similar, but different, patches for the same upstream charts on different branches can be taxing.
+This repository solves specific problems the ORBS team faces when maintaining Monitoring and Logging charts:
 
-## Why only `main` branch in this repo?
-The principal function of this repo is to reduce redundant work from processes used by the ORBS team today.
-The current process to maintain Monitoring and Logging -essentially- involve us maintaining the same upstream version in multiple Rancher Branches.
+- **Regressions during rebases**: The previous workflow caused regressions
+- **Missed dependency updates**: During rebases, some sub-charts kept old image tags, leaving CVEs unfixed even after the rebase
+- **Inconsistent patches**: Different Rancher branches in `rancher/charts` had different patches for the same upstream chart version, making maintenance difficult
 
-Instead, if we apply most of our Rancher specific changes in a Rancher version agnostic manner we can maintain important changes once.
-Then when the chart lands in a Minor version specific `rancher/charts` branch it can have Rancher minor specific patching applied.
+## What made the old chart process complex?
+
+The old process in `rancher/charts` involved three types of changes:
+- Chart rebases
+- Image updates and security patches
+- Rancher-specific modifications
+
+Each change type could have:
+- Specific image tags to match upstream charts
+- Rancher version-dependent changes
+
+This created repeated work with subtle differences across branches. Comparing similar-but-different patches for the same upstream chart across multiple Rancher branches was difficult and error-prone.
+
+## Why does this repository only have a `main` branch?
+
+This repository reduces redundant work by maintaining charts once instead of across multiple Rancher branches.
+
+In the old process, we maintained the same upstream chart version separately in multiple Rancher branches. With this repository:
+
+1. Apply Rancher-specific changes once in a version-agnostic way
+2. When the chart goes to `rancher/charts`, apply only Rancher minor version-specific patches
 
 ### What about `rancher/charts` auto-bumps?
-This workflow change isn't something considered as part of this repo's creation.
 
-However, the requirements of that new feature of `rancher/charts` isn't incompatible with our new repo.
-It will complicate it if we must adopt it, yet it's possible to do via using `main` as our source of truth, and pulling from it to produce Rancher Minor specific charts on release branches here.
-Likely we should start the new release branches from a single common orphaned branch
+The auto-bump feature in `rancher/charts` is compatible with this repository. If needed:
+- Use `main` as the source of truth
+- Create Rancher minor version-specific charts on release branches
+- Start new release branches from a common orphaned branch
 
-## Where does the chart for Helm Project Operator and Prometheus Federator live now?
-The chart for `helm-project-operator` that used to be a subchcart of Prometheus Federator was removed.
-It was primarily used for development testing and complicated the development of the chart for Prometheus Federator.
-So by removing it we simplified the Prometheus Federator chart, which now lives in the Prometheus Federator repo.
+## Where are the Helm Project Operator and Prometheus Federator charts?
+
+The `helm-project-operator` chart was removed. It was a sub-chart of Prometheus Federator used primarily for development testing, but it made development more complex.
+
+After removing it, the simplified Prometheus Federator chart now lives in the Prometheus Federator repository.

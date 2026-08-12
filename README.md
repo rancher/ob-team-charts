@@ -1,65 +1,77 @@
 # ob-team-charts
-A repo for Rancher Observability &amp; Backups team's charts - a canonical dev spot just before rancher/charts.
+
+This repository contains Helm charts maintained by the Rancher Observability & Backups (ORBS) team. It serves as the primary development location for these charts before they are released to `rancher/charts`.
 
 ## Prerequisites
 
-The Makefile and scripts in this repo require [`dep-fetch`](https://github.com/rancherlabs/dep-fetch) to be installed and available on your `PATH`. It is used to pull down binary dependencies (e.g. `charts-build-scripts`, `yq`, `gh`) before running chart operations.
+You need [`dep-fetch`](https://github.com/rancherlabs/dep-fetch) installed and available on your `PATH`. The Makefile and scripts use it to download binary dependencies (such as `charts-build-scripts`, `yq`, and `gh`) before running chart operations.
 
-## What ORBS projects use this repo?
+**Installation:**
+1. Download the latest release from https://github.com/rancherlabs/dep-fetch
+2. Place the binary in your `PATH` (e.g., `/usr/local/bin`)
+3. Make it executable: `chmod +x /path/to/dep-fetch`
+4. After cloning this repository, run: `dep-fetch sync`
 
-This covers the following ORBS team charts:
-- `rancher-monitoring`,
-- `rancher-project-monitoring`, and
+## What charts are in this repository?
+
+This repository contains the following ORBS team charts:
+- `rancher-monitoring`
+- `rancher-project-monitoring`
 - `rancher-logging`
 
-This is where we apply the majority of the Rancher specific changes to these charts.
-None of the changes we apply at this level should be specific to a single Rancher minor version.
+This is where we apply most Rancher-specific changes to these charts. Changes made here should work across all Rancher minor versions, not just one specific version.
 
-## How do we manage Chart version numbers?
+## Chart version numbering
 
-Most charts should use this syntax: `{upstream version}-rancher.{incrementing number}`.  
+Most charts use this format: `{upstream version}-rancher.{incrementing number}`
 
-Where each new `{upstream version}` resets the `{incrementing number}`. The result being that for any upstream version 
-that we release, we will also be able to track what rancher specific changes were applied.
-And that this version is universal across all Rancher minor versions that support a given `{upstream version}`.
+Each new `{upstream version}` resets the `{incrementing number}` back to 1. This format allows us to:
+- Track Rancher-specific changes for any upstream version
+- Use the same version across all Rancher minor versions that support a given `{upstream version}`
 
-For more specifics on why this format is used, see: [How do we manage Chart versions across this repo and `rancher/charts`?](./docs/semver-across-chart-repos.md)
+**Example**: `66.7.1-rancher.1`, `66.7.1-rancher.2`, then `67.0.0-rancher.1`
 
-The only exception is Rancher Project Monitoring uses SemVer. However, each version of Project Monitoring chart is directly dependent on a specific Rancher Monitoring.
+For more details on why we use this format, see: [How do we manage Chart versions across this repo and `rancher/charts`?](./docs/semver-across-chart-repos.md)
 
-## How are PRs merged into this repo?
-PRs are merged only after they've been tested. The flow is:
+**Exception**: Rancher Project Monitoring uses standard SemVer. Each Project Monitoring version depends on a specific Rancher Monitoring version.
+
+## Pull request workflow
+
+PRs are only merged after testing is complete. The workflow is:
+
 1. ORBS team approves the PR
 2. QA validates the changes and comments on the associated issue
 3. ORBS team merges the PR
 
-This ensures every commit on main is a "safe version" - tested and ready to release. It also lets us maintain a single branch (`main`) instead of separate dev and release branches.
+This ensures every commit on `main` is tested and ready to release. It also allows us to maintain a single `main` branch instead of separate development and release branches.
 
-Since revision numbers are sequential (e.g., `1.2.3-rancher.1`, `1.2.3-rancher.2`), PRs must merge in order. If multiple PRs are open for the same package, they need to coordinate merge order and rebase after earlier revisions merge.
+**Important**: Revision numbers are sequential (example: `1.2.3-rancher.1`, `1.2.3-rancher.2`). This means PRs must merge in order. If multiple PRs are open for the same package, they must coordinate merge order and rebase after earlier revisions merge.
 
-For more on what details to provide QA for testing, see: [How to test charts straight from ob-team-charts](./docs/testing-from-ob-team-charts.md).
+For details on what information to provide QA for testing, see: [How to test charts from ob-team-charts](./docs/testing-from-ob-team-charts.md).
 
-### PR Labels
+### PR labels
 
 The ORBS team uses these labels to track PR status:
 
-- **`revision-hold`**: Another PR has a lower `-rancher.x` revision that must merge first. Once that PR merges, this label will be removed and the PR will need to be rebased.
+- **`revision-hold`**: Another PR has a lower `-rancher.x` revision number that must merge first. When that PR merges, this label will be removed and the PR will need a rebase.
 
-- **`needs-rebase`**: The PR is behind main or has become stale. Contributor should rebase their PR to include recent changes.
+- **`needs-rebase`**: The PR is behind `main` or has become stale. The contributor should rebase their PR to include recent changes.
 
-- **`stale-revision-number`**: The revision number in this PR is already released or claimed by another PR further along in QA. Sync with the ORBS team to pick a new revision number.
+- **`stale-revision-number`**: The revision number in this PR is already released or claimed by another PR that is further along in QA. Contact the ORBS team to choose a new revision number.
 
-## How does rebasing for Rancher Monitoring charts work with this repo?
-Overall the process isn't too different, however how we manage a particular upstream version will be different.
-In the new system, we will suffix each upstream version with a `-rancher.{num}` identifier.
+## Rancher Monitoring chart rebasing
 
-Using that will give us a better identifier for our Rancher specific modifications that we use across Rancher minor versions.
-Specifically some other ways this will benfit our team is:
-- ORBS team maintains a single canonical version of upstream chart changes,
-- `rancher-monitoring` and `rancher-project-monitoirng` rebase can be a single PR
-  - Then followed up by PRs in `rancher/prometheus-federator` and all synced to `rancher/charts` in unison. 
+The rebasing process is similar to before, but how we manage upstream versions is different. We suffix each upstream version with a `-rancher.{num}` identifier.
 
-Please review the [Monitoring Rebase doc](./docs/monitoring-rebase.md) for more details on the process this repo allows.
+This format provides better tracking for Rancher-specific modifications across all Rancher minor versions.
 
-## Repo name ORBS vs O&B (ob)
-The team has been renamed from O&B to ORBS. The repo name will remain the same.
+**Benefits**:
+- ORBS team maintains a single canonical version of upstream chart changes
+- `rancher-monitoring` and `rancher-project-monitoring` rebases can be done in a single PR
+- Follow-up PRs in `rancher/prometheus-federator` can be synced to `rancher/charts` together
+
+For more details on the rebase process, see: [Example Monitoring Rebase](./docs/example-monitoring-rebase.md)
+
+## Repository naming
+
+The team is now called ORBS (previously O&B). The repository name `ob-team-charts` remains unchanged.
