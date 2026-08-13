@@ -9,7 +9,8 @@
 #   BRANCH_FILE   - path to branch data CSV; if unset, auto-derived from TARGET_BRANCH
 #   TARGET_BRANCH - branch name (required when BRANCH_FILE is not set)
 #
-# Output: git commit in CHARTS_DIR; writes versions to ${BRANCH_FILE}.versions
+# Output: git commit in CHARTS_DIR; writes versions to ${BRANCH_FILE}.versions;
+#         writes superseded rc versions (chart bumped from one rc to the next) to ${BRANCH_FILE}.rc_removals
 set -euo pipefail
 source "$(dirname "$0")/common.sh"
 
@@ -19,8 +20,9 @@ ensure_branch_file
 
 CHART_NAMES=$(cut -d',' -f1 "$BRANCH_FILE" | cut -d'/' -f1 | sort -u | tr '\n' ',' | sed 's/,$//' | sed 's/,/, /g')
 
-# Clear versions file for this branch
+# Clear versions/rc_removals files for this branch
 > "${BRANCH_FILE}.versions"
+> "${BRANCH_FILE}.rc_removals"
 
 while IFS=, read -r chart_full_version PACKAGE_PATH; do
   CHART_NAME=$(echo "$chart_full_version" | cut -d'/' -f1)
@@ -36,7 +38,9 @@ while IFS=, read -r chart_full_version PACKAGE_PATH; do
   yq e -i ".commit = \"$COMMIT_SHA\"" "$PACKAGE_YAML_PATH"
 
   CURRENT_VERSION=$(yq e '.version' "$PACKAGE_YAML_PATH")
+  IS_RC_BUMP=false
   if [[ "$CURRENT_VERSION" == *"-rc."* ]]; then
+    IS_RC_BUMP=true
     NEW_VERSION=$(echo "$CURRENT_VERSION" | awk -F- '{split($2, a, "."); print $1"-rc."a[2]+1}')
   else
     NEW_VERSION=$(echo "$CURRENT_VERSION" | awk -F. '{print $1"."$2"."$3+1"-rc.1"}')
@@ -46,10 +50,18 @@ while IFS=, read -r chart_full_version PACKAGE_PATH; do
   echo "${chart_full_version}=${NEW_VERSION}" >> "${BRANCH_FILE}.versions"
   summary "  - Updated \`$PACKAGE_PATH\` to version \`$NEW_VERSION\`"
 
+  if [ "$IS_RC_BUMP" = "true" ]; then
+    echo "${CHART_NAME},${CURRENT_VERSION}" >> "${BRANCH_FILE}.rc_removals"
+  fi
+
   if yq e '.additionalCharts | has(0)' "$PACKAGE_YAML_PATH" &>/dev/null; then
     CRD_CHART_NAME="${CHART_NAME}-crd"
     yq e -i ".additionalCharts[0].upstreamOptions.subdirectory = \"charts/${CRD_CHART_NAME}/${CHART_VERSION}\"" "$PACKAGE_YAML_PATH"
     yq e -i ".additionalCharts[0].upstreamOptions.commit = \"$COMMIT_SHA\"" "$PACKAGE_YAML_PATH"
+
+    if [ "$IS_RC_BUMP" = "true" ]; then
+      echo "${CRD_CHART_NAME},${CURRENT_VERSION}" >> "${BRANCH_FILE}.rc_removals"
+    fi
   fi
 done < "$BRANCH_FILE"
 

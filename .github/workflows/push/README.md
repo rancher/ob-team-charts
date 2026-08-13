@@ -38,6 +38,7 @@ CHARTS_DIR=/path/to/rancher/charts TARGET_BRANCH=dev-v2.13 ./update-kuberlr.sh
 | `generate-assets.sh` (Initial) | `update-patches.sh` |
 | `update-kuberlr.sh` | `generate-assets.sh` (Initial) |
 | `generate-assets.sh` (Final) | `update-kuberlr.sh` |
+| `remove-old-rc.sh` | `update-package-yaml.sh` (needs `${BRANCH_FILE}.rc_removals`), `generate-assets.sh` (Final) |
 | `update-release-yaml.sh` | `update-package-yaml.sh` (needs `${BRANCH_FILE}.versions`) |
 | `create-pr.sh` | all of the above |
 
