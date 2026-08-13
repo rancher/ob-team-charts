@@ -1,5 +1,6 @@
 {{- $ns := include "rancher-monitoring.namespace" . -}}
 {{- $cluster := .Values.global.cattle.clusterId | default "local" -}}
+{{- $clusterDomain := .Values.global.clusterDomain | default "cluster.local" -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -53,11 +54,11 @@ data:
         proxy_set_header Accept-Encoding "";
 
         location /api/dashboards {
-          proxy_pass     http://{{ .Values.grafanaProxy.upstreamService }}.{{ $ns }}.svc.cluster.local:{{ .Values.grafanaProxy.upstreamPort }};
+          proxy_pass     http://{{ .Values.grafanaProxy.upstreamService }}.{{ $ns }}.svc.{{ $clusterDomain }}:{{ .Values.grafanaProxy.upstreamPort }};
         }
 
         location /api/search {
-          proxy_pass     http://{{ .Values.grafanaProxy.upstreamService }}.{{ $ns }}.svc.cluster.local:{{ .Values.grafanaProxy.upstreamPort }};
+          proxy_pass     http://{{ .Values.grafanaProxy.upstreamService }}.{{ $ns }}.svc.{{ $clusterDomain }}:{{ .Values.grafanaProxy.upstreamPort }};
           sub_filter_types application/json;
           sub_filter_once off;
         }
@@ -68,7 +69,7 @@ data:
           proxy_set_header Connection $connection_upgrade;
           proxy_set_header Host $http_host;
           proxy_set_header Accept-Encoding "";
-          proxy_pass http://{{ .Values.grafanaProxy.upstreamService }}.{{ $ns }}.svc.cluster.local:{{ .Values.grafanaProxy.upstreamPort }};
+          proxy_pass http://{{ .Values.grafanaProxy.upstreamService }}.{{ $ns }}.svc.{{ $clusterDomain }}:{{ .Values.grafanaProxy.upstreamPort }};
         }
 
         location / {
@@ -80,7 +81,7 @@ data:
           add_header          X-Proxy-Cache $upstream_cache_status;
           add_header          Cache-Control "public";
 
-          proxy_pass     http://{{ .Values.grafanaProxy.upstreamService }}.{{ $ns }}.svc.cluster.local:{{ .Values.grafanaProxy.upstreamPort }}/;
+          proxy_pass     http://{{ .Values.grafanaProxy.upstreamService }}.{{ $ns }}.svc.{{ $clusterDomain }}:{{ .Values.grafanaProxy.upstreamPort }}/;
 
           sub_filter_once off;
           {{- if eq .Values.global.cattle.clusterId "local" -}}
@@ -112,7 +113,7 @@ data:
         location / {
           proxy_set_header Accept-Encoding "";
           proxy_set_header Host $host;
-          proxy_pass http://{{ .Values.prometheusProxy.upstreamService }}.{{ $ns }}.svc.cluster.local:{{ .Values.prometheusProxy.upstreamPort }};
+          proxy_pass http://{{ .Values.prometheusProxy.upstreamService }}.{{ $ns }}.svc.{{ $clusterDomain }}:{{ .Values.prometheusProxy.upstreamPort }};
         }
       }
       {{- end }}
@@ -131,7 +132,7 @@ data:
         location / {
           proxy_set_header Accept-Encoding "";
           proxy_set_header Host $host;
-          proxy_pass http://{{ .Values.alertmanagerProxy.upstreamService }}.{{ $ns }}.svc.cluster.local:{{ .Values.alertmanagerProxy.upstreamPort }};
+          proxy_pass http://{{ .Values.alertmanagerProxy.upstreamService }}.{{ $ns }}.svc.{{ $clusterDomain }}:{{ .Values.alertmanagerProxy.upstreamPort }};
         }
       }
       {{- end }}
