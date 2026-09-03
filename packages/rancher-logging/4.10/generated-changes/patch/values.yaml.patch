@@ -47,7 +47,7 @@
 -#  fsGroup: 2000
 +podSecurityContext:
 +  runAsNonRoot: true
-+  runAsUser: 1000
++  runAsUser: 1000prometheus-windows-exporter
 +  fsGroup: 2000
  
  # -- Container SecurityContext for Logging operator. [More info](https://kubernetes.io/docs/concepts/policy/security-context/)
@@ -205,7 +205,7 @@
 +    tag: 3.1.8-debug
 +  fluentd:
 +    repository: rancher/mirrored-kube-logging-fluentd
-+    tag: v1.16-4.10-full
++    tag: v1.16-4.11-full
 +
 +additionalLoggingSources:
 +  rke:
