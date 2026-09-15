@@ -104,7 +104,7 @@ data:
              {{- end }}
           {{- end }}
 
-          rewrite ^/k8s/clusters/.*/proxy(.*) /$1 break;
+          rewrite ^/k8s/clusters/.*/proxy(.*) $1 break;
 
         }
       }
