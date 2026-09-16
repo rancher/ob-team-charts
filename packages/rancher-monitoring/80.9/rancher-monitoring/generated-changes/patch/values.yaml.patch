@@ -559,7 +559,7 @@
 +  ## Image to use to run the scripts
 +  image:
 +    repository: rancher/kuberlr-kubectl
-+    tag: v8.1.1
++    tag: v8.1.2
 +
 +## Rancher Monitoring
 +##
@@ -650,7 +650,7 @@
 -        tag: ""  # defaults to the Kubernetes version
 -        sha: ""
 +        repository: rancher/kuberlr-kubectl
-+        tag: v8.1.1
++        tag: v8.1.2
          pullPolicy: IfNotPresent
  
      env: {}
@@ -673,7 +673,7 @@
 +    enabled: false
 +  kubectl:
 +     repository: rancher/kuberlr-kubectl
-+     tag: v8.1.1
++     tag: v8.1.2
 +     pullPolicy: IfNotPresent
    rbac:
 +    ## Create RBAC resources for ServiceAccounts and users
