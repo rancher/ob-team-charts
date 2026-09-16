@@ -33,6 +33,7 @@ while IFS=, read -r chart_full_version CHARTS_PACKAGE_DIR; do
     echo "WARNING: package.yaml not found at $PACKAGE_YAML_PATH" >&2
     continue
   fi
+  OLD_CHART_VERSION=$(basename "$(yq e '.subdirectory' "$PACKAGE_YAML_PATH")")
 
   yq e -i ".subdirectory = \"charts/$CHART_NAME/$CHART_VERSION\"" "$PACKAGE_YAML_PATH"
   yq e -i ".commit = \"$COMMIT_SHA\"" "$PACKAGE_YAML_PATH"
@@ -51,16 +52,17 @@ while IFS=, read -r chart_full_version CHARTS_PACKAGE_DIR; do
   summary "  - Updated \`$CHARTS_PACKAGE_DIR\` to version \`$NEW_VERSION\`"
 
   if [ "$IS_RC_BUMP" = "true" ]; then
-    echo "${CHART_NAME},${CURRENT_VERSION}" >> "${BRANCH_FILE}.rc_removals"
+    echo "${CHART_NAME},${CURRENT_VERSION}+up${OLD_CHART_VERSION}" >> "${BRANCH_FILE}.rc_removals"
   fi
 
   if yq e '.additionalCharts | has(0)' "$PACKAGE_YAML_PATH" &>/dev/null; then
     CRD_CHART_NAME="${CHART_NAME}-crd"
+    OLD_CRD_CHART_VERSION=$(basename "$(yq e '.additionalCharts[0].upstreamOptions.subdirectory' "$PACKAGE_YAML_PATH")")
     yq e -i ".additionalCharts[0].upstreamOptions.subdirectory = \"charts/${CRD_CHART_NAME}/${CHART_VERSION}\"" "$PACKAGE_YAML_PATH"
     yq e -i ".additionalCharts[0].upstreamOptions.commit = \"$COMMIT_SHA\"" "$PACKAGE_YAML_PATH"
 
     if [ "$IS_RC_BUMP" = "true" ]; then
-      echo "${CRD_CHART_NAME},${CURRENT_VERSION}" >> "${BRANCH_FILE}.rc_removals"
+      echo "${CRD_CHART_NAME},${CURRENT_VERSION}+up${OLD_CRD_CHART_VERSION}" >> "${BRANCH_FILE}.rc_removals"
     fi
   fi
 done < "$BRANCH_FILE"
