@@ -18,7 +18,9 @@ ensure_branch_file
 ASSET_LABEL="${ASSET_LABEL:-Initial}"
 CHART_NAMES=$(cut -d',' -f1 "$BRANCH_FILE" | cut -d'/' -f1 | sort -u | tr '\n' ',' | sed 's/,$//' | sed 's/,/, /g')
 
+summary "  - Starting to generate initial assets - $ASSET_LABEL for $CHART_NAMES"
 while IFS=, read -r chart_full_version CHARTS_PACKAGE_DIR; do
+  summary "  - Building for $CHARTS_PACKAGE_DIR"
   make -C "$CHARTS_DIR" charts PACKAGE="$CHARTS_PACKAGE_DIR" USE_CACHE=true
   summary "  - Generated assets for \`$CHARTS_PACKAGE_DIR\`"
 done < "$BRANCH_FILE"
