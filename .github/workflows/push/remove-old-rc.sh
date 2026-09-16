@@ -19,7 +19,31 @@ if [ ! -f "$REMOVALS_FILE" ] || [ ! -s "$REMOVALS_FILE" ]; then
 fi
 
 while IFS=, read -r CHART_NAME OLD_VERSION; do
-  make -C "$CHARTS_DIR" remove CHART="$CHART_NAME" VERSION="$OLD_VERSION"
-  commit_if_changed "chore(charts): Remove superseded \`$CHART_NAME\` version \`$OLD_VERSION\`"
-  summary "  - Removed superseded \`$CHART_NAME\` version \`$OLD_VERSION\`"
+  summary "Package Version to Remove RCs: $OLD_VERSION"
+
+  # Find all directories that match the version prefix
+  CHART_PATH="$CHARTS_DIR/charts/$CHART_NAME"
+  if [ ! -d "$CHART_PATH" ]; then
+    summary "  - Warning: Chart directory not found: $CHART_PATH"
+    continue
+  fi
+
+  # Find matching version directories
+  MATCHED_VERSIONS=()
+  while IFS= read -r -d '' version_dir; do
+    version_name=$(basename "$version_dir")
+    MATCHED_VERSIONS+=("$version_name")
+  done < <(find "$CHART_PATH" -maxdepth 1 -type d -name "${OLD_VERSION}*" -print0)
+
+  if [ ${#MATCHED_VERSIONS[@]} -eq 0 ]; then
+    summary "  - Warning: No versions found matching \`$OLD_VERSION\` for chart \`$CHART_NAME\`"
+    continue
+  fi
+
+  # Remove each matching version
+  for FULL_VERSION in "${MATCHED_VERSIONS[@]}"; do
+    make -C "$CHARTS_DIR" remove CHART="$CHART_NAME" VERSION="$FULL_VERSION"
+    commit_if_changed "chore(charts): Remove superseded \`$CHART_NAME\` version \`$FULL_VERSION\`"
+    summary "  - Removed superseded \`$CHART_NAME\` version \`$FULL_VERSION\`"
+  done
 done < "$REMOVALS_FILE"
