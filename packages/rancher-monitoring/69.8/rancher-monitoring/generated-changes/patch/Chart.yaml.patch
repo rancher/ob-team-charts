@@ -24,7 +24,7 @@
  dependencies:
 -- condition: crds.enabled
 -  name: crds
--  repository: ""
+-  repository: file://./charts/crds
 -  version: 0.0.0
  - condition: grafana.enabled
    name: grafana
