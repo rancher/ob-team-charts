@@ -19,6 +19,20 @@ if [ ! -f "$VERSIONS_FILE" ]; then
   exit 1
 fi
 
+REMOVALS_FILE="${BRANCH_FILE}.rc_removals"
+
+remove_superseded_entry() {
+  local name="$1"
+  [ -f "$REMOVALS_FILE" ] || return 0
+
+  local old_version
+  old_version=$(grep "^${name}," "$REMOVALS_FILE" 2>/dev/null | head -1 | cut -d',' -f2 || true)
+  [ -n "$old_version" ] || return 0
+
+  yq e -i "del(.${name}[] | select(test(\"^${old_version}\\+up\")))" "$CHARTS_DIR/release.yaml"
+  summary "  - Removed superseded \`$name\` version \`$old_version\` from release.yaml"
+}
+
 while IFS=, read -r chart_full_version CHARTS_PACKAGE_DIR; do
   CHART_NAME=$(echo "$chart_full_version" | cut -d'/' -f1)
   CHART_VERSION=$(echo "$chart_full_version" | cut -d'/' -f2)
@@ -32,11 +46,13 @@ while IFS=, read -r chart_full_version CHARTS_PACKAGE_DIR; do
   FULL_VERSION="${NEW_PACKAGE_VERSION}+up${CHART_VERSION}"
   yq e -i ".${CHART_NAME} |= [\"${FULL_VERSION}\"] + ." "$CHARTS_DIR/release.yaml"
   summary "  - Added \`$CHART_NAME\`: \`$FULL_VERSION\`"
+  remove_superseded_entry "$CHART_NAME"
 
   CRD_CHART_NAME="${CHART_NAME}-crd"
   if yq e ".${CRD_CHART_NAME}" "$CHARTS_DIR/release.yaml" &>/dev/null; then
     yq e -i ".${CRD_CHART_NAME} |= [\"${FULL_VERSION}\"] + ." "$CHARTS_DIR/release.yaml"
     summary "  - Added \`$CRD_CHART_NAME\`: \`$FULL_VERSION\`"
+    remove_superseded_entry "$CRD_CHART_NAME"
   fi
 done < "$BRANCH_FILE"
 
