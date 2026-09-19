@@ -1,0 +1,64 @@
+name: unrc - Promote an rc chart version to release
+
+on:
+  workflow_dispatch:
+    inputs:
+      chart:
+        description: 'Chart name to promote (e.g. "rancher-monitoring")'
+        required: true
+        type: string
+      version:
+        description: 'Version to promote, as "<rancher_version>+up<ob_team_charts_version>" (the "-rc.N" suffix is optional and stripped if present, e.g. "110.0.2-rc.1+up80.9.1-rancher.20")'
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/rancher/ci-image/charts
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Install Dependencies
+        run: zypper --non-interactive in curl tar gzip git make jq go awk patch
+
+      - name: Checkout current repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Mark git directory as safe
+        shell: bash
+        run: git config --global --add safe.directory "$(pwd)"
+
+      - uses: rancherlabs/dep-fetch/actions/sync-deps@v0.2.0
+        with:
+          version: v0.2.0
+
+      - name: Read App Credentials from Vault
+        uses: rancher-eio/read-vault-secrets@0da85151ad1f19ed7986c41587e45aac1ace74b6 # v3
+        with:
+          secrets: |
+            secret/data/github/repo/${{ github.repository }}/github/app-credentials appId | APPID;
+            secret/data/github/repo/${{ github.repository }}/github/app-credentials privateKey | PRIVATEKEY
+
+      - name: Generate GitHub App Token
+        id: generate_token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
+        with:
+          app-id: ${{ env.APPID }}
+          private-key: ${{ env.PRIVATEKEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: |
+            charts
+            org
+
+      - name: Promote rc to release and open PR
+        env:
+          CHART_NAME: ${{ inputs.chart }}
+          UNRC_VERSION: ${{ inputs.version }}
+          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+          SOURCE_REPO: ${{ github.repository }}
+          OB_DIR: ${{ github.workspace }}
+          CHARTS_DIR: ${{ github.workspace }}/charts-repo
+        run: ./.github/workflows/unrc/run-gha.sh
