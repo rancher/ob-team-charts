@@ -19,8 +19,8 @@ require_var CHART_NAMES
 SOURCE_REPO="${SOURCE_REPO:-unknown}"
 SOURCE_SHA="${SOURCE_SHA:-unknown}"
 
-PR_TITLE="chore(charts): Update \`${CHART_NAMES}\` from upstream for $TARGET_BRANCH"
-PR_BODY="Automated PR to update charts from ${SOURCE_REPO} commit ${SOURCE_SHA}"
+PR_TITLE="${PR_TITLE:-chore(charts): Update \`${CHART_NAMES}\` from upstream for $TARGET_BRANCH}"
+PR_BODY="${PR_BODY:-Automated PR to update charts from ${SOURCE_REPO} commit ${SOURCE_SHA}}"
 
 if [ "$DRY_RUN" = "true" ]; then
   echo "[DRY RUN] Skipping push and PR creation."
