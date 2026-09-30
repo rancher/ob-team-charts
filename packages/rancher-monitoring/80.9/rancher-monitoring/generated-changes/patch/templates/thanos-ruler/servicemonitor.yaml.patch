@@ -1,19 +1,26 @@
 --- charts-original/templates/thanos-ruler/servicemonitor.yaml
 +++ charts/templates/thanos-ruler/servicemonitor.yaml
-@@ -41,6 +41,16 @@
-     {{- if .Values.thanosRuler.serviceMonitor.metricRelabelings }}
-     metricRelabelings: {{- tpl (toYaml .Values.thanosRuler.serviceMonitor.metricRelabelings | nindent 6) . }}
+@@ -38,8 +38,22 @@
+     tlsConfig: {{- toYaml .Values.thanosRuler.serviceMonitor.tlsConfig | nindent 6 }}
      {{- end }}
-+    {{ if .Values.global.cattle.clusterId }}
+     path: "{{ trimSuffix "/" .Values.thanosRuler.thanosRulerSpec.routePrefix }}/metrics"
++    {{- $hasExtra := or .Values.global.cattle.clusterId .Values.global.cattle.clusterName }}
++    {{- if or .Values.thanosRuler.serviceMonitor.metricRelabelings $hasExtra }}
++    metricRelabelings:
+     {{- if .Values.thanosRuler.serviceMonitor.metricRelabelings }}
+-    metricRelabelings: {{- tpl (toYaml .Values.thanosRuler.serviceMonitor.metricRelabelings | nindent 6) . }}
++    {{- tpl (toYaml .Values.thanosRuler.serviceMonitor.metricRelabelings | nindent 6) . }}
++    {{- end }}
++    {{- if .Values.global.cattle.clusterId }}
 +      - sourceLabels: [__address__]
 +        targetLabel: cluster_id
-+        replacement: {{ .Values.global.cattle.clusterId }}
++        replacement: {{ .Values.global.cattle.clusterId | quote }}
 +    {{- end }}
-+    {{ if .Values.global.cattle.clusterName}}
++    {{- if .Values.global.cattle.clusterName }}
 +      - sourceLabels: [__address__]
 +        targetLabel: cluster_name
-+        replacement: {{ .Values.global.cattle.clusterName }}
++        replacement: {{ .Values.global.cattle.clusterName | quote }}
 +    {{- end }}
+     {{- end }}
      {{- if .Values.thanosRuler.serviceMonitor.relabelings }}
      relabelings: {{- toYaml .Values.thanosRuler.serviceMonitor.relabelings | nindent 6 }}
-     {{- end }}
