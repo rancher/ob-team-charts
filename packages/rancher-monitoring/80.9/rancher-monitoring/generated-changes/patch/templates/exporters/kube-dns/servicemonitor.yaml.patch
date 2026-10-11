@@ -1,25 +1,28 @@
 --- charts-original/templates/exporters/kube-dns/servicemonitor.yaml
 +++ charts/templates/exporters/kube-dns/servicemonitor.yaml
-@@ -41,10 +41,20 @@
+@@ -41,10 +41,23 @@
      {{- if .Values.kubeDns.serviceMonitor.proxyUrl }}
      proxyUrl: {{ .Values.kubeDns.serviceMonitor.proxyUrl}}
      {{- end }}
 -{{- if .Values.kubeDns.serviceMonitor.dnsmasqMetricRelabelings }}
++    {{- $hasExtra := or .Values.global.cattle.clusterId .Values.global.cattle.clusterName }}
++    {{- if or .Values.kubeDns.serviceMonitor.dnsmasqMetricRelabelings $hasExtra }}
      metricRelabelings:
 -{{ tpl (toYaml .Values.kubeDns.serviceMonitor.dnsmasqMetricRelabelings | indent 4) . }}
 -{{- end }}
 +    {{- if .Values.kubeDns.serviceMonitor.dnsmasqMetricRelabelings }}
-+    {{ tpl (toYaml .Values.kubeDns.serviceMonitor.dnsmasqMetricRelabelings | indent 4) . }}
++    {{- tpl (toYaml .Values.kubeDns.serviceMonitor.dnsmasqMetricRelabelings | nindent 6) . }}
 +    {{- end }}
-+    {{ if .Values.global.cattle.clusterId }}
++    {{- if .Values.global.cattle.clusterId }}
 +      - sourceLabels: [__address__]
 +        targetLabel: cluster_id
-+        replacement: {{ .Values.global.cattle.clusterId }}
++        replacement: {{ .Values.global.cattle.clusterId | quote }}
 +    {{- end }}
-+    {{ if .Values.global.cattle.clusterName}}
++    {{- if .Values.global.cattle.clusterName }}
 +      - sourceLabels: [__address__]
 +        targetLabel: cluster_name
-+        replacement: {{ .Values.global.cattle.clusterName }}
++        replacement: {{ .Values.global.cattle.clusterName | quote }}
++    {{- end }}
 +    {{- end }}
  {{- if .Values.kubeDns.serviceMonitor.dnsmasqRelabelings }}
      relabelings:
