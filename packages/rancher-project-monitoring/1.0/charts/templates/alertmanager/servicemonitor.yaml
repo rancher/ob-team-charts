@@ -34,6 +34,8 @@ spec:
     tlsConfig: {{ toYaml .Values.alertmanager.serviceMonitor.tlsConfig | nindent 6 }}
     {{- end }}
     path: "{{ trimSuffix "/" .Values.alertmanager.alertmanagerSpec.routePrefix }}/metrics"
+    {{- $hasExtra := or .Values.global.cattle.clusterId .Values.global.cattle.clusterName }}
+    {{- if or .Values.alertmanager.serviceMonitor.metricRelabelings $hasExtra }}
     metricRelabelings:
     {{- if .Values.alertmanager.serviceMonitor.metricRelabelings }}
     {{ tpl (toYaml .Values.alertmanager.serviceMonitor.metricRelabelings | indent 6) . }}
@@ -47,6 +49,7 @@ spec:
       - sourceLabels: [__address__]
         targetLabel: cluster_name
         replacement: {{ .Values.global.cattle.clusterName }}
+    {{- end }}
     {{- end }}
 {{- if .Values.alertmanager.serviceMonitor.relabelings }}
     relabelings:
