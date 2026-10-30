@@ -15,6 +15,6 @@ rules:
 
 {{- define "rules.clusterIdLabel" }}
 {{- if .Values.defaultRules.clusterIdLabel }}
-cluster_id: {{ .Values.global.cattle.clusterId }}
+cluster_id: {{ .Values.global.cattle.clusterId | quote }}
 {{- end }}
 {{- end }}
