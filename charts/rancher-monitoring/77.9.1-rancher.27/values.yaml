@@ -4807,7 +4807,7 @@ prometheus:
     ## Image of Prometheus.
     ##
     image:
-      repository: rancher/prom-prometheus
+      repository: rancher/mirrored-prometheus-prometheus
       tag: v3.5.0
       pullPolicy: IfNotPresent
 

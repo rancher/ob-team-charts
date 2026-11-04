@@ -1691,7 +1691,7 @@ entries:
       catalog.cattle.io/upstream-version: 80.9.1
     apiVersion: v2
     appVersion: v0.87.1
-    created: "2026-11-04T18:22:55.3833-05:00"
+    created: "2026-11-04T18:26:07.388488-05:00"
     dependencies:
     - condition: grafana.enabled
       name: grafana
@@ -1785,7 +1785,7 @@ entries:
       and Prometheus rules combined with documentation and scripts to provide easy
       to operate end-to-end Kubernetes cluster monitoring with Prometheus using the
       Prometheus Operator.
-    digest: e2f48e965363c346d00e891e7283639914c92b711507f8cf360edd301b28719a
+    digest: e81abf98ba8d9a102be8a1bc74e7e71b0b055d83a12002d6f55355db2ccf249c
     home: https://github.com/prometheus-operator/kube-prometheus
     icon: file://assets/logos/rancher-monitoring.png
     keywords:
@@ -5417,7 +5417,7 @@ entries:
       catalog.cattle.io/upstream-version: 77.9.1
     apiVersion: v2
     appVersion: v0.85.0
-    created: "2026-11-04T18:22:09.089901-05:00"
+    created: "2026-11-04T18:25:57.127123-05:00"
     dependencies:
     - condition: grafana.enabled
       name: grafana
@@ -5511,7 +5511,7 @@ entries:
       and Prometheus rules combined with documentation and scripts to provide easy
       to operate end-to-end Kubernetes cluster monitoring with Prometheus using the
       Prometheus Operator.
-    digest: 9d66f2f48e9e9bd732f1c076f786a0dca3dfc5af8692cf09c2cd09e1d4a616de
+    digest: a105168cfc5828509880c3cecea974f5a4af4ef0309174e5b4dce3c2bd59b2fd
     home: https://github.com/prometheus-operator/kube-prometheus
     icon: file://assets/logos/rancher-monitoring.png
     keywords:
@@ -9791,7 +9791,7 @@ entries:
       catalog.cattle.io/upstream-version: 69.8.2
     apiVersion: v2
     appVersion: v0.80.1
-    created: "2026-11-04T18:21:28.725265-05:00"
+    created: "2026-11-04T18:25:46.916781-05:00"
     dependencies:
     - condition: grafana.enabled
       name: grafana
@@ -9885,7 +9885,7 @@ entries:
       and Prometheus rules combined with documentation and scripts to provide easy
       to operate end-to-end Kubernetes cluster monitoring with Prometheus using the
       Prometheus Operator.
-    digest: 01cf6a4cd26ef7a3186ef0fd62fe5f1f3a94af5bea44cf020a4642df8d31046a
+    digest: 77b7a113c97ce3303c292b4e7192bf31376a7f5a2e261cac95a2af70c4bea05e
     home: https://github.com/prometheus-operator/kube-prometheus
     icon: file://assets/logos/rancher-monitoring.png
     keywords:
