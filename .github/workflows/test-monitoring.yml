@@ -199,7 +199,11 @@ jobs:
         run: |
           BRANCH="${{ github.event.pull_request.head.ref }}"
           FORK_REPO="${{ github.event.pull_request.head.repo.full_name }}"
-          REPO_NAME="ob-team-charts-$(echo "${BRANCH}" | tr '/' '-' | tr '[:upper:]' '[:lower:]' | cut -c1-47)"
+          # ClusterRepo names must be RFC 1123 subdomains: lowercase alphanumerics or '-',
+          # starting and ending with an alphanumeric. Replace anything else (e.g. '/', '_')
+          # with '-' and trim trailing '-' left over after truncation.
+          SANITIZED_BRANCH=$(echo "${BRANCH}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g' | cut -c1-47 | sed -E 's/^-+//; s/-+$//')
+          REPO_NAME="ob-team-charts-${SANITIZED_BRANCH}"
           echo "REPO_NAME=${REPO_NAME}" >> $GITHUB_ENV
           kubectl apply -f - <<EOF
           apiVersion: catalog.cattle.io/v1
