@@ -4724,7 +4724,7 @@ prometheus:
     ## Image of Prometheus.
     ##
     image:
-      repository: rancher/prom-prometheus
+      repository: rancher/mirrored-prometheus-prometheus
       tag: v3.2.1
 
     ## Tolerations for use with node taints
