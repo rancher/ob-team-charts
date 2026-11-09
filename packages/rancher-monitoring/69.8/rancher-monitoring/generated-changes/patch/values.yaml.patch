@@ -1178,7 +1178,7 @@
      image:
 -      registry: quay.io
 -      repository: prometheus/prometheus
-+      repository: rancher/prom-prometheus
++      repository: rancher/mirrored-prometheus-prometheus
        tag: v3.2.1
 -      sha: ""
  
