@@ -23,12 +23,12 @@
 +    {{ if .Values.global.cattle.clusterId }}
 +    - sourceLabels: [__address__]
 +      targetLabel: cluster_id
-+      replacement: {{ .Values.global.cattle.clusterId }}
++      replacement: {{ .Values.global.cattle.clusterId | quote }}
 +    {{- end }}
 +    {{ if .Values.global.cattle.clusterName }}
 +    - sourceLabels: [__address__]
 +      targetLabel: cluster_name
-+      replacement: {{ .Values.global.cattle.clusterName }}
++      replacement: {{ .Values.global.cattle.clusterName | quote }}
      {{- end }}
 -    {{- if .Values.alertmanager.serviceMonitor.scheme }}
 -    scheme: {{ .Values.alertmanager.serviceMonitor.scheme }}
