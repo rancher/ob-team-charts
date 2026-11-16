@@ -49,7 +49,7 @@ while IFS=, read -r chart_full_version CHARTS_PACKAGE_DIR; do
   remove_superseded_entry "$CHART_NAME"
 
   CRD_CHART_NAME="${CHART_NAME}-crd"
-  if yq e ".${CRD_CHART_NAME}" "$CHARTS_DIR/release.yaml" &>/dev/null; then
+  if [ "$(yq e '.additionalCharts | has(0)' "$CHARTS_DIR/packages/$CHARTS_PACKAGE_DIR/package.yaml")" = "true" ]; then
     yq e -i ".${CRD_CHART_NAME} |= [\"${FULL_VERSION}\"] + ." "$CHARTS_DIR/release.yaml"
     summary "  - Added \`$CRD_CHART_NAME\`: \`$FULL_VERSION\`"
     remove_superseded_entry "$CRD_CHART_NAME"

@@ -27,12 +27,15 @@ while IFS=, read -r chart_full_version CHARTS_PACKAGE_DIR; do
 
   crd_chart_version="${chart_full_version/\//-crd/}"
   LOCAL_CRD_VALUES="$OB_DIR/charts/$crd_chart_version/values.yaml"
-  CRD_KUBERLR_TAG=$(grep kuberlr -A2 $LOCAL_CRD_VALUES | grep tag: | awk '{print $2}' | uniq)
-  LINE_COUNT=$(echo "$CRD_KUBERLR_TAG" | grep -c . || true)
-  if [ "$LINE_COUNT" -ne 1 ]; then
-    echo "Error: Expected exactly 1 tag, but found $LINE_COUNT:" >&2
-    echo "$CRD_KUBERLR_TAG" >&2
-    exit 1
+  CRD_KUBERLR_TAG=""
+  if [ -f "$LOCAL_CRD_VALUES" ]; then
+    CRD_KUBERLR_TAG=$(grep kuberlr -A2 $LOCAL_CRD_VALUES | grep tag: | awk '{print $2}' | uniq)
+    LINE_COUNT=$(echo "$CRD_KUBERLR_TAG" | grep -c . || true)
+    if [ "$LINE_COUNT" -ne 1 ]; then
+      echo "Error: Expected exactly 1 tag, but found $LINE_COUNT:" >&2
+      echo "$CRD_KUBERLR_TAG" >&2
+      exit 1
+    fi
   fi
 
 

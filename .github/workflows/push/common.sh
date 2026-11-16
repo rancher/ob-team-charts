@@ -65,15 +65,27 @@ ensure_branch_file() {
   require_var TARGET_BRANCH
   mkdir -p "$BRANCH_DATA_DIR"
   local derived="$BRANCH_DATA_DIR/$TARGET_BRANCH"
-  yq e '.packages' -o=json "$OB_DIR/charts-config.yaml" \
-    | jq -r 'to_entries[] | .key as $chart | .value | to_entries[] | .key as $version
+  local entries chart series package version
+  entries=$(yq e '.packages' -o=json "$OB_DIR/charts-config.yaml" \
+    | jq -r 'to_entries[] | .key as $chart | .value | to_entries[] | .key as $series
              | .value.branches[] | select(.branch == "'"$TARGET_BRANCH"'")
-             | ($chart + "/" + $version + "," + .package)' \
-    > "$derived"
-  if [ ! -s "$derived" ]; then
+             | ($chart + "," + $series + "," + .package)')
+  if [ -z "$entries" ]; then
     echo "ERROR: No charts configured for TARGET_BRANCH='$TARGET_BRANCH' in charts-config.yaml" >&2
     exit 1
   fi
+  # The keys of charts-config.yaml are Major.Minor series (80.9); the steps need
+  # a chart version of charts/ (80.9.1-rancher.23), so take the newest of the series.
+  : > "$derived"
+  while IFS=, read -r chart series package; do
+    version=$(find "$OB_DIR/charts/$chart" -mindepth 1 -maxdepth 1 -type d -name "$series.*" -exec basename {} \; 2>/dev/null \
+      | grep -E "^${series//./\\.}\.[0-9]+(-|$)" | sort -V | tail -1 || true)
+    if [ -z "$version" ]; then
+      echo "ERROR: No version of the $series series of $chart in charts/$chart" >&2
+      exit 1
+    fi
+    echo "$chart/$version,$package" >> "$derived"
+  done <<< "$entries"
   export BRANCH_FILE="$derived"
   echo "  (auto-derived BRANCH_FILE for $TARGET_BRANCH → $BRANCH_FILE)"
 }
