@@ -40,6 +40,7 @@ while IFS=, read -r chart_full_version CHARTS_PACKAGE_DIR; do
   make -C "$CHARTS_DIR" prepare PACKAGE="$CHARTS_PACKAGE_DIR" USE_CACHE=true
 
   for chart_subdir in charts charts-crd; do
+    [ -d "$CHARTS_DIR/packages/$CHARTS_PACKAGE_DIR/$chart_subdir" ] || continue
     find "$CHARTS_DIR/packages/$CHARTS_PACKAGE_DIR/$chart_subdir" -name "values.yaml" 2>/dev/null \
       | while read -r yaml_file; do
           if grep -q "rancher/kuberlr-kubectl" "$yaml_file"; then

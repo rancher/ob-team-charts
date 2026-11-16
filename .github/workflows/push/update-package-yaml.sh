@@ -54,7 +54,7 @@ while IFS=, read -r chart_full_version CHARTS_PACKAGE_DIR; do
     echo "${CHART_NAME},${CURRENT_VERSION}" >> "${BRANCH_FILE}.rc_removals"
   fi
 
-  if yq e '.additionalCharts | has(0)' "$PACKAGE_YAML_PATH" &>/dev/null; then
+  if [ "$(yq e '.additionalCharts | has(0)' "$PACKAGE_YAML_PATH")" = "true" ]; then
     CRD_CHART_NAME="${CHART_NAME}-crd"
     yq e -i ".additionalCharts[0].upstreamOptions.subdirectory = \"charts/${CRD_CHART_NAME}/${CHART_VERSION}\"" "$PACKAGE_YAML_PATH"
     yq e -i ".additionalCharts[0].upstreamOptions.commit = \"$COMMIT_SHA\"" "$PACKAGE_YAML_PATH"

@@ -62,3 +62,24 @@ When changes are merged to the `main` branch, the GitHub Actions workflow (`.git
 4. Updates dependencies, patches, and release metadata
 
 The automation can also be triggered manually using the workflow dispatch option if needed.
+
+## Staging charts with cargueiro (Rancher 2.16 and later)
+
+The `stage-charts.yaml` workflow stages a chart of `assets/` in the staging registry with cargueiro, next to the flow above. It is started by hand:
+
+```bash
+gh workflow run stage-charts.yaml --ref main -f chart=rancher-monitoring/80.9.1-rancher.23
+```
+
+The chart, and its `-crd` chart when there is one, is staged once for every `dev-v2.X` branch, with X of 16 or more, that its `Major.Minor` maps to under `packages`. Each Rancher version gets its own chart version, such as `111.0.0+up80.9.1-rancher.23` for 2.16. What the workflow sets in the chart for a Rancher version comes from `charts-config.yaml`:
+
+```yaml
+kuberlr-kubectl:
+  dev-v2.16: release/v9.x  # the latest v9.Y.Z release goes into every kuberlr-kubectl image
+
+rancher-versions:
+  "2.16":
+    kube-version: ">= 1.35.0-0 < 1.38.0-0"  # the catalog.cattle.io/kube-version annotation
+```
+
+The `rancher-version` annotation is set to `>= 2.X.0-0 < 2.(X+1).0-0`. A `file://assets/logos/` icon, or no icon, is replaced by the address of the logo in `assets/logos/` of this repository, because cargueiro downloads the icon. The chart must also be listed in the `rules.yaml` of [cargueiro](https://github.com/rancher/cargueiro).
