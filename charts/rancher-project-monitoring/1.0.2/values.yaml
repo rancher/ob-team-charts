@@ -76,7 +76,7 @@ global:
     projectNamespaces: []
   kubectl:
      repository: rancher/kuberlr-kubectl
-     tag: v6.0.0
+     tag: v9.0.3
      pullPolicy: IfNotPresent
      securityContext:
        runAsNonRoot: true
