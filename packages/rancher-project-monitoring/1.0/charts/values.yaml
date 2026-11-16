@@ -76,7 +76,7 @@ global:
     projectNamespaces: []
   kubectl:
      repository: rancher/kuberlr-kubectl
-     tag: v6.0.0
+     tag: v9.0.3
      pullPolicy: IfNotPresent
      securityContext:
        runAsNonRoot: true
@@ -1157,7 +1157,7 @@ prometheus:
     ## Image of Prometheus.
     ##
     image:
-      repository: rancher/prom-prometheus
+      repository: rancher/mirrored-prometheus-prometheus
       tag: v3.8.1
       sha: ""
 
