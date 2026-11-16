@@ -34,7 +34,7 @@ fi
 rancher_versions=$(
   NAME="$NAME" MAJOR_MINOR="$MAJOR_MINOR" \
     yq e '.packages[strenv(NAME)][strenv(MAJOR_MINOR)].branches[].branch' "$OB_DIR/charts-config.yaml" |
-    sed -n 's/^dev-v2\.\([0-9]\+\)$/\1/p' |
+    sed -nE 's/^dev-v2\.([0-9]+)$/\1/p' |
     awk -v min="$MIN_RANCHER_MINOR" '$1 >= min { print "2." $1 }' |
     sort -t. -k2,2n -u
 )
