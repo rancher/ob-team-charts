@@ -1,0 +1,117 @@
+name: Stage charts
+
+# Charts v2: stages a chart of assets/ as OCI artifacts in the staging catalog
+# registry with cargueiro, and starts its release in rancher/charts. It runs next
+# to the push workflow, which stays as it is, so both release paths work at the
+# same time.
+#
+# It is started by hand, for a chart version that is already in assets/:
+#
+#   gh workflow run stage-charts.yaml --ref main -f chart=rancher-monitoring/80.9.1-rancher.23
+#
+# The chart is staged once for every Rancher version, 2.16 or later, whose
+# dev-v2.X branch charts-config.yaml maps its Major.Minor to, each with its own
+# version (111.Z.W+up80.9.1-rancher.23 for 2.16). The -crd chart, when there is
+# one, is staged with it, at the same version. The archives of assets/ are
+# extracted, and the script sets in them what rancher/charts used to set in the
+# dev-v2.X branch: the rancher-version and kube-version ranges, the kuberlr-kubectl
+# tag and an icon cargueiro can download (see rancher-versions and
+# kuberlr-kubectl in charts-config.yaml). The ship-family-staged action of rancher/charts stamps,
+# checks, packages and pushes them, and then starts the chart-staged workflow of
+# rancher/charts, which ships them and opens a pull request that adds them to the
+# index.yaml of its staging branch.
+#
+# The family is the name of the chart, which must be in the rules.yaml of
+# cargueiro. The action is pinned to the chart-owners branch of rancher/charts,
+# which holds only the shared actions, so it moves only when they change.
+
+on:
+  workflow_dispatch:
+    inputs:
+      chart:
+        description: "Chart version of assets/ to stage, e.g. rancher-monitoring/80.9.1-rancher.23"
+        required: true
+        type: string
+
+permissions: {}
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      name: ${{ steps.resolve.outputs.name }}
+      version: ${{ steps.resolve.outputs.version }}
+      rancher-versions: ${{ steps.resolve.outputs.rancher-versions }}
+    steps:
+      - name: Check out the branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # The input goes through the environment, never into a script.
+      - name: Resolve the chart
+        id: resolve
+        env:
+          CHART: ${{ inputs.chart }}
+        run: ./.github/workflows/stage/resolve-chart.sh "$CHART" | tee -a "$GITHUB_OUTPUT"
+
+  stage:
+    needs: resolve
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # Required for vault
+    strategy:
+      fail-fast: false
+      matrix:
+        rancher-version: ${{ fromJSON(needs.resolve.outputs.rancher-versions) }}
+    # Two runs of the same release must not push at the same time.
+    concurrency:
+      group: stage-charts-${{ needs.resolve.outputs.name }}-${{ needs.resolve.outputs.version }}-${{ matrix.rancher-version }}
+      cancel-in-progress: false
+    steps:
+      - name: Check out the branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Prepare the charts
+        id: prepare
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CHART: ${{ needs.resolve.outputs.name }}
+          VERSION: ${{ needs.resolve.outputs.version }}
+          RANCHER_VERSION: ${{ matrix.rancher-version }}
+        run: |
+          dirs=$(./.github/workflows/stage/prepare-charts.sh "$CHART" "$VERSION" "$RANCHER_VERSION" "$RUNNER_TEMP/charts")
+          {
+            echo "dirs<<EOF"
+            echo "$dirs"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Install cargueiro
+        run: |
+          curl -fsSL https://github.com/rancher/cargueiro/releases/latest/download/install.sh | sh -
+          cargueiro version
+
+      - name: Work out the version
+        id: version
+        env:
+          CHART: ${{ needs.resolve.outputs.name }}
+          VERSION: ${{ needs.resolve.outputs.version }}
+          DIRS: ${{ steps.prepare.outputs.dirs }}
+        run: |
+          mapfile -t dirs <<< "$DIRS"
+          version=$(./.github/workflows/stage/chart-version.sh "$CHART" "$VERSION" "${dirs[@]}")
+          echo "version: $version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Stage the charts and notify rancher/charts
+        uses: rancher/charts/.github/actions/ship-family-staged@chart-owners # chart-owners
+        with:
+          family: ${{ needs.resolve.outputs.name }}
+          chart-dirs: ${{ steps.prepare.outputs.dirs }}
+          version: ${{ steps.version.outputs.version }}
