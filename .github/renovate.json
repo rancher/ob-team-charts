@@ -2,9 +2,9 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "description": "Renovate manages GitHub Actions workflows. Chart artifacts in charts/ are published releases and cannot be automatically updated.",
   "extends": [
-    "github>rancher/renovate-config#release"
+    "github>rancher/renovate-config//default#release"
   ],
-  "baseBranches": [
+  "baseBranchPatterns": [
     "main"
   ],
   "enabled": true,
@@ -16,7 +16,9 @@
   "packageRules": [
     {
       "matchBaseBranches": ["main"],
-      "extends": ["github>rancher/renovate-config:rancher-main#main"]
+      "extends": [
+        "github>rancher/renovate-config:rancher-main#release"
+      ]
     },
     {
       "groupName": "GitHub Workflow Actions",
