@@ -26,4 +26,4 @@ sources:
 - https://github.com/kube-logging/logging-operator
 - https://github.com/kube-logging/helm-charts/tree/main/charts/logging-operator
 type: application
-version: 4.10.0
+version: 4.10.0-rancher.25
