@@ -17,9 +17,9 @@ ensure_branch_file
 
 while IFS=, read -r chart_full_version CHARTS_PACKAGE_DIR; do
   LOCAL_VALUES="$OB_DIR/charts/$chart_full_version/values.yaml"
-  KUBERLR_TAG=$(grep kuberlr -A2 $LOCAL_VALUES | grep tag: | awk '{print $2}' | uniq)
+  KUBERLR_TAG=$(grep kuberlr -A2 $LOCAL_VALUES | grep tag: | awk '{print $2}' | uniq || true)
   LINE_COUNT=$(echo "$KUBERLR_TAG" | grep -c . || true)
-  if [ "$LINE_COUNT" -ne 1 ]; then
+  if (( "$LINE_COUNT" > 1 )); then
     echo "Error: Expected exactly 1 tag, but found $LINE_COUNT:" >&2
     echo "$KUBERLR_TAG" >&2
     exit 1
@@ -29,9 +29,9 @@ while IFS=, read -r chart_full_version CHARTS_PACKAGE_DIR; do
   LOCAL_CRD_VALUES="$OB_DIR/charts/$crd_chart_version/values.yaml"
   CRD_KUBERLR_TAG=""
   if [ -f "$LOCAL_CRD_VALUES" ]; then
-    CRD_KUBERLR_TAG=$(grep kuberlr -A2 $LOCAL_CRD_VALUES | grep tag: | awk '{print $2}' | uniq)
+    CRD_KUBERLR_TAG=$(grep kuberlr -A2 $LOCAL_CRD_VALUES | grep tag: | awk '{print $2}' | uniq || true)
     LINE_COUNT=$(echo "$CRD_KUBERLR_TAG" | grep -c . || true)
-    if [ "$LINE_COUNT" -ne 1 ]; then
+    if (( "$LINE_COUNT" > 1 )); then
       echo "Error: Expected exactly 1 tag, but found $LINE_COUNT:" >&2
       echo "$CRD_KUBERLR_TAG" >&2
       exit 1
