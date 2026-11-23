@@ -7,6 +7,11 @@ on:
         description: 'Space-separated list of charts to sync (e.g., "rancher-monitoring/105.0.0-rancher.1 rancher-logging/4.10.0-rancher.21")'
         required: true
         type: string
+      skip_rc:
+        description: 'Create release versions (X.Y.Z) instead of rc versions (X.Y.Z-rc.N)'
+        required: false
+        default: false
+        type: boolean
   push:
     branches:
       - main
@@ -90,4 +95,5 @@ jobs:
           SOURCE_REPO: ${{ github.repository }}
           OB_DIR: ${{ github.workspace }}
           CHARTS_DIR: ${{ github.workspace }}/charts-repo
+          SKIP_RC: ${{ github.event_name == 'workflow_dispatch' && inputs.skip_rc || false }}
         run: ./.github/workflows/push/run-gha.sh

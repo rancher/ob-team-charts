@@ -58,7 +58,7 @@ When changes are merged to the `main` branch, the GitHub Actions workflow (`.git
 
 1. Detects which charts were updated
 2. Reads `charts-config.yaml` to determine target branches
-3. Creates pull requests in `rancher/charts` for each target branch
+3. Creates pull requests in `rancher/charts` for each target branch up to `dev-v2.15`. `dev-v2.16` and later are skipped, because those charts are staged with cargueiro. Kept their entries under `packages` anyway, since the staging workflow reads them (need to remove this later).
 4. Updates dependencies, patches, and release metadata
 
 The automation can also be triggered manually using the workflow dispatch option if needed.
