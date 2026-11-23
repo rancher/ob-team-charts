@@ -8,11 +8,15 @@
 #   COMMIT_SHA    - upstream commit SHA to pin in package.yaml (required)
 #   BRANCH_FILE   - path to branch data CSV; if unset, auto-derived from TARGET_BRANCH
 #   TARGET_BRANCH - branch name (required when BRANCH_FILE is not set)
+#   SKIP_RC       - when "true", bump to a release version instead of an rc:
+#                   X.Y.Z-rc.N -> X.Y.Z (the rc is superseded), X.Y.Z -> X.Y.(Z+1)
 #
 # Output: git commit in CHARTS_DIR; writes versions to ${BRANCH_FILE}.versions;
 #         writes superseded rc versions (chart bumped from one rc to the next) to ${BRANCH_FILE}.rc_removals
 set -euo pipefail
 source "$(dirname "$0")/common.sh"
+
+SKIP_RC="${SKIP_RC:-false}"
 
 require_charts_dir
 require_var COMMIT_SHA
@@ -40,8 +44,15 @@ while IFS=, read -r chart_full_version CHARTS_PACKAGE_DIR; do
   CURRENT_VERSION=$(yq e '.version' "$PACKAGE_YAML_PATH")
   IS_RC_BUMP=false
   if [[ "$CURRENT_VERSION" == *"-rc."* ]]; then
+    # Either way the current rc is superseded and gets removed
     IS_RC_BUMP=true
-    NEW_VERSION=$(echo "$CURRENT_VERSION" | awk -F- '{split($2, a, "."); print $1"-rc."a[2]+1}')
+    if [ "$SKIP_RC" = "true" ]; then
+      NEW_VERSION="${CURRENT_VERSION%%-rc.*}"
+    else
+      NEW_VERSION=$(echo "$CURRENT_VERSION" | awk -F- '{split($2, a, "."); print $1"-rc."a[2]+1}')
+    fi
+  elif [ "$SKIP_RC" = "true" ]; then
+    NEW_VERSION=$(echo "$CURRENT_VERSION" | awk -F. '{print $1"."$2"."$3+1}')
   else
     NEW_VERSION=$(echo "$CURRENT_VERSION" | awk -F. '{print $1"."$2"."$3+1"-rc.1"}')
   fi

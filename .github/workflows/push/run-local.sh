@@ -13,6 +13,8 @@
 #   --remote NAME         Remote name for rancher/charts in CHARTS_DIR (default: origin)
 #   --target-branch NAME  Process only this target branch (e.g., dev-v2.9, dev-v2.10)
 #                         If omitted, processes all detected target branches
+#   --skip-rc             Create a release version instead of an rc
+#                         (X.Y.Z-rc.N -> X.Y.Z, X.Y.Z -> X.Y.(Z+1))
 #   --dry-run             Skip push and PR creation (all local git work still runs)
 #   --help                Show this message
 set -euo pipefail
@@ -28,6 +30,7 @@ usage() {
 COMMIT_SHA=""
 SOURCE_REPO="rancher/ob-team-charts"
 TARGET_BRANCH_FILTER=""
+SKIP_RC="false"
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -37,6 +40,7 @@ while [[ $# -gt 0 ]]; do
     --source-repo)    SOURCE_REPO="$2";          shift 2 ;;
     --remote)         CHARTS_REMOTE="$2";        shift 2 ;;
     --target-branch)  TARGET_BRANCH_FILTER="$2"; shift 2 ;;
+    --skip-rc)        SKIP_RC="true";            shift ;;
     --dry-run)        DRY_RUN="true";            shift ;;
     --help|-h)        usage ;;
     *) echo "Unknown option: $1" >&2; usage ;;
@@ -46,7 +50,7 @@ done
 require_charts_dir
 
 COMMIT_SHA="${COMMIT_SHA:-$(git -C "$OB_DIR" rev-parse HEAD)}"
-export CHARTS_DIR OB_DIR DRY_RUN COMMIT_SHA BRANCH_DATA_DIR SOURCE_REPO CHARTS_REMOTE
+export CHARTS_DIR OB_DIR DRY_RUN COMMIT_SHA BRANCH_DATA_DIR SOURCE_REPO CHARTS_REMOTE SKIP_RC
 
 # --- Step 1: Detect/validate charts ---
 if [ -z "${NEW_CHARTS:-}" ]; then

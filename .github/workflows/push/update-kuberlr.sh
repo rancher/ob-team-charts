@@ -25,13 +25,25 @@ if [ -z "${GH_TOKEN:-}" ]; then
   summary "  - GH_TOKEN not set, warning kuberlr-kubectl tag fetch may not work."
 fi
 
-KUBERLR_TAG=$(gh api "repos/rancher/kuberlr-kubectl/releases?per_page=100" \
-  --jq "[.[] | select(.target_commitish == \"${KUBERLR_BRANCH}\")] | sort_by(.created_at) | last | .tag_name" \
-  2>/dev/null || echo "")
+# Select by the major of the branch (release/v8.x -> v8.Y.Z), not by the release's
+# target_commitish: releases are often cut from main (e.g. v8.2.1+ report "main"),
+# so filtering on the branch name silently returns a stale tag. Same logic as
+# stage/prepare-charts.sh.
+if [[ ! "$KUBERLR_BRANCH" =~ ^release/(v[0-9]+)\.x$ ]]; then
+  echo "ERROR: kuberlr-kubectl branch '$KUBERLR_BRANCH' for $TARGET_BRANCH must look like release/vN.x" >&2
+  exit 1
+fi
+KUBERLR_MAJOR="${BASH_REMATCH[1]}"
+
+KUBERLR_TAG=$(
+  gh api --paginate "repos/rancher/kuberlr-kubectl/releases?per_page=100" \
+    --jq '.[] | select(.draft == false and .prerelease == false) | .tag_name' |
+    grep -E "^${KUBERLR_MAJOR}\.[0-9]+\.[0-9]+$" | sort -V | tail -1
+) || true
 
 if [ -z "$KUBERLR_TAG" ] || [ "$KUBERLR_TAG" = "null" ]; then
-  summary "  - No release found for kuberlr-kubectl branch \`$KUBERLR_BRANCH\`. Skipping."
-  exit 0
+  echo "ERROR: No ${KUBERLR_MAJOR}.Y.Z release found for kuberlr-kubectl (branch \`$KUBERLR_BRANCH\`)" >&2
+  exit 1
 fi
 
 summary "  - Found latest kuberlr-kubectl tag for \`$KUBERLR_BRANCH\`: \`$KUBERLR_TAG\`"

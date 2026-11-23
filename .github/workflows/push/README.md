@@ -10,6 +10,7 @@ These scripts automate pushing chart updates from ob-team-charts into rancher/ch
 Options:
   --charts "rancher-monitoring/77.9"  # override auto-detection (space-separated)
   --commit-sha <sha>                  # defaults to HEAD of ob-team-charts
+  --skip-rc                           # release version instead of rc (X.Y.Z-rc.N -> X.Y.Z, X.Y.Z -> X.Y.Z+1)
   --dry-run                           # skips push and PR creation
   --remote <name>                     # remote name in rancher/charts clone (default: origin)
 ```
@@ -55,4 +56,4 @@ CHARTS_DIR=/path/to/rancher/charts TARGET_BRANCH=dev-v2.13 ./update-kuberlr.sh
 
 ## kuberlr-kubectl version mapping
 
-`charts-config.yaml` contains a `kuberlr-kubectl` section mapping each target branch to a branch in `rancher/kuberlr-kubectl`. `update-kuberlr.sh` queries the GitHub API for the latest release on that branch.
+`charts-config.yaml` contains a `kuberlr-kubectl` section mapping each target branch to a branch in `rancher/kuberlr-kubectl`. `update-kuberlr.sh` uses the latest non-prerelease `vN.Y.Z` release, where `N` is the major of that branch (`release/vN.x`). It does not use the release's `target_commitish`, because many releases are cut from `main`.
