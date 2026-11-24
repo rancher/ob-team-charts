@@ -12,6 +12,9 @@ source "$(dirname "$0")/common.sh"
 
 require_var NEW_CHARTS
 
+# after this we use cargueiro
+PUSH_MAX_RANCHER_MINOR_EXCLUSIVE=16
+
 mkdir -p "$BRANCH_DATA_DIR"
 rm -rf "${BRANCH_DATA_DIR:?}"/*
 
@@ -32,6 +35,10 @@ for chart_full_version in $NEW_CHARTS; do
   yq e ".packages.$CHART_NAME.\"$UPSTREAM_VERSION\".branches" -o=json "$OB_DIR/charts-config.yaml" \
     | jq -c '.[]' | while read -r branch_config; do
         TARGET_BRANCH=$(echo "$branch_config" | jq -r '.branch')
+        if [[ "$TARGET_BRANCH" =~ ^dev-v2\.([0-9]+)$ ]] && (( BASH_REMATCH[1] >= PUSH_MAX_RANCHER_MINOR_EXCLUSIVE )); then
+          summary "Skipping \`$TARGET_BRANCH\` for $chart_full_version: Rancher 2.${BASH_REMATCH[1]}+ charts are staged with cargueiro, not pushed."
+          continue
+        fi
         CHARTS_PACKAGE_DIR=$(echo "$branch_config" | jq -r '.package')
         echo "${chart_full_version},${CHARTS_PACKAGE_DIR}" >> "$BRANCH_DATA_DIR/$TARGET_BRANCH"
     done

@@ -9,6 +9,9 @@
 #   OB_DIR      - path to ob-team-charts workspace ($GITHUB_WORKSPACE)
 #   CHARTS_DIR  - path to clone charts into ($GITHUB_WORKSPACE/charts-repo)
 #   SOURCE_REPO - source repo (github.repository)
+#
+# Optional env vars:
+#   SKIP_RC     - "true" to create release versions instead of rc versions
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -18,15 +21,13 @@ require_var NEW_CHARTS
 require_var GH_TOKEN
 require_var COMMIT_SHA
 
-export OB_DIR CHARTS_DIR DRY_RUN BRANCH_DATA_DIR
+SKIP_RC="${SKIP_RC:-false}"
+export OB_DIR CHARTS_DIR DRY_RUN BRANCH_DATA_DIR SKIP_RC
 
 # --- Clone downstream repo ---
 git clone "https://oauth2:${GH_TOKEN}@github.com/rancher/charts.git" "$CHARTS_DIR"
 git -C "$CHARTS_DIR" config user.name "github-actions[bot]"
 git -C "$CHARTS_DIR" config user.email "github-actions[bot]@users.noreply.github.com"
-
-# --- Download charts-build-scripts binary ---
-make -C "$CHARTS_DIR" pull-scripts
 
 # --- Download code-freeze manifest ---
 #FREEZE_MANIFEST="/tmp/ob-push/code-freeze.yaml"
@@ -39,11 +40,25 @@ make -C "$CHARTS_DIR" pull-scripts
 export NEW_CHARTS
 bash "$SCRIPT_DIR/group-by-branch.sh"
 
+# Branch files are named after the branch (dev-v2.14); skip the side files that steps
+# write next to them. Empty when every target branch was skipped (e.g. only dev-v2.16+,
+# which cargueiro handles).
+shopt -s nullglob
+BRANCH_FILES=()
+for f in "$BRANCH_DATA_DIR"/*; do
+  case "$f" in *.versions|*.rc_removals|*.kept) continue ;; esac
+  BRANCH_FILES+=("$f")
+done
+if [ "${#BRANCH_FILES[@]}" -eq 0 ]; then
+  summary "No branches to push to."
+  exit 0
+fi
+
 summary ""
 summary "## Branch Processing"
 
 # --- Process each target branch ---
-for branch_file in "$BRANCH_DATA_DIR"/*; do
+for branch_file in "${BRANCH_FILES[@]}"; do
   TARGET_BRANCH=$(basename "$branch_file")
   summary ""
   summary "### Processing branch: \`$TARGET_BRANCH\`"
@@ -60,10 +75,23 @@ for branch_file in "$BRANCH_DATA_DIR"/*; do
   git -C "$CHARTS_DIR" checkout -B "$TARGET_BRANCH" "$CHARTS_REMOTE/$TARGET_BRANCH"
   git -C "$CHARTS_DIR" checkout -b "$BRANCH_NAME"
 
+  # The default branch of rancher/charts (staging) has no Makefile; each dev-v2.X
+  # branch pins its own charts-build-scripts, so pull it after the checkout.
+  make -C "$CHARTS_DIR" pull-scripts
+
   export TARGET_BRANCH BRANCH_FILE="$branch_file" COMMIT_SHA BRANCH_NAME CHART_NAMES SOURCE_SHA="$COMMIT_SHA" SOURCE_REPO="${SOURCE_REPO:-}"
 
   summary "- Updating package.yaml files..."
-  bash "$SCRIPT_DIR/update-package-yaml.sh" || { summary "- package.yaml update produced no changes, skipping branch."; continue; }
+  rc=0; bash "$SCRIPT_DIR/update-package-yaml.sh" || rc=$?
+  if [ "$rc" -eq 3 ]; then
+    summary "- All charts already released in \`$TARGET_BRANCH\`, skipping branch."
+    continue
+  elif [ "$rc" -ne 0 ]; then
+    exit "$rc"
+  fi
+  # update-package-yaml.sh drops already-released charts from BRANCH_FILE
+  CHART_NAMES=$(cut -d',' -f1 "$branch_file" | cut -d'/' -f1 | sort -u | tr '\n' ',' | sed 's/,$//' | sed 's/,/, /g')
+  export CHART_NAMES
 
   echo "--- Correct kuberlr patch versions ---"
   bash "$SCRIPT_DIR/correct-kuberlr-patch.sh"
