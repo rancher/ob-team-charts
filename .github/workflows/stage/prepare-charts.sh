@@ -9,6 +9,8 @@
 #     given by its address in this repository at this commit
 #   - the tag of every kuberlr-kubectl image: the latest release of the major of
 #     the branch that kuberlr-kubectl in charts-config.yaml gives for dev-v2.X
+#   - the annotations of the dev-v2.X entry of the chart in packages of
+#     charts-config.yaml, if it has any, on the main chart
 # The archives in assets/ stay as they are.
 #
 # Usage: prepare-charts.sh <chart> <version> <rancher version> <output dir>
@@ -39,7 +41,8 @@ fail() {
 }
 
 [[ "$CHART" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]] || fail "The chart '$CHART' is not a chart name"
-[[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$ ]] || fail "The version '$VERSION' must look like X.Y.Z or X.Y.Z-rancher.N"
+[[ "$VERSION" =~ ^([0-9]+\.[0-9]+)\.[0-9]+(-[0-9A-Za-z.]+)?$ ]] || fail "The version '$VERSION' must look like X.Y.Z or X.Y.Z-rancher.N"
+SERIES="${BASH_REMATCH[1]}"
 [[ "$RANCHER_VERSION" =~ ^2\.([0-9]+)$ ]] || fail "The Rancher version '$RANCHER_VERSION' must look like 2.X"
 RANCHER_MINOR="${BASH_REMATCH[1]}"
 
@@ -67,6 +70,21 @@ RANCHER_RANGE="$RANCHER_RANGE" KUBE_VERSION="$KUBE_VERSION" yq e -i '
   .annotations."catalog.cattle.io/rancher-version" = strenv(RANCHER_RANGE) |
   .annotations."catalog.cattle.io/kube-version" = strenv(KUBE_VERSION)
 ' "$main_chart"
+
+# Annotations the dev-v2.X branch of rancher/charts adds with a patch, such as
+# catalog.cattle.io/hidden. Applied last, so they win over the ones above.
+ANNOTATIONS=$(CHART="$CHART" SERIES="$SERIES" BRANCH="dev-v$RANCHER_VERSION" yq e -o=json -I0 '
+  [.packages[strenv(CHART)][strenv(SERIES)].branches[] | select(.branch == strenv(BRANCH)) | .annotations // {}] | .[0] // {}
+' "$CONFIG")
+if [ "$ANNOTATIONS" != "{}" ]; then
+  [ "$(jq '[.[] | select(type != "string")] | length' <<<"$ANNOTATIONS")" = 0 ] ||
+    fail "The annotations of $CHART $SERIES dev-v$RANCHER_VERSION in charts-config.yaml must all be strings, e.g. \"true\""
+  while IFS= read -r key; do
+    KEY="$key" VALUE="$(jq -r --arg k "$key" '.[$k]' <<<"$ANNOTATIONS")" \
+      yq e -i '.annotations[strenv(KEY)] = strenv(VALUE)' "$main_chart"
+  done < <(jq -r 'keys[]' <<<"$ANNOTATIONS")
+  echo "annotations: $(jq -r 'keys | join(", ")' <<<"$ANNOTATIONS")" >&2
+fi
 
 # The logo is the file of a file://assets/logos/ icon, or assets/logos/<chart>.*
 # for a chart with no icon. An http(s) icon is kept.

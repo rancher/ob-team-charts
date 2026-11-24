@@ -29,6 +29,8 @@ packages:
           package: rancher-monitoring/rancher-monitoring
         - branch: "dev-v2.16"
           package: rancher-monitoring/rancher-monitoring
+          annotations:
+            catalog.cattle.io/hidden: "true"
   rancher-monitoring-dashboards:
     "0.1":
       branches:

@@ -74,6 +74,15 @@ gh workflow run stage-charts.yaml --ref main -f chart=rancher-monitoring/80.9.1-
 The chart, and its `-crd` chart when there is one, is staged once for every `dev-v2.X` branch, with X of 16 or more, that its `Major.Minor` maps to under `packages`. Each Rancher version gets its own chart version, such as `111.0.0+up80.9.1-rancher.23` for 2.16. What the workflow sets in the chart for a Rancher version comes from `charts-config.yaml`:
 
 ```yaml
+packages:
+  rancher-monitoring:
+    "80.9":
+      branches:
+        - branch: "dev-v2.16"
+          package: rancher-monitoring/rancher-monitoring
+          annotations:                         # optional, added to the main chart; values must be strings
+            catalog.cattle.io/hidden: "true"   # what a Chart.yaml patch adds in a dev-v2.X branch of rancher/charts
+
 kuberlr-kubectl:
   dev-v2.16: release/v9.x  # the latest v9.Y.Z release goes into every kuberlr-kubectl image
 
